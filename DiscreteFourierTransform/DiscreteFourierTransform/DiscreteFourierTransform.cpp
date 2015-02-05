@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include <cmath>
 #include <iostream>
 
@@ -13,7 +15,7 @@ void discrete_fourier_transform(unsigned int length, double* input_real, double*
 // note that length has to be a power of 2
 void fast_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag, double* temp_real, double* temp_imag);
 
-int _tmain(int argc, _TCHAR* argv[])q
+int _tmain(int argc, _TCHAR* argv[])
 {
     double input_real[4];
     double input_imag[4];
