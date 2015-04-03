@@ -17,25 +17,25 @@ void fast_fourier_transform(unsigned int length, double* input_real, double* inp
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-    double input_real[4];
-    double input_imag[4];
-    double output_real[4];
-    double output_imag[4];
-    double temp_real[4];
-    double temp_imag[4];
-    input_real[0] = 1;
-    input_real[1] = 2;
-    input_real[2] = 3;
-    input_real[3] = 4;
-    input_imag[0] = 0;
-    input_imag[1] = 0;
-    input_imag[2] = 0;
-    input_imag[3] = 0;
-    // discrete_fourier_transform(4, input_real, input_imag, output_real, output_imag);
-    fast_fourier_transform(4, input_real, input_imag, output_real, output_imag, temp_real, temp_imag);
-    for (unsigned int i = 0; i < 4; i++)
+    const unsigned int length = 64;
+    double input_real[length];
+    double input_imag[length];
+    double output_real[length];
+    double output_imag[length];
+    double temp_real[length];
+    double temp_imag[length];
+    for (unsigned int i = 0; i < length; i++)
+    {
+        input_real[i] = 2 * i;
+        input_imag[i] = 2 * i + 1;
+    }
+
+    // discrete_fourier_transform(length, input_real, input_imag, output_real, output_imag);
+    fast_fourier_transform(length, input_real, input_imag, output_real, output_imag, temp_real, temp_imag);
+    for (unsigned int i = 0; i < length; i++)
     {
         cout << output_real[i] << " " << output_imag[i] << "j" << endl;
+        // cout << input_real[i] << " " << input_imag[i] << "j" << endl;
     }
     return 0;
 }
@@ -96,5 +96,19 @@ void fast_fourier_transform(unsigned int length, double* input_real, double* inp
         output_imag[i]        = temp_imag[i] + temp_real[i + half] * sine   + temp_imag[i + half] * cosine;
         output_real[i + half] = temp_real[i] - temp_real[i + half] * cosine + temp_imag[i + half] * sine  ;
         output_imag[i + half] = temp_imag[i] - temp_real[i + half] * sine   - temp_imag[i + half] * cosine;
+    }
+
+    // Step 4: (Optional) restore input
+    for (unsigned int i = 0; i < length; i++)
+    {
+        temp_real[i] = input_real[i];
+        temp_imag[i] = input_imag[i];
+    }
+    for (unsigned int i = 0; i < half; i++)
+    {
+        input_real[2 * i] = temp_real[i];
+        input_imag[2 * i] = temp_imag[i];
+        input_real[2 * i + 1] = temp_real[i + half];
+        input_imag[2 * i + 1] = temp_imag[i + half];
     }
 }
