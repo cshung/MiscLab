@@ -1,0 +1,4 @@
+:l 01.hs
+myLast []	-- error
+myLast [1]	-- 1
+myLast [1,2]	-- 2

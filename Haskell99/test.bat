@@ -1,0 +1,1 @@
+type 01.test.txt | ghci > 01.test.actual 2>&1
