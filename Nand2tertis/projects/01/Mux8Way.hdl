@@ -1,0 +1,30 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux8Way.hdl
+
+/**
+ * 8-way multiplexor:
+ * out = a if sel == 000
+ *       b if sel == 001
+ *       c if sel == 010
+ *       d if sel == 011
+ *       e if sel == 100
+ *       f if sel == 101
+ *       g if sel == 110
+ *       h if sel == 111
+ */
+
+CHIP Mux8Way {
+    IN a, b, c, d, e, f, g, h, sel[3];
+    OUT out;
+
+    PARTS:
+    Mux(a=a,b=b,sel=sel[0],out=oab);
+    Mux(a=c,b=d,sel=sel[0],out=ocd);
+    Mux(a=e,b=f,sel=sel[0],out=oef);
+    Mux(a=g,b=h,sel=sel[0],out=ogh);
+    Mux(a=oab,b=ocd,sel=sel[1],out=oabcd);
+    Mux(a=oef,b=ogh,sel=sel[1],out=oefgh);
+    Mux(a=oabcd,b=oefgh,sel=sel[2],out=out);
+}
