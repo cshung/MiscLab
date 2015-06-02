@@ -13,5 +13,13 @@ CHIP Inc16 {
     OUT out[16];
 
     PARTS:
-   // Put you code here:
+    /* A roundabout way to get a zero - in reality - just connect to ground */
+    Not16(in=in,out=nin);
+    And16(a=in,b=nin,out=z16);
+    
+    /* A roundabout way to get a one - in reality - just connect to power source */
+    Not(in=in[0],out=nin0);
+    Or(a=in[0],b=nin0,out=one);
+    
+    FullAdd16(a=in,b=z16,carryin=one,out=out,carryout=carryout);
 }

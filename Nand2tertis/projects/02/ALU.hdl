@@ -42,5 +42,25 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    /* The roundabout way to get 0 */
+    Not16(in=x,out=notx);
+    And16(a=x,b=notx,out=z);
+    
+    Mux16(a=x,b=z,sel=zx,out=xsel);
+    Mux16(a=y,b=z,sel=zy,out=ysel);
+    Not16(in=xsel,out=nxsel);
+    Not16(in=ysel,out=nysel);
+    Mux16(a=xsel,b=nxsel,sel=nx,out=xin);
+    Mux16(a=ysel,b=nysel,sel=ny,out=yin);
+    Add16(a=xin,b=yin,out=sum);
+    And16(a=xin,b=yin,out=and);
+    Mux16(a=and,b=sum,sel=f,out=op);
+    Not16(in=op,out=notop);
+    Mux16(a=op,b=notop,sel=no,out=out16,out[15]=ng);
+
+    Not16(in=out16,out=nout16);
+    Not16(in=nout16,out=out);
+    
+    Or16Way(in=out16, out=nzr);
+    Not(in=nzr,out=zr);
 }

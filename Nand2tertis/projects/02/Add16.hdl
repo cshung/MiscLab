@@ -1,7 +1,7 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/02/Adder16.hdl
+// File name: projects/02/Add16.hdl
 
 /**
  * Adds two 16-bit values.
@@ -12,6 +12,9 @@ CHIP Add16 {
     IN a[16], b[16];
     OUT out[16];
 
-    PARTS:
-   // Put you code here:
+    PARTS:    
+    /* A roundabout way to get a zero - in reality - just connect to ground */
+    Not(in=a[0],out=na0);
+    And(a=a[0],b=na0,out=z);
+    FullAdd16(a=a,b=b,carryin=z,out=out,carryout=carryout);
 }
