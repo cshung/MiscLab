@@ -1,8 +1,0 @@
-:l 03.hs
-elementAt []  0   -- error
-elementAt []  1   -- error
-elementAt [1] 0   -- 1
-elementAt [1] 1   -- error
-elementAt [1,2] 0 -- 1
-elementAt [1,2] 1 -- 2
-elementAt [1,2] 2 -- error
