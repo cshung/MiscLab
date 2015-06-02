@@ -1,5 +1,0 @@
-:l 04.hs
-myLength []      -- 0
-myLength [1]     -- 1
-myLength [1,2]   -- 2
-myLength [1,2,3] -- 3
