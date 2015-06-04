@@ -1,10 +1,11 @@
 module Q10 where
+import Q09
 
 encode :: (Eq a) => [a] -> [(a,Int)]
-encode x =
+encode x = 
   let
-    encode' :: (Eq a) => a -> [(a,Int)] -> [(a,Int)]
-    encode' x [] = [(x,1)]
-    encode' y ((x,c):xs) = if y == x then ((x,c+1):xs) else ((y,1):(x,c):xs)
+    compact :: [a] -> (a, Int)
+    compact [] = error "Internal error - pack should not include empty list"
+    compact (x:xs) = (x, length(x:xs))
   in
-    foldr encode' [] x 
+    map compact (pack x)
