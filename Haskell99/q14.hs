@@ -1,5 +1,5 @@
 module Q14 where
+import Q15
 
 dupli :: [a] -> [a]
-dupli [] = []
-dupli (x:xs) = x:x:dupli(xs)
+dupli x = repli x 2
