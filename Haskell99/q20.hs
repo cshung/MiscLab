@@ -14,7 +14,9 @@ removeAtTest p q =
       | otherwise      = Left (removeAtTest' p q)
       
     removeAtTest' :: [a] -> Int -> (a,[a])
+    removeAtTest' []    1 = error "This is impossible"
     removeAtTest' (p:q) 1 = (p, q)
+    removeAtTest' []    r = error "This is impossible"
     removeAtTest' (p:q) r = 
       let
         (s, t) = removeAt q (r-1)

@@ -15,10 +15,12 @@ sliceTest p q r =
       | otherwise      = Left (sliceTest' p q r)
 
     sliceTest' :: [a] -> Int -> Int -> [a]
-    sliceTest' p 1 r = prefix p r
+    sliceTest' p     1 r = prefix p r
+    sliceTest' []    r s = error "This is impossible"
     sliceTest' (p:q) r s = sliceTest' q (r-1) (s-1)
     
-    prefix _ 0 = []
+    prefix _     0 = []
+    prefix []    r = error "This is impossible"
     prefix (p:q) r = p:(prefix q (r-1))
   in
     check p q r

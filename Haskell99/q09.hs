@@ -4,7 +4,8 @@ pack :: (Eq a) => [a] -> [[a]]
 pack x =
   let
     pack' :: (Eq a) => a -> [[a]] -> [[a]]
-    pack' x [] = [[x]]
+    pack' x []            = [[x]]
+    pack' y ([]:xs)       = error "This is impossible"
     pack' y ((xx:xxs):xs) = if y == xx then ((y:xx:xxs):xs) else ([y]:(xx:xxs):xs)
   in
     foldr pack' [] x 
