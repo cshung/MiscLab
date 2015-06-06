@@ -1,7 +1,6 @@
 module Q23 where
 
 import System.Random
-import Data.Array
 
 rndSelect x y = case (rndSelectTest x y) of Left x  -> x
                                             Right y -> error y
