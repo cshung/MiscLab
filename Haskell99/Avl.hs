@@ -1,3 +1,13 @@
+module Avl
+(
+  Tree(Empty),
+  insert,
+  deleteByIndex,
+  preOrder,
+)
+
+where
+
 data Tree a = Empty | Node { value :: a, size :: Int, height :: Int, left :: Tree a, right :: Tree a} deriving (Show)
 
 getHeight :: Tree a -> Int
