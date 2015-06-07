@@ -1,6 +1,23 @@
 module Q23 where
 
 import System.Random
+import Avl
+
+data IndexedValue a = IndexedValue (Int, a) deriving (Show)
+
+instance Eq (IndexedValue a)
+  where
+    IndexedValue(x,_) == IndexedValue(y,_) = (x == y)
+
+instance Ord (IndexedValue a)
+  where
+   IndexedValue(x,_) `compare` IndexedValue(y,_) = compare x y
+
+toIndexedValue :: (Int, a) -> IndexedValue a
+toIndexedValue (p,q) = IndexedValue (p, q)
+
+toTree :: [a] -> Tree (IndexedValue a)
+toTree x = foldr (flip insert) Empty $ map toIndexedValue (zip [1..length x] x)
 
 rndSelect x y = case (rndSelectTest x y) of Left x  -> x
                                             Right y -> error y
@@ -12,21 +29,15 @@ rndSelectTest x y =
     check x y
       | y < 1          = Right "Selecting less than one element is not supported"
       | y > (length x) = Right "Selecting more than length elements is not supported"
-      | otherwise      = Left (rndSelectTest' (mkStdGen 1) x y)
+      | otherwise      = Left (rndSelectTest' (mkStdGen 1) (toTree x) y)
 
-    rndSelectTest' :: StdGen -> [a] -> Int -> [a]
+    rndSelectTest' :: StdGen -> Tree (IndexedValue a) -> Int -> [a]
     rndSelectTest' _         _      0 = []
     rndSelectTest' generator items numItems =
       let
         (randomNumber, nextGenerator) = next generator
-        (chosenItem, remainingItems)  = pick items (mod randomNumber (length items))
+        (IndexedValue(_,chosenItem), remainingItems)  = deleteByIndex items (1 + (mod randomNumber (getSize items)))
       in
         chosenItem:(rndSelectTest' nextGenerator remainingItems (numItems-1))
-
-
-    pick :: [a] -> Int -> (a, [a])
-    pick [] _ = error "This is impossible"
-    pick (x:xs) 0 = (x, xs)
-    pick (x:xs) index = let (y, ys) = pick xs (index - 1) in (y, x:ys)
   in
     check x y
