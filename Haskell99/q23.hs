@@ -19,8 +19,8 @@ toIndexedValue (p,q) = IndexedValue (p, q)
 toTree :: [a] -> Tree (IndexedValue a)
 toTree x = foldr (flip insert) Empty $ map toIndexedValue (zip [1..length x] x)
 
-rndSelect x y = case (rndSelectTest x y) of Left x  -> x
-                                            Right y -> error y
+rndSelect x y = case (rndSelectTest x y) of Left result   -> result
+                                            Right message -> error message
 
 rndSelectTest :: [a] -> Int -> Either [a] String
 rndSelectTest x y =
