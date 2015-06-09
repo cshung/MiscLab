@@ -7,6 +7,6 @@ flatten x =
   let
     flatten' :: NestedList a -> [a] -> [a]  
     flatten' (Elem x)  = \y -> x:y
-    flatten' (List y) = foldr (.) (\x -> []) $ map flatten' y
+    flatten' (List y) = foldr (.) (\x -> x) $ map flatten' y
   in
     (flatten' x) []
