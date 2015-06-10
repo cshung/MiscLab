@@ -13,7 +13,7 @@ tryGoldbachList x y =
   let
     check :: Int -> Int -> Either [(Int, Int)] String
     check x y
-      | x <= 0    = Right "x <= 0 is not supported"
+      | x <= 2    = Right "x <= 2 is not supported"
       | x > y     = Right "x > y is not supported"
       | otherwise = Left (tryGoldbachList' x y)
       
