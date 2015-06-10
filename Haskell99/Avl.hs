@@ -4,7 +4,8 @@ module Avl
   insert,
   deleteByIndex,
   toList,
-  getSize
+  getSize,
+  contain
 )
 
 where
@@ -90,6 +91,20 @@ deleteRootNode node = balance (buildTree (left node) firstValue tree) where (fir
 deleteFirst :: Tree a -> (a, Tree a)
 deleteFirst Node {left = Empty, value = value, right = right} = (value, right)
 deleteFirst Node {left = left, value = value, right = right} = (resultValue, balance (buildTree resultTree value right)) where (resultValue, resultTree) = (deleteFirst left)
+
+contain :: (Ord a) => Tree a -> a -> Bool
+contain Empty _           = False
+contain node  searchValue =
+  let
+    Node { value = nodeValue, left = nodeLeft, right = nodeRight } = node
+  in 
+    if (searchValue == nodeValue) then 
+      True 
+    else
+      if (searchValue < nodeValue) then
+        contain nodeLeft searchValue
+      else
+        contain nodeRight searchValue
 
 toList :: Tree a -> [a]
 toList Empty = []
