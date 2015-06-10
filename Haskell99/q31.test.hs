@@ -1,7 +1,7 @@
 import Test.HUnit
 import Q31
 
-test01 = TestCase (assertEqual "tryIsPrime 1    should be Left True                                 ." (Left True                                   ) (tryIsPrime 1   ))
+test01 = TestCase (assertEqual "tryIsPrime 1    should be Left False                                ." (Left False                                  ) (tryIsPrime 1   ))
 test02 = TestCase (assertEqual "tryIsPrime 2    should be Left True                                 ." (Left True                                   ) (tryIsPrime 2   ))
 test03 = TestCase (assertEqual "tryIsPrime 3    should be Left True                                 ." (Left True                                   ) (tryIsPrime 3   ))
 test04 = TestCase (assertEqual "tryIsPrime 4    should be Left False                                ." (Left False                                  ) (tryIsPrime 4   ))

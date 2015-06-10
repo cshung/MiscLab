@@ -35,3 +35,6 @@ https://gist.github.com/2ab815324c6dc29b7695.git
 https://gist.github.com/3b5673205f156cef1950.git
 https://gist.github.com/90edaa45e864aae6f881.git
 https://gist.github.com/bfcab51ab42026d4574b.git
+https://gist.github.com/406a06c00ac07b09c287.git
+https://gist.github.com/2677825415316549ade2.git
+https://gist.github.com/1a24979e59daf507d53d.git
