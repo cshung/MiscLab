@@ -1,9 +1,12 @@
-module BinomialHeap where
+module BinomialHeap (BinomialHeap, empty, insert, findMin, deleteMin) where
 
 data BinomialNode a = Node { size :: Int, value :: a, children :: [BinomialNode a] } deriving (Show)
-type BinomialHeap a = [BinomialNode a]
+data BinomialHeap a = List [BinomialNode a]
 
-mergeOneNode :: (Ord a) => BinomialHeap a -> BinomialNode a -> BinomialHeap a
+empty :: BinomialHeap a
+empty = List []
+
+mergeOneNode :: (Ord a) => [BinomialNode a] -> BinomialNode a -> [BinomialNode a]
 mergeOneNode []    insertNode = [insertNode]
 mergeOneNode queue insertNode =
   let
@@ -23,13 +26,18 @@ mergeOneNode queue insertNode =
           mergeOneNode tail (Node { size = headNodeSize * 2, value = insertNodeValue, children = headNode:insertNodeChildren })
 
 insert :: (Ord a) => BinomialHeap a -> a -> BinomialHeap a
-insert queue insertValue = mergeOneNode queue Node { size = 1, value = insertValue, children = []}
+insert queue insertValue = 
+  let
+    List queueList = queue
+    newQueueList = mergeOneNode queueList Node { size = 1, value = insertValue, children = []}
+  in
+    List newQueueList
 
-findMinTree :: (Ord a) => BinomialHeap a -> (BinomialNode a, BinomialHeap a)
+findMinTree :: (Ord a) => [BinomialNode a] -> (BinomialNode a, [BinomialNode a])
 findMinTree []          = error "This is impossible"
 findMinTree (head:tail) =
   let
-    findMinTree' :: (Ord a) => BinomialHeap a -> BinomialNode a -> (BinomialNode a, BinomialHeap a)
+    findMinTree' :: (Ord a) => [BinomialNode a] -> BinomialNode a -> (BinomialNode a, [BinomialNode a])
     findMinTree' []          currentMinTree = (currentMinTree, [])
     findMinTree' (head:tail) currentMinTree =
       let
@@ -50,13 +58,13 @@ findMinTree (head:tail) =
     findMinTree' tail head
 
 findMin :: (Ord a) => BinomialHeap a -> Maybe a
-findMin []    = Nothing
-findMin queue = Just (value (fst(findMinTree queue)))
+findMin (List []       ) = Nothing
+findMin (List queueList) = Just (value (fst(findMinTree queueList)))
 
 deleteMin :: (Ord a) => BinomialHeap a -> Maybe (a, BinomialHeap a)
-deleteMin [] = Nothing
-deleteMin queue =
+deleteMin (List []) = Nothing
+deleteMin (List queueList) =
   let
-    (minTree, minHeap) = findMinTree queue
+    (minTree, minHeap) = findMinTree queueList
   in
-    Just ((value minTree), foldr (flip mergeOneNode) minHeap (children minTree))
+    Just ((value minTree), List (foldr (flip mergeOneNode) minHeap (children minTree)))
