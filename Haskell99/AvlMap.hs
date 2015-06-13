@@ -60,6 +60,17 @@ rotateRight oldTop =
   in
    buildTree oldLeftLeft oldLeftKey oldLeftValue newRight
 
+deleteByKey :: (Ord tKey) => Tree tKey tValue -> tKey -> (tKey, tValue, Tree tKey tValue)
+deleteByKey Empty _ = error "Unexpected 3"
+deleteByKey node deleteKey
+  | deleteKey <  nodeKey  = let (deletedKey, deletedValue, deletedLeft ) = (deleteByKey nodeLeft deleteKey) in (deletedKey, deletedValue, balance (buildTree deletedLeft nodeKey nodeValue nodeRight))
+  | deleteKey == nodeKey  = (nodeKey, nodeValue, deleteRootNode node)
+  | otherwise             = let (deletedKey, deletedValue, deletedRight) = (deleteByKey nodeRight deleteKey) in (deletedKey, deletedValue, balance (buildTree nodeLeft nodeKey nodeValue deletedRight))
+  where nodeKey   = key node
+        nodeValue = value node
+        nodeLeft  = left node
+        nodeRight = right node
+
 deleteByIndex :: Tree tKey tValue -> Int -> (tKey, tValue, Tree tKey tValue)
 deleteByIndex Empty _ = error "Unexpected 1"
 deleteByIndex node index
