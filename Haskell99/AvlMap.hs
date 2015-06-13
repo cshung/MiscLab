@@ -1,6 +1,6 @@
 module AvlMap where
 
-data Tree tKey tValue = Empty | Node { key :: tKey, value :: tValue, size :: Int, height :: Int, left :: Tree tKey tValue, right :: Tree tKey tValue} deriving (Show)
+data Tree tKey tValue = Empty | Node { key :: tKey, value :: tValue, size :: Int, height :: Int, left :: Tree tKey tValue, right :: Tree tKey tValue}
 
 getHeight :: Tree tKey tValue -> Int
 getHeight Empty = 0
