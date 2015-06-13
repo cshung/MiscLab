@@ -1,4 +1,4 @@
-module BinomialHeap (BinomialHeap, empty, insert, findMin, deleteMin) where
+module BinomialHeap (BinomialHeap(), empty, insert, findMin, deleteMin) where
 
 data BinomialNode a = Node { size :: Int, value :: a, children :: [BinomialNode a] } deriving (Show)
 data BinomialHeap a = List [BinomialNode a]
