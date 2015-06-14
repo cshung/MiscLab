@@ -2,7 +2,7 @@ module Q41 where
 
 import Q39
 import Q40
-import Avl
+import AvlSet
 
 goldbachList :: Int -> Int -> [(Int, Int)]
 goldbachList x y = case (tryGoldbachList x y) of Left result   -> result
@@ -26,7 +26,7 @@ tryGoldbachList x y =
         q = lower y
         r = [p,p+2..q]
         primesList = primesR 2 q
-        primesTree = foldr (flip insert) Empty primesList
+        primesTree = foldr (flip insert) empty primesList
       in
         map (\s -> goldbachInternal s primesList primesTree) r        
   in

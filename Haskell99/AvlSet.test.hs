@@ -1,12 +1,12 @@
 import Test.HUnit
-import Avl
+import AvlSet
                   
 assertEqualIntList :: String -> [Int] -> [Int] -> Assertion
 assertEqualIntList = assertEqual
 
 main = 
   let
-    tree1 = Empty
+    tree1 = empty
     tree2 = insert tree1 1
     tree3 = insert tree2 2
     tree4 = insert tree3 3

@@ -1,7 +1,8 @@
 module AvlMap
 (
-  Tree(),
+  TreeMap(),
   empty,
+  getSize,
   insert,
   containsKey,
   valueByKey,
@@ -9,31 +10,32 @@ module AvlMap
   deleteByKey,
   valueByIndex,
   setValueByIndex,
-  deleteByIndex
+  deleteByIndex,
+  toList
 )
 where
 
-data Tree tKey tValue = Empty | Node { key :: tKey, value :: tValue, size :: Int, height :: Int, left :: Tree tKey tValue, right :: Tree tKey tValue}
+data TreeMap tKey tValue = Empty | Node { key :: tKey, value :: tValue, size :: Int, height :: Int, left :: TreeMap tKey tValue, right :: TreeMap tKey tValue}
 
-empty :: Tree tKey tValue
+empty :: TreeMap tKey tValue
 empty = Empty
 
-getHeight :: Tree tKey tValue -> Int
+getHeight :: TreeMap tKey tValue -> Int
 getHeight Empty = 0
 getHeight Node { height = height } = height
 
-getSize :: Tree tKey tValue -> Int
+getSize :: TreeMap tKey tValue -> Int
 getSize Empty = 0
 getSize Node { size = size } = size
 
-buildTree :: Tree tKey tValue -> tKey -> tValue -> Tree tKey tValue -> Tree tKey tValue
+buildTree :: TreeMap tKey tValue -> tKey -> tValue -> TreeMap tKey tValue -> TreeMap tKey tValue
 buildTree left key value right = Node {key = key, value = value, size = (getSize left) + (getSize right) + 1, height = (max (getHeight left) (getHeight right)) + 1, left = left, right = right}
 
-balance :: Tree tKey tValue -> Tree tKey tValue
+balance :: TreeMap tKey tValue -> TreeMap tKey tValue
 balance Empty = Empty
 balance x =
   let
-    getBalance :: Tree tKey tValue -> Int
+    getBalance :: TreeMap tKey tValue -> Int
     getBalance x = (getHeight (right x)) - (getHeight (left x))
   in
     case (getBalance x) of
@@ -50,7 +52,7 @@ balance x =
               rotateRight x
       otherwise -> error "This is impossible"
 
-rotateLeft :: Tree tKey tValue -> Tree tKey tValue
+rotateLeft :: TreeMap tKey tValue -> TreeMap tKey tValue
 rotateLeft oldTop =
   let
     Node { key = oldTopKey  , value = oldTopValue  , left = oldTopLeft  , right = oldTopRight   } = oldTop       -- to rotate left, top   must be non empty
@@ -59,7 +61,7 @@ rotateLeft oldTop =
   in
    buildTree newLeft oldRightKey oldRightValue oldRightRight
 
-rotateRight :: Tree tKey tValue -> Tree tKey tValue
+rotateRight :: TreeMap tKey tValue -> TreeMap tKey tValue
 rotateRight oldTop =
   let
     Node { key = oldTopKey , value = oldTopValue , left = oldTopLeft , right = oldTopRight  } = oldTop      -- to rotate right, top  must be non empty
@@ -68,7 +70,7 @@ rotateRight oldTop =
   in
    buildTree oldLeftLeft oldLeftKey oldLeftValue newRight
 
-insert :: (Ord tKey) => Tree tKey tValue -> tKey -> tValue -> Maybe (Tree tKey tValue)
+insert :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (TreeMap tKey tValue)
 insert Empty key value = Just Node { key = key, value = value, size = 1, height = 1, left = Empty, right = Empty }
 insert Node { key = nodeKey, value = nodeValue, left = left, right = right } insertKey insertValue =
   if insertKey > nodeKey then
@@ -81,7 +83,7 @@ insert Node { key = nodeKey, value = nodeValue, left = left, right = right } ins
       case insert left insertKey insertValue of Just insertedLeft -> Just (balance (buildTree insertedLeft nodeKey nodeValue right))
                                                 Nothing           -> Nothing
 
-byKey :: (Ord tKey) => Tree tKey tValue -> tKey -> (Tree tKey tValue -> (b, Tree tKey tValue)) -> Maybe (b, Tree tKey tValue)
+byKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> (TreeMap tKey tValue -> (b, TreeMap tKey tValue)) -> Maybe (b, TreeMap tKey tValue)
 byKey Empty _        _               = Nothing
 byKey node searchKey processFunction
   | searchKey <  nodeKey  = case (byKey nodeLeft  searchKey processFunction) of (Just (processResult, processedLeft )) -> Just (processResult, balance (buildTree processedLeft nodeKey nodeValue nodeRight))
@@ -95,22 +97,22 @@ byKey node searchKey processFunction
         nodeLeft  = left node
         nodeRight = right node
 
-valueByKey :: (Ord tKey) => Tree tKey tValue -> tKey -> Maybe tValue
+valueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> Maybe tValue
 valueByKey node searchKey = case (byKey node searchKey (\foundNode -> (value foundNode, foundNode))) of Just (foundValue, _) -> Just foundValue
                                                                                                         Nothing              -> Nothing
 
-containsKey:: (Ord tKey) => Tree tKey tValue -> tKey -> Bool
+containsKey:: (Ord tKey) => TreeMap tKey tValue -> tKey -> Bool
 containsKey node searchKey = case (valueByKey node searchKey) of Just _  -> True
                                                                  Nothing -> False
 
-setValueByKey :: (Ord tKey) => Tree tKey tValue -> tKey -> tValue -> Maybe (Tree tKey tValue)
+setValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (TreeMap tKey tValue)
 setValueByKey node searchKey replaceValue = case (byKey node searchKey (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
                                                                                                                                                                            Nothing         -> Nothing
 
-deleteByKey :: (Ord tKey) => Tree tKey tValue -> tKey -> Maybe ((tKey, tValue), Tree tKey tValue)
+deleteByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> Maybe ((tKey, tValue), TreeMap tKey tValue)
 deleteByKey node deleteKey = byKey node deleteKey (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
 
-byIndex :: Tree tKey tValue -> Int -> (Tree tKey tValue -> (b, Tree tKey tValue)) -> Maybe (b, Tree tKey tValue)
+byIndex :: TreeMap tKey tValue -> Int -> (TreeMap tKey tValue -> (b, TreeMap tKey tValue)) -> Maybe (b, TreeMap tKey tValue)
 byIndex Empty _    _               = Nothing
 byIndex node index processFunction
   | index < split  = case (byIndex nodeLeft index            processFunction) of Just (processedResult, processedLeft ) -> Just (processedResult, balance (buildTree processedLeft nodeKey nodeValue nodeRight))
@@ -124,27 +126,27 @@ byIndex node index processFunction
         nodeRight = right node
         split     = (getSize nodeLeft) + 1
 
-deleteByIndex :: Tree tKey tValue -> Int -> Maybe ((tKey, tValue), Tree tKey tValue)
-deleteByIndex node deleteIndex = byIndex node deleteIndex (\foundNode -> ((key node, value node), deleteRootNode foundNode))
+deleteByIndex :: TreeMap tKey tValue -> Int -> Maybe ((tKey, tValue), TreeMap tKey tValue)
+deleteByIndex node deleteIndex = byIndex node deleteIndex (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
 
-valueByIndex ::  Tree tKey tValue -> Int -> Maybe tValue
+valueByIndex ::  TreeMap tKey tValue -> Int -> Maybe tValue
 valueByIndex node searchIndex = case (byIndex node searchIndex (\foundNode -> (value foundNode, foundNode))) of Just (result, _) -> Just result
                                                                                                                 Nothing          -> Nothing
 
-setValueByIndex :: Tree Int tValue -> Int -> tValue -> Maybe (Tree Int tValue)
+setValueByIndex :: TreeMap Int tValue -> Int -> tValue -> Maybe (TreeMap Int tValue)
 setValueByIndex node searchIndex replaceValue = case (byIndex node searchIndex (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
                                                                                                                                                                                    Nothing         -> Nothing
 
-deleteRootNode :: Tree tKey tValue -> Tree tKey tValue
+deleteRootNode :: TreeMap tKey tValue -> TreeMap tKey tValue
 deleteRootNode Empty = error "Unexpected 2"
 deleteRootNode Node {left = Empty, right = right} = right
 deleteRootNode Node {left = left,  right = Empty} = left
 deleteRootNode node = balance (buildTree (left node) firstKey firstValue tree) where (firstKey, firstValue, tree) = deleteFirst (right node)
 
-deleteFirst :: Tree tKey tValue -> (tKey, tValue, Tree tKey tValue)
+deleteFirst :: TreeMap tKey tValue -> (tKey, tValue, TreeMap tKey tValue)
 deleteFirst Node {left = Empty, key = key, value = value, right = right} = (key, value, right)
-deleteFirst Node {left = left, key = key, value = value, right = right} = (resultKey, resultValue, balance (buildTree resultTree key value right)) where (resultKey, resultValue, resultTree) = (deleteFirst left)
+deleteFirst Node {left = left, key = key, value = value, right = right} = (resultKey, resultValue, balance (buildTree resultTreeMap key value right)) where (resultKey, resultValue, resultTreeMap) = (deleteFirst left)
 
-toList :: Tree tKey tValue -> [(tKey, tValue)]
+toList :: TreeMap tKey tValue -> [(tKey, tValue)]
 toList Empty = []
 toList Node {left = left, key = key, value = value, right = right} = (toList left) ++ ((key, value): (toList right))
