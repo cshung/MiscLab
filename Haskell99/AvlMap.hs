@@ -4,13 +4,16 @@ module AvlMap
   empty,
   getSize,
   insert,
+  tryInsert,
   containsKey,
   valueByKey,
   setValueByKey,
   deleteByKey,
+  tryDeleteByKey,
   valueByIndex,
   setValueByIndex,
   deleteByIndex,
+  tryDeleteByIndex,
   toList
 )
 where
@@ -70,18 +73,22 @@ rotateRight oldTop =
   in
    buildTree oldLeftLeft oldLeftKey oldLeftValue newRight
 
-insert :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (TreeMap tKey tValue)
-insert Empty key value = Just Node { key = key, value = value, size = 1, height = 1, left = Empty, right = Empty }
-insert Node { key = nodeKey, value = nodeValue, left = left, right = right } insertKey insertValue =
+insert :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> TreeMap tKey tValue
+insert node key value = case (tryInsert node key value) of Just result -> result
+                                                           Nothing     -> error "Cannot insert - key duplicated"
+
+tryInsert :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (TreeMap tKey tValue)
+tryInsert Empty key value = Just Node { key = key, value = value, size = 1, height = 1, left = Empty, right = Empty }
+tryInsert Node { key = nodeKey, value = nodeValue, left = left, right = right } insertKey insertValue =
   if insertKey > nodeKey then
-    case insert right insertKey insertValue of Just insertedRight -> Just (balance (buildTree left nodeKey nodeValue insertedRight))
-                                               Nothing            -> Nothing
+    case tryInsert right insertKey insertValue of Just insertedRight -> Just (balance (buildTree left nodeKey nodeValue insertedRight))
+                                                  Nothing            -> Nothing
   else
     if insertKey == nodeKey then
       Nothing
     else
-      case insert left insertKey insertValue of Just insertedLeft -> Just (balance (buildTree insertedLeft nodeKey nodeValue right))
-                                                Nothing           -> Nothing
+      case tryInsert left insertKey insertValue of Just insertedLeft -> Just (balance (buildTree insertedLeft nodeKey nodeValue right))
+                                                   Nothing           -> Nothing
 
 byKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> (TreeMap tKey tValue -> (b, TreeMap tKey tValue)) -> Maybe (b, TreeMap tKey tValue)
 byKey Empty _        _               = Nothing
@@ -109,8 +116,12 @@ setValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (T
 setValueByKey node searchKey replaceValue = case (byKey node searchKey (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
                                                                                                                                                                            Nothing         -> Nothing
 
-deleteByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> Maybe ((tKey, tValue), TreeMap tKey tValue)
-deleteByKey node deleteKey = byKey node deleteKey (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
+deleteByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> ((tKey, tValue), TreeMap tKey tValue)
+deleteByKey node deleteKey = case (tryDeleteByKey node deleteKey) of Just result -> result
+                                                                     Nothing     -> error "Key not found"
+
+tryDeleteByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> Maybe ((tKey, tValue), TreeMap tKey tValue)
+tryDeleteByKey node deleteKey = byKey node deleteKey (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
 
 byIndex :: TreeMap tKey tValue -> Int -> (TreeMap tKey tValue -> (b, TreeMap tKey tValue)) -> Maybe (b, TreeMap tKey tValue)
 byIndex Empty _    _               = Nothing
@@ -126,8 +137,12 @@ byIndex node index processFunction
         nodeRight = right node
         split     = (getSize nodeLeft) + 1
 
-deleteByIndex :: TreeMap tKey tValue -> Int -> Maybe ((tKey, tValue), TreeMap tKey tValue)
-deleteByIndex node deleteIndex = byIndex node deleteIndex (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
+deleteByIndex :: TreeMap tKey tValue -> Int -> ((tKey, tValue), TreeMap tKey tValue)
+deleteByIndex node deleteIndex = case (tryDeleteByIndex node deleteIndex) of Just result -> result
+                                                                             Nothing     -> error "Index not found"
+
+tryDeleteByIndex :: TreeMap tKey tValue -> Int -> Maybe ((tKey, tValue), TreeMap tKey tValue)
+tryDeleteByIndex node deleteIndex = byIndex node deleteIndex (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
 
 valueByIndex ::  TreeMap tKey tValue -> Int -> Maybe tValue
 valueByIndex node searchIndex = case (byIndex node searchIndex (\foundNode -> (value foundNode, foundNode))) of Just (result, _) -> Just result

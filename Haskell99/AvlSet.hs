@@ -4,7 +4,9 @@ module AvlSet
   empty,
   getSize,
   insert,
+  tryInsert,
   deleteByIndex,
+  tryDeleteByIndex,
   contain,
   toList
 )
@@ -21,13 +23,21 @@ empty = Map AvlMap.empty
 getSize :: TreeSet a -> Int
 getSize (Map map) = AvlMap.getSize map
 
+tryInsert :: (Ord a) => TreeSet a -> a -> Maybe (TreeSet a)
+tryInsert (Map oldMap) keyToInsert = case (AvlMap.tryInsert oldMap keyToInsert ()) of Just newMap -> Just (Map newMap)
+                                                                                      Nothing     -> Nothing
+
 insert :: (Ord a) => TreeSet a -> a -> TreeSet a
-insert (Map oldMap) keyToInsert = case (AvlMap.insert oldMap keyToInsert ()) of Just newMap -> Map newMap
-                                                                                Nothing     -> error "Key duplicated"
+insert oldSet keyToInsert = case (tryInsert oldSet keyToInsert) of Just result -> result
+                                                                   Nothing     -> error "Key duplicated"
+
+tryDeleteByIndex :: TreeSet a -> Int -> Maybe (a, TreeSet a)
+tryDeleteByIndex (Map oldMap) indexToDelete = case (AvlMap.tryDeleteByIndex oldMap indexToDelete) of Just ((deletedValue, _), newMap) -> Just (deletedValue, Map newMap)
+                                                                                                     Nothing                          -> Nothing
 
 deleteByIndex :: TreeSet a -> Int -> (a, TreeSet a)
-deleteByIndex (Map oldMap) indexToDelete = case (AvlMap.deleteByIndex oldMap indexToDelete) of Just ((deletedValue, _), newMap) -> (deletedValue, Map newMap)
-                                                                                               Nothing                          -> error "Index not found"
+deleteByIndex oldSet indexToDelete = case (tryDeleteByIndex oldSet indexToDelete) of Just result -> result
+                                                                                     Nothing     -> error "Index not found"
 
 contain :: (Ord a) => TreeSet a -> a -> Bool
 contain (Map oldMap) keyToFind = AvlMap.containsKey oldMap keyToFind

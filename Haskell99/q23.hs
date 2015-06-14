@@ -6,11 +6,8 @@ import AvlMap
 rndSelect x y = case (rndSelectTest x y) of Left result   -> result
                                             Right message -> error message
 
-unJust :: Maybe a -> a
-unJust (Just x) = x
-
 toTreeMap :: [a] -> TreeMap Int a
-toTreeMap entries = foldr (\(index, value) accMap -> unJust (insert accMap index value)) empty (zip [1..length entries] entries)
+toTreeMap entries = foldr (\(index, value) accMap -> (insert accMap index value)) empty (zip [1..length entries] entries)
 
 rndSelectTest :: [a] -> Int -> Either [a] String
 rndSelectTest x y =
@@ -26,7 +23,7 @@ rndSelectTest x y =
     rndSelectTest' generator items numItems =
       let
         (randomNumber, nextGenerator) = next generator
-        ((_,chosenItem), remainingItems)  = unJust (deleteByIndex items (1 + (mod randomNumber (getSize items))))
+        ((_,chosenItem), remainingItems)  = deleteByIndex items (1 + (mod randomNumber (getSize items)))
       in
         chosenItem:(rndSelectTest' nextGenerator remainingItems (numItems-1))
   in

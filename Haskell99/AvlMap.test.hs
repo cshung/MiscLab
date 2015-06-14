@@ -10,10 +10,10 @@ assertEqualCharList = assertEqual
 main = 
   let
     tree0          = empty
-    Just tree1     = insert tree0 100 'a'
-    Just tree2     = insert tree1 200 'b'
-    Just tree3     = insert tree2 150 'c'
-    Just (_,tree4) = deleteByKey tree3 100
+    tree1          = insert tree0 100 'a'
+    tree2          = insert tree1 200 'b'
+    tree3          = insert tree2 150 'c'
+    (_,tree4)      = deleteByKey tree3 100
     c01            = containsKey tree0 100
     c02            = containsKey tree1 100
     c03            = containsKey tree2 100
