@@ -7,7 +7,7 @@ assertEqualBoolList = assertEqual
 assertEqualCharList :: String -> [Char] -> [Char] -> Assertion
 assertEqualCharList = assertEqual
 
-main = 
+main =
   let
     tree0          = empty
     tree1          = insert tree0 100 'a'
@@ -26,9 +26,9 @@ main =
     c10            = containsKey tree1 200
     c11            = containsKey tree2 200
     c12            = containsKey tree3 200
-    Just v1        = valueByKey tree3 100
-    Just v2        = valueByKey tree3 150
-    Just v3        = valueByKey tree3 200    
+    v1             = getValueByKey tree3 100
+    v2             = getValueByKey tree3 150
+    v3             = getValueByKey tree3 200
     test1          = TestCase (assertEqualBoolList "Validating containsKey." ([False, True, True, True, False, False, False, True, False, False, True, True]) ([c01, c02, c03, c04, c05, c06, c07, c08, c09, c10, c11, c12]))
     test2          = TestCase (assertEqualCharList "Validating valueByKey." (['a', 'c', 'b']) ([v1, v2, v3]))
   in

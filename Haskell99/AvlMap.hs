@@ -4,15 +4,19 @@ module AvlMap
   empty,
   getSize,
   insert,
-  tryInsert,
   containsKey,
-  valueByKey,
+  getValueByKey,
   setValueByKey,
   deleteByKey,
-  tryDeleteByKey,
-  valueByIndex,
+  getValueByIndex,
   setValueByIndex,
   deleteByIndex,
+  tryInsert,
+  tryGetValueByKey,
+  trySetValueByKey,
+  tryDeleteByKey,
+  tryGetValueByIndex,
+  trySetValueByIndex,
   tryDeleteByIndex,
   toList
 )
@@ -104,17 +108,25 @@ byKey node searchKey processFunction
         nodeLeft  = left node
         nodeRight = right node
 
-valueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> Maybe tValue
-valueByKey node searchKey = case (byKey node searchKey (\foundNode -> (value foundNode, foundNode))) of Just (foundValue, _) -> Just foundValue
-                                                                                                        Nothing              -> Nothing
+tryGetValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> Maybe tValue
+tryGetValueByKey node searchKey = case (byKey node searchKey (\foundNode -> (value foundNode, foundNode))) of Just (foundValue, _) -> Just foundValue
+                                                                                                              Nothing              -> Nothing
+
+getValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue
+getValueByKey node searchKey = case (tryGetValueByKey node searchKey) of Just result -> result
+                                                                         Nothing     -> error "Key not found"
 
 containsKey:: (Ord tKey) => TreeMap tKey tValue -> tKey -> Bool
-containsKey node searchKey = case (valueByKey node searchKey) of Just _  -> True
-                                                                 Nothing -> False
+containsKey node searchKey = case (tryGetValueByKey node searchKey) of Just _  -> True
+                                                                       Nothing -> False
 
-setValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (TreeMap tKey tValue)
-setValueByKey node searchKey replaceValue = case (byKey node searchKey (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
-                                                                                                                                                                           Nothing         -> Nothing
+trySetValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> Maybe (TreeMap tKey tValue)
+trySetValueByKey node searchKey replaceValue = case (byKey node searchKey (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
+                                                                                                                                                                              Nothing         -> Nothing
+
+setValueByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> tValue -> TreeMap tKey tValue
+setValueByKey node searchKey replaceValue = case (trySetValueByKey node searchKey replaceValue) of Just result -> result
+                                                                                                   Nothing     -> error "Key not found"
 
 deleteByKey :: (Ord tKey) => TreeMap tKey tValue -> tKey -> ((tKey, tValue), TreeMap tKey tValue)
 deleteByKey node deleteKey = case (tryDeleteByKey node deleteKey) of Just result -> result
@@ -144,13 +156,21 @@ deleteByIndex node deleteIndex = case (tryDeleteByIndex node deleteIndex) of Jus
 tryDeleteByIndex :: TreeMap tKey tValue -> Int -> Maybe ((tKey, tValue), TreeMap tKey tValue)
 tryDeleteByIndex node deleteIndex = byIndex node deleteIndex (\foundNode -> ((key foundNode, value foundNode), deleteRootNode foundNode))
 
-valueByIndex ::  TreeMap tKey tValue -> Int -> Maybe tValue
-valueByIndex node searchIndex = case (byIndex node searchIndex (\foundNode -> (value foundNode, foundNode))) of Just (result, _) -> Just result
-                                                                                                                Nothing          -> Nothing
+tryGetValueByIndex ::  TreeMap tKey tValue -> Int -> Maybe tValue
+tryGetValueByIndex node searchIndex = case (byIndex node searchIndex (\foundNode -> (value foundNode, foundNode))) of Just (result, _) -> Just result
+                                                                                                                      Nothing          -> Nothing
 
-setValueByIndex :: TreeMap Int tValue -> Int -> tValue -> Maybe (TreeMap Int tValue)
-setValueByIndex node searchIndex replaceValue = case (byIndex node searchIndex (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
-                                                                                                                                                                                   Nothing         -> Nothing
+getValueByIndex ::  TreeMap tKey tValue -> Int -> tValue
+getValueByIndex node searchIndex = case (tryGetValueByIndex node searchIndex) of Just result -> result
+                                                                                 Nothing     -> error "Index not found"
+
+trySetValueByIndex :: TreeMap Int tValue -> Int -> tValue -> Maybe (TreeMap Int tValue)
+trySetValueByIndex node searchIndex replaceValue = case (byIndex node searchIndex (\foundNode -> ((), buildTree (left foundNode) (key foundNode) replaceValue (right foundNode)))) of Just (_,result) -> Just result
+                                                                                                                                                                                      Nothing         -> Nothing
+
+setValueByIndex :: TreeMap Int tValue -> Int -> tValue -> TreeMap Int tValue
+setValueByIndex node searchIndex replaceValue = case (trySetValueByIndex node searchIndex replaceValue) of Just result -> result
+                                                                                                           Nothing     -> error "Index not found"
 
 deleteRootNode :: TreeMap tKey tValue -> TreeMap tKey tValue
 deleteRootNode Empty = error "Unexpected 2"
