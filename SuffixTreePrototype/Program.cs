@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Text;
 
-    // Still O(m^3) - changed the representation of the edge from a string to a pair of numbers as on page 101
+    // Still O(m^3) - skip count trick as in page 101
     class SuffixTree2
     {
         private SuffixTree2(string text)
@@ -62,16 +62,10 @@
                     }
                     else
                     {
-                        if (currentCharacter == followingLink.EdgeLabel(text, linkCursor))
-                        {
-                            textCursor++;
-                            remainingTextLength--;
-                            linkCursor++;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        int move = Math.Min(followingLink.Length(), remainingTextLength);
+                        textCursor += move;
+                        remainingTextLength -= move;
+                        linkCursor += move;
                     }
                 }
             }
@@ -108,8 +102,6 @@
                     else
                     {
                         // Rule 2 
-                        //string followingLinkEdgeLabelPrefix = followingLink.EdgeLabel.Substring(0, linkCursor);
-                        //string followingLinkEdgeLabelSuffix = followingLink.EdgeLabel.Substring(linkCursor);
                         int originalEnd = followingLink.End;
                         SuffixTreeNode originalChild = followingLink.child;
 
