@@ -4,21 +4,22 @@
     using System.Collections.Generic;
     using System.Text;
 
-    // Naive O(m^3) algorithm
-    class SuffixTree1
+    // Still O(m^3) - changed the representation of the edge from a string to a pair of numbers as on page 101
+    class SuffixTree2
     {
-        private SuffixTree1()
+        private SuffixTree2(string text)
         {
             // Avoid direct construction
+            this.text = text;
         }
 
-        public static SuffixTree1 Build(string text)
+        public static SuffixTree2 Build(string text)
         {
             // Step 1: Build initial tree
-            SuffixTree1 result = new SuffixTree1();
+            SuffixTree2 result = new SuffixTree2(text);
             result.rootNode = new SuffixTreeNode();
             string suffix = text[0] + "";
-            result.rootNode.links.Add(suffix[0], new SuffixTreeLink { EdgeLabel = suffix, child = new SuffixTreeNode() });
+            result.rootNode.links.Add(suffix[0], new SuffixTreeLink { Start = 0, End = 1, child = new SuffixTreeNode() });
 
             // Step 2: Basic extension loop
             for (int phase = 2; phase <= text.Length; phase++)
@@ -53,7 +54,7 @@
                 }
                 else
                 {
-                    if (linkCursor == followingLink.EdgeLabel.Length)
+                    if (linkCursor == followingLink.Length())
                     {
                         linkCursor = -1;
                         nodeCursor = followingLink.child;
@@ -61,7 +62,7 @@
                     }
                     else
                     {
-                        if (currentCharacter == followingLink.EdgeLabel[linkCursor])
+                        if (currentCharacter == followingLink.EdgeLabel(text, linkCursor))
                         {
                             textCursor++;
                             remainingTextLength--;
@@ -78,12 +79,12 @@
             char characterToExtend = text[phase - 1];
             if (followingLink != null)
             {
-                if (linkCursor == followingLink.EdgeLabel.Length)
+                if (linkCursor == followingLink.Length())
                 {
                     if (followingLink.child.links.Count == 0)
                     {
                         // Rule 1 - we have reached a leaf - extend the leaf, done
-                        followingLink.EdgeLabel += characterToExtend;
+                        followingLink.End++;
                     }
                     else
                     {
@@ -94,26 +95,28 @@
                         else
                         {
                             // Rule 2
-                            followingLink.child.links.Add(characterToExtend, new SuffixTreeLink { EdgeLabel = characterToExtend + "", child = new SuffixTreeNode() });
+                            followingLink.child.links.Add(characterToExtend, new SuffixTreeLink { Start = phase - 1, End = phase, child = new SuffixTreeNode() });
                         }
                     }
                 }
                 else
                 {
-                    if (followingLink.EdgeLabel[linkCursor] == characterToExtend)
+                    if (followingLink.EdgeLabel(text, linkCursor) == characterToExtend)
                     {
                         // Rule 3 - no op
                     }
                     else
                     {
                         // Rule 2 
-                        string followingLinkEdgeLabelPrefix = followingLink.EdgeLabel.Substring(0, linkCursor);
-                        string followingLinkEdgeLabelSuffix = followingLink.EdgeLabel.Substring(linkCursor);
+                        //string followingLinkEdgeLabelPrefix = followingLink.EdgeLabel.Substring(0, linkCursor);
+                        //string followingLinkEdgeLabelSuffix = followingLink.EdgeLabel.Substring(linkCursor);
+                        int originalEnd = followingLink.End;
                         SuffixTreeNode originalChild = followingLink.child;
+
                         followingLink.child = new SuffixTreeNode();
-                        followingLink.EdgeLabel = followingLinkEdgeLabelPrefix;
-                        followingLink.child.links.Add(followingLinkEdgeLabelSuffix[0], new SuffixTreeLink { EdgeLabel = followingLinkEdgeLabelSuffix, child = originalChild });
-                        followingLink.child.links.Add(characterToExtend, new SuffixTreeLink { EdgeLabel = characterToExtend + "", child = new SuffixTreeNode() });
+                        followingLink.End = followingLink.Start + linkCursor;
+                        followingLink.child.links.Add(text[followingLink.Start + linkCursor], new SuffixTreeLink { Start = followingLink.Start + linkCursor, End = originalEnd, child = originalChild });
+                        followingLink.child.links.Add(characterToExtend, new SuffixTreeLink { Start = phase - 1, End = phase, child = new SuffixTreeNode() });
                     }
                 }
             }
@@ -126,14 +129,31 @@
                 else
                 {
                     // Rule 2 again
-                    nodeCursor.links.Add(characterToExtend, new SuffixTreeLink { EdgeLabel = characterToExtend + "", child = new SuffixTreeNode() });
+                    nodeCursor.links.Add(characterToExtend, new SuffixTreeLink { Start = phase - 1, End = phase, child = new SuffixTreeNode() });
                 }
             }
         }
 
         private class SuffixTreeLink
         {
-            public string EdgeLabel { get; set; }
+            // 0 based [) index
+            public int Start { get; set; }
+            public int End { get; set; }
+            public char EdgeLabel(string text, int index)
+            {
+                return text[this.Start + index];
+            }
+
+            public string EdgeLabel(string text)
+            {
+                return text.Substring(this.Start, this.Length());
+            }
+
+            public int Length()
+            {
+                return this.End - this.Start;
+            }
+
             public SuffixTreeNode child;
         }
 
@@ -141,32 +161,33 @@
         {
             public Dictionary<char, SuffixTreeLink> links = new Dictionary<char, SuffixTreeLink>();
 
-            internal void BuildString(StringBuilder sb, int indent)
+            internal void BuildString(string text, StringBuilder sb, int indent)
             {
                 foreach (var link in links)
                 {
                     sb.Append(new string('-', indent));
-                    sb.AppendLine(link.Value.EdgeLabel);
-                    link.Value.child.BuildString(sb, indent + 2);
+                    sb.AppendLine(link.Value.EdgeLabel(text));
+                    link.Value.child.BuildString(text, sb, indent + 2);
                 }
             }
         }
 
-        private SuffixTreeNode rootNode;
-
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            rootNode.BuildString(sb, 0);
+            rootNode.BuildString(this.text, sb, 0);
             return sb.ToString();
         }
+
+        private SuffixTreeNode rootNode;
+        private string text;
     }
 
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(SuffixTree1.Build("Hello World"));
+            Console.WriteLine(SuffixTree2.Build("Hello World"));
         }
     }
 }
