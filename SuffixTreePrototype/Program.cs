@@ -2,24 +2,31 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Text;
 
-    // Still O(m^3) - skip count trick as in page 101
-    class SuffixTree2
+    // Still O(m^3) - building suffix links
+    class SuffixTree4
     {
-        private SuffixTree2(string text)
+        private SuffixTree4(string text)
         {
             // Avoid direct construction
             this.text = text;
         }
 
-        public static SuffixTree2 Build(string text)
+        public static SuffixTree4 Build(string text)
+        {
+            SuffixTree4 result = new SuffixTree4(text);
+            result.BuildTree(text);
+            return result;
+        }
+
+        private void BuildTree(string text)
         {
             // Step 1: Build initial tree
-            SuffixTree2 result = new SuffixTree2(text);
-            result.rootNode = new SuffixTreeNode();
+            this.rootNode = new SuffixTreeNode();
             string suffix = text[0] + "";
-            result.rootNode.links.Add(suffix[0], new SuffixTreeLink { Start = 0, End = 1, child = new SuffixTreeNode() });
+            this.rootNode.links.Add(suffix[0], new SuffixTreeLink { Start = 0, End = 1, child = new SuffixTreeNode() });
 
             // Step 2: Basic extension loop
             for (int phase = 2; phase <= text.Length; phase++)
@@ -27,10 +34,9 @@
                 for (int j = 1; j <= phase; j++)
                 {
                     // Extension j is about adding the string x[j..phase] into the suffix tree
-                    result.Extend(text, j, phase);
+                    this.Extend(text, j, phase);
                 }
             }
-            return result;
         }
 
         private void Extend(string text, int j, int phase)
@@ -70,6 +76,8 @@
                 }
             }
 
+            SuffixTreeNode newlyCreatedInternalNode = null;
+
             char characterToExtend = text[phase - 1];
             if (followingLink != null)
             {
@@ -104,8 +112,7 @@
                         // Rule 2 
                         int originalEnd = followingLink.End;
                         SuffixTreeNode originalChild = followingLink.child;
-
-                        followingLink.child = new SuffixTreeNode();
+                        newlyCreatedInternalNode = followingLink.child = new SuffixTreeNode();
                         followingLink.End = followingLink.Start + linkCursor;
                         followingLink.child.links.Add(text[followingLink.Start + linkCursor], new SuffixTreeLink { Start = followingLink.Start + linkCursor, End = originalEnd, child = originalChild });
                         followingLink.child.links.Add(characterToExtend, new SuffixTreeLink { Start = phase - 1, End = phase, child = new SuffixTreeNode() });
@@ -124,6 +131,27 @@
                     nodeCursor.links.Add(characterToExtend, new SuffixTreeLink { Start = phase - 1, End = phase, child = new SuffixTreeNode() });
                 }
             }
+
+            if (this.lastInternalNode != null)
+            {
+                if (followingLink != null)
+                {
+                    Debug.Assert(linkCursor == followingLink.Length(), "B) We should always end up in another node if we applied rule 2");
+                    this.lastInternalNode.SuffixLink = followingLink.child;
+                }
+                else
+                {
+                    this.lastInternalNode.SuffixLink = nodeCursor;
+                }
+
+                this.lastInternalNode = null;
+            }
+
+            if (newlyCreatedInternalNode != null)
+            {
+                this.lastInternalNode = newlyCreatedInternalNode;
+            }
+
         }
 
         private class SuffixTreeLink
@@ -153,6 +181,8 @@
         {
             public Dictionary<char, SuffixTreeLink> links = new Dictionary<char, SuffixTreeLink>();
 
+            public SuffixTreeNode SuffixLink { get; set; }
+
             internal void BuildString(string text, StringBuilder sb, int indent)
             {
                 foreach (var link in links)
@@ -172,6 +202,7 @@
         }
 
         private SuffixTreeNode rootNode;
+        private SuffixTreeNode lastInternalNode;
         private string text;
     }
 
@@ -179,7 +210,8 @@
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(SuffixTree2.Build("Hello World"));
+            SuffixTree4 result = SuffixTree4.Build("xabxac");
+            Console.WriteLine(result);
         }
     }
 }
