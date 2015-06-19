@@ -38,7 +38,7 @@
             // Step 2: Basic extension loop
             for (int endIndex = 2; endIndex <= text.Length; endIndex++)
             {
-                this.lastExtensionLeafNode = null;
+                this.lastExtensionSearchNode = null;
                 for (int startIndex = 0; startIndex < endIndex; startIndex++)
                 {
                     if (this.Extend(startIndex, endIndex))
@@ -52,28 +52,6 @@
             if (assertOn)
             {
                 ValidateSuffixLinks(this.rootNode);
-            }
-        }
-
-        private void ValidateSuffixLinks(SuffixTreeNode node)
-        {
-            if (node.ParentLink == null)
-            {
-                Debug.Assert(node.SuffixLink == null, "Root node should not have a suffix link");
-            }
-            else if (node.links.Count == 0)
-            {
-                Debug.Assert(node.SuffixLink == null, "Leaf node should not have a suffix link");
-            }
-            else
-            {
-                Debug.Assert(node.SuffixLink != null, "Internal node should have suffix link");
-                Debug.Assert(node.StringDepth == node.SuffixLink.StringDepth + 1, "Should actually point to a suffix");
-            }
-
-            foreach (var link in node.links)
-            {
-                ValidateSuffixLinks(link.Value.Child);
             }
         }
 
@@ -120,43 +98,34 @@
             }
             else
             {
-                if (assertOn)
+                SuffixTreeNode startNode = this.rootNode;
+                Debug.Assert(this.lastExtensionSearchNode != null, "Last extension should have searched something");
+                if (this.lastExtensionSearchNode != this.rootNode)
                 {
-                    if (this.lastExtensionLeafNode == null)
+                    Debug.Assert(this.lastExtensionSearchNode.ParentLink != null, "A node should have a parent link if it is not a root node");
+                    Debug.Assert(this.lastExtensionSearchNode.ParentLink.Parent != null, "A link should have a parent node");
+                    if (this.lastExtensionSearchNode.SuffixLink == null)
                     {
-                        throw new Exception("Last extension should end up with a leaf node");
-                    }
-                    if (this.lastExtensionLeafNode.links.Count != 0)
-                    {
-                        throw new Exception("Leaf node should not have any children");
-                    }
-                    if (this.lastExtensionLeafNode.SuffixLink != null)
-                    {
-                        throw new Exception("Leaf node should not have a suffix link");
-                    }
-                    if (this.lastExtensionLeafNode == this.rootNode)
-                    {
-                        throw new Exception("Last extension should not end up in the root node");
-                    }
-                    if (this.lastExtensionLeafNode.ParentLink == null)
-                    {
-                        throw new Exception("Any non-root node should have a parent link");
-                    }
-                    if (this.lastExtensionLeafNode.ParentLink.Parent == null)
-                    {
-                        throw new Exception("Any link should have a parent node");
-                    }
-                    if (this.lastExtensionLeafNode.ParentLink.Parent != this.rootNode)
-                    {
-                        if (this.lastExtensionLeafNode.ParentLink.Parent.SuffixLink == null)
+                        if (this.lastExtensionSearchNode.ParentLink.Parent != this.rootNode)
                         {
-                            Console.WriteLine("That sucks!");
+                            Debug.Assert(this.lastExtensionSearchNode.ParentLink.Parent.SuffixLink != null);
+                            startNode = this.lastExtensionSearchNode.ParentLink.Parent.SuffixLink;
                         }
+                    }
+                    else
+                    {
+                        startNode = this.lastExtensionSearchNode.SuffixLink;
                     }
                 }
 
                 int remainingSearchingTextLength = searchingTextLength;
                 int textCursor = startIndex;
+
+                // Short-circuitting by suffix link
+                remainingSearchingTextLength -= startNode.StringDepth;
+                textCursor += startNode.StringDepth;
+                nodeCursor = startNode;
+
                 while (remainingSearchingTextLength > 0)
                 {
                     char currentCharacter = text[textCursor];
@@ -207,7 +176,7 @@
                         // Rule 1 - we have reached a leaf - extend the leaf, done
                         followingLink.End++;
                         followingLink.Child.StringDepth++;
-                        this.lastExtensionLeafNode = followingLink.Child;
+                        this.lastExtensionSearchNode = followingLink.Child.ParentLink.Parent;
                     }
                     else
                     {
@@ -227,7 +196,7 @@
                             SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
                             newLeaf.ParentLink = newExtendingLink;
                             followingLink.Child.links.Add(characterToExtend, newExtendingLink);
-                            this.lastExtensionLeafNode = newLeaf;
+                            this.lastExtensionSearchNode = followingLink.Child;
                         }
                     }
                 }
@@ -258,7 +227,7 @@
                         SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
                         newLeaf.ParentLink = newExtendingLink;
                         followingLink.Child.links.Add(characterToExtend, newExtendingLink);
-                        this.lastExtensionLeafNode = newLeaf;
+                        this.lastExtensionSearchNode = newlyCreatedInternalNode;
                     }
                 }
             }
@@ -275,7 +244,7 @@
                     SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = nodeCursor, Start = endIndex - 1, End = endIndex, Child = newLeaf };
                     newLeaf.ParentLink = newExtendingLink;
                     nodeCursor.links.Add(characterToExtend, newExtendingLink);
-                    this.lastExtensionLeafNode = newLeaf;
+                    this.lastExtensionSearchNode = nodeCursor;
                 }
             }
 
@@ -314,6 +283,28 @@
         private int extensionCount;
         private int lastInternalNodeBirthday;
 
+        private void ValidateSuffixLinks(SuffixTreeNode node)
+        {
+            if (node.ParentLink == null)
+            {
+                Debug.Assert(node.SuffixLink == null, "Root node should not have a suffix link");
+            }
+            else if (node.links.Count == 0)
+            {
+                Debug.Assert(node.SuffixLink == null, "Leaf node should not have a suffix link");
+            }
+            else
+            {
+                Debug.Assert(node.SuffixLink != null, "Internal node should have suffix link");
+                Debug.Assert(node.StringDepth == node.SuffixLink.StringDepth + 1, "Should actually point to a suffix");
+            }
+
+            foreach (var link in node.links)
+            {
+                ValidateSuffixLinks(link.Value.Child);
+            }
+        }
+
         private class SuffixTreeLink
         {
             // 0 based [) index
@@ -333,8 +324,11 @@
             }
 
             public SuffixTreeNode Parent { get; set; }
+
             public int Start { get; set; }
+
             public int End { get; set; }
+
             public SuffixTreeNode Child { get; set; }
         }
 
@@ -378,7 +372,7 @@
         private SuffixTreeNode rootNode;
         private SuffixTreeNode fullStringLeaf;
         private SuffixTreeNode lastInternalNode;
-        private SuffixTreeNode lastExtensionLeafNode;
+        private SuffixTreeNode lastExtensionSearchNode;
         private string text;
     }
 
