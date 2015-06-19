@@ -8,6 +8,8 @@
     // Still O(m^3) - building suffix links
     class SuffixTree4
     {
+        private static bool assertOn = true;
+
         private SuffixTree4(string text)
         {
             // Avoid direct construction
@@ -26,15 +28,16 @@
             // Step 1: Build initial tree
             this.rootNode = new SuffixTreeNode();
             string suffix = text[0] + "";
-            this.rootNode.links.Add(suffix[0], new SuffixTreeLink { Start = 0, End = 1, child = new SuffixTreeNode() });
+            this.fullStringLeaf = new SuffixTreeNode();
+            this.rootNode.links.Add(suffix[0], new SuffixTreeLink { Start = 0, End = 1, child = fullStringLeaf });
 
             // Step 2: Basic extension loop
-            for (int phase = 2; phase <= text.Length; phase++)
+            for (int phase = 1; phase < text.Length; phase++)
             {
-                for (int j = 1; j <= phase; j++)
+                for (int j = 1; j <= (phase + 1); j++)
                 {
                     // Extension j is about adding the string x[j..phase] into the suffix tree
-                    this.Extend(text, j, phase);
+                    this.Extend(text, j, phase + 1);
                 }
             }
         }
@@ -69,6 +72,12 @@
                     else
                     {
                         int move = Math.Min(followingLink.Length(), remainingTextLength);
+                        if (assertOn)
+                        {
+                            string movedText = text.Substring(textCursor - 1, move);
+                            string movedLink = text.Substring(followingLink.Start, move);
+                            Debug.Assert(string.Equals(movedText, movedLink));
+                        }
                         textCursor += move;
                         remainingTextLength -= move;
                         linkCursor += move;
@@ -202,6 +211,7 @@
         }
 
         private SuffixTreeNode rootNode;
+        private SuffixTreeNode fullStringLeaf;
         private SuffixTreeNode lastInternalNode;
         private string text;
     }
