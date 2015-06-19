@@ -26,10 +26,11 @@
         private void BuildTree(string text)
         {
             // Step 1: Build initial tree
-            this.rootNode = new SuffixTreeNode(0);
-            string suffix = text[0] + "";
-            this.fullStringLeaf = new SuffixTreeNode(1);
-            this.rootNode.links.Add(suffix[0], new SuffixTreeLink { Start = 0, End = 1, Child = fullStringLeaf });
+            this.rootNode = new SuffixTreeNode(0, 1);
+            this.fullStringLeaf = new SuffixTreeNode(1, 1);
+            SuffixTreeLink nodeToFullStringLeafLink = new SuffixTreeLink { Parent = rootNode, Start = 0, End = 1, Child = fullStringLeaf };
+            this.rootNode.links.Add(text[0], nodeToFullStringLeafLink);
+            fullStringLeaf.ParentLink = nodeToFullStringLeafLink;
 
             // Step 2: Basic extension loop
             for (int endIndex = 2; endIndex <= text.Length; endIndex++)
@@ -46,48 +47,50 @@
         {
             int insertingTextLength = endIndex - startIndex;
             int searchingTextLength = insertingTextLength - 1;
-            int remainingSearchingTextLength = searchingTextLength;
-            int textCursor = startIndex;
             SuffixTreeNode nodeCursor = this.rootNode;
             SuffixTreeLink followingLink = null;
             int linkCursor = -1;
 
-            while (remainingSearchingTextLength > 0)
+            // Introduce a scope to prevent leaking the searching cursors
             {
-                char currentCharacter = text[textCursor];
-                if (followingLink == null)
+                int remainingSearchingTextLength = searchingTextLength;
+                int textCursor = startIndex;
+                while (remainingSearchingTextLength > 0)
                 {
-                    followingLink = nodeCursor.links[currentCharacter];
-                    nodeCursor = null;
-                    linkCursor = 0;
-                }
-                else
-                {
-                    if (linkCursor == followingLink.Length())
+                    char currentCharacter = text[textCursor];
+                    if (followingLink == null)
                     {
-                        linkCursor = -1;
-                        nodeCursor = followingLink.Child;
-                        followingLink = null;
+                        followingLink = nodeCursor.links[currentCharacter];
+                        nodeCursor = null;
+                        linkCursor = 0;
                     }
                     else
                     {
-                        int move = Math.Min(followingLink.Length(), remainingSearchingTextLength);
-                        if (assertOn)
+                        if (linkCursor == followingLink.Length())
                         {
-                            string movedText = text.Substring(textCursor, move);
-                            string movedLink = text.Substring(followingLink.Start, move);
-                            Debug.Assert(string.Equals(movedText, movedLink));
+                            linkCursor = -1;
+                            nodeCursor = followingLink.Child;
+                            followingLink = null;
                         }
+                        else
+                        {
+                            int move = Math.Min(followingLink.Length(), remainingSearchingTextLength);
+                            if (assertOn)
+                            {
+                                string movedText = text.Substring(textCursor, move);
+                                string movedLink = text.Substring(followingLink.Start, move);
+                                Debug.Assert(string.Equals(movedText, movedLink));
+                            }
 
-                        textCursor += move;
-                        remainingSearchingTextLength -= move;
-                        linkCursor += move;
+                            textCursor += move;
+                            remainingSearchingTextLength -= move;
+                            linkCursor += move;
+                        }
                     }
                 }
             }
-
+            
             SuffixTreeNode newlyCreatedInternalNode = null;
-
             char characterToExtend = text[endIndex - 1];
             if (followingLink != null)
             {
@@ -107,8 +110,11 @@
                         }
                         else
                         {
-                            // Rule 2
-                            followingLink.Child.links.Add(characterToExtend, new SuffixTreeLink { Start = endIndex - 1, End = endIndex, Child = new SuffixTreeNode(insertingTextLength) });
+                            // Rule 2 - but not creating internal nodes
+                            SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
+                            SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
+                            newLeaf.ParentLink = newExtendingLink;
+                            followingLink.Child.links.Add(characterToExtend, newExtendingLink);
                         }
                     }
                 }
@@ -120,13 +126,20 @@
                     }
                     else
                     {
-                        // Rule 2 
+                        // Rule 2 - creating internal node
                         int originalEnd = followingLink.End;
                         SuffixTreeNode originalChild = followingLink.Child;
-                        newlyCreatedInternalNode = followingLink.Child = new SuffixTreeNode(searchingTextLength);
+                        newlyCreatedInternalNode = followingLink.Child = new SuffixTreeNode(searchingTextLength, 1);
+                        newlyCreatedInternalNode.ParentLink = followingLink;
                         followingLink.End = followingLink.Start + linkCursor;
-                        followingLink.Child.links.Add(text[followingLink.Start + linkCursor], new SuffixTreeLink { Start = followingLink.Start + linkCursor, End = originalEnd, Child = originalChild });
-                        followingLink.Child.links.Add(characterToExtend, new SuffixTreeLink { Start = endIndex - 1, End = endIndex, Child = new SuffixTreeNode(insertingTextLength) });
+                        SuffixTreeLink brokenLink2 = new SuffixTreeLink { Parent = followingLink.Child, Start = followingLink.Start + linkCursor, End = originalEnd, Child = originalChild };
+                        originalChild.ParentLink = brokenLink2;
+                        followingLink.Child.links.Add(text[followingLink.Start + linkCursor], brokenLink2);
+
+                        SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
+                        SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
+                        newLeaf.ParentLink = newExtendingLink;
+                        followingLink.Child.links.Add(characterToExtend, newExtendingLink);
                     }
                 }
             }
@@ -138,8 +151,11 @@
                 }
                 else
                 {
-                    // Rule 2 again
-                    nodeCursor.links.Add(characterToExtend, new SuffixTreeLink { Start = endIndex - 1, End = endIndex, Child = new SuffixTreeNode(insertingTextLength) });
+                    // Rule 2 - but not creating internal nodes
+                    SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
+                    SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = nodeCursor, Start = endIndex - 1, End = endIndex, Child = newLeaf };
+                    newLeaf.ParentLink = newExtendingLink;
+                    nodeCursor.links.Add(characterToExtend, newExtendingLink);
                 }
             }
 
@@ -147,7 +163,7 @@
             {
                 if (followingLink != null)
                 {
-                    Debug.Assert(linkCursor == followingLink.Length(), "B) We should always end up in another node if we applied rule 2");
+                    Debug.Assert(linkCursor == followingLink.Length(), "We should always end up in another node if we applied rule 2");
                     this.lastInternalNode.SuffixLink = followingLink.Child;
                 }
                 else
@@ -168,8 +184,6 @@
         private class SuffixTreeLink
         {
             // 0 based [) index
-            public int Start { get; set; }
-            public int End { get; set; }
             public char EdgeLabel(string text, int index)
             {
                 return text[this.Start + index];
@@ -185,17 +199,22 @@
                 return this.End - this.Start;
             }
 
+            public SuffixTreeNode Parent { get; set; }
+            public int Start { get; set; }
+            public int End { get; set; }
             public SuffixTreeNode Child { get; set; }
         }
 
         private class SuffixTreeNode
         {
-            public SuffixTreeNode(int stringDepth)
+            public SuffixTreeNode(int stringDepth, int fuckedAgain)
             {
                 this.StringDepth = stringDepth;
             }
 
             public Dictionary<char, SuffixTreeLink> links = new Dictionary<char, SuffixTreeLink>();
+
+            public SuffixTreeLink ParentLink { get; set; }
 
             public SuffixTreeNode SuffixLink { get; set; }
 
