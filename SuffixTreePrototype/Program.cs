@@ -6,19 +6,19 @@
     using System.Text;
 
     // Still O(m^3) - building suffix links
-    class SuffixTree4
+    class SuffixTree
     {
         private static bool assertOn = true;
 
-        private SuffixTree4(string text)
+        private SuffixTree(string text)
         {
             // Avoid direct construction
             this.text = text;
         }
 
-        public static SuffixTree4 Build(string text)
+        public static SuffixTree Build(string text)
         {
-            SuffixTree4 result = new SuffixTree4(text);
+            SuffixTree result = new SuffixTree(text);
             result.BuildTree(text);
             return result;
         }
@@ -35,23 +35,45 @@
             // Step 2: Basic extension loop
             for (int endIndex = 2; endIndex <= text.Length; endIndex++)
             {
+                this.lastExtensionLeafNode = null;
                 for (int startIndex = 0; startIndex < endIndex; startIndex++)
                 {
-                    this.Extend(text, startIndex, endIndex);
+                    if (this.Extend(text, startIndex, endIndex))
+                    {
+                        // Short circuit to the next phase if rule 3 ever applied
+                        break;
+                    }
                 }
             }
         }
 
-        // startIndex, endIndex are 0 based (] index to the string to be inserted to the current implicit suffix tree
-        private void Extend(string text, int startIndex, int endIndex)
+        // startIndex, endIndex are 0 based [) index to the string to be inserted to the current implicit suffix tree
+        private bool Extend(string text, int startIndex, int endIndex)
         {
             int insertingTextLength = endIndex - startIndex;
             int searchingTextLength = insertingTextLength - 1;
+
+            //
+            // Step 1: Search for the end of the searchingText
+            //         The search result could be 
+            //         nodeCursor == rootNode, in this case the searchingText is the empty string
+            //         followingLink != null and 0 < linkCursor <= followingLink.Length(), that represents the exclusive end index of a pointer on the link
+            //         note that if linkCursor == followingLink.Length(), it means we are at the followingLink.child node
+            //
+            // We decided to use followingLink != null && linkCursor == followingLink.Length() to represent the cursor is at the next node is because we need 
+            // to manipulate the link at times (e.g. extending it in leaf case)
+            // 
             SuffixTreeNode nodeCursor = this.rootNode;
             SuffixTreeLink followingLink = null;
             int linkCursor = -1;
 
-            // Introduce a scope to prevent leaking the searching cursors
+            if (startIndex == 0)
+            {
+                // For the first extension - it is always extending the full string leaf node
+                followingLink = this.fullStringLeaf.ParentLink;
+                linkCursor = followingLink.Length();
+            }
+            else
             {
                 int remainingSearchingTextLength = searchingTextLength;
                 int textCursor = startIndex;
@@ -90,6 +112,9 @@
                 }
             }
             
+            //
+            // Extension algorithm - rule 1, 2, 3
+            //
             SuffixTreeNode newlyCreatedInternalNode = null;
             char characterToExtend = text[endIndex - 1];
             if (followingLink != null)
@@ -106,7 +131,8 @@
                     {
                         if (followingLink.Child.links.ContainsKey(characterToExtend))
                         {
-                            // Rule 3 - no op
+                            // Rule 3 - no op - and be done with the phase
+                            return true;
                         }
                         else
                         {
@@ -115,6 +141,7 @@
                             SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
                             newLeaf.ParentLink = newExtendingLink;
                             followingLink.Child.links.Add(characterToExtend, newExtendingLink);
+                            this.lastExtensionLeafNode = newLeaf;
                         }
                     }
                 }
@@ -122,7 +149,8 @@
                 {
                     if (followingLink.EdgeLabel(text, linkCursor) == characterToExtend)
                     {
-                        // Rule 3 - no op
+                        // Rule 3 - no op - and be done with the phase
+                        return true;
                     }
                     else
                     {
@@ -147,7 +175,8 @@
             {
                 if (nodeCursor.links.ContainsKey(characterToExtend))
                 {
-                    // Rule 3 - no op
+                    // Rule 3 - no op - and be done with the phase
+                    return true;
                 }
                 else
                 {
@@ -179,6 +208,7 @@
                 this.lastInternalNode = newlyCreatedInternalNode;
             }
 
+            return false;
         }
 
         private class SuffixTreeLink
@@ -245,6 +275,7 @@
         private SuffixTreeNode rootNode;
         private SuffixTreeNode fullStringLeaf;
         private SuffixTreeNode lastInternalNode;
+        private SuffixTreeNode lastExtensionLeafNode;
         private string text;
     }
 
@@ -252,7 +283,7 @@
     {
         static void Main(string[] args)
         {
-            SuffixTree4 result = SuffixTree4.Build("xabxac");
+            SuffixTree result = SuffixTree.Build("xabxac");
             Console.WriteLine(result);
         }
     }
