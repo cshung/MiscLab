@@ -32,6 +32,9 @@
             this.rootNode.links.Add(text[0], nodeToFullStringLeafLink);
             fullStringLeaf.ParentLink = nodeToFullStringLeafLink;
 
+            // debugging
+            this.extensionCount = 0;
+
             // Step 2: Basic extension loop
             for (int endIndex = 2; endIndex <= text.Length; endIndex++)
             {
@@ -45,20 +48,49 @@
                     }
                 }
             }
+
+            if (assertOn)
+            {
+                ValidateSuffixLinks(this.rootNode);
+            }
+        }
+
+        private void ValidateSuffixLinks(SuffixTreeNode node)
+        {
+            if (node.ParentLink == null)
+            {
+                Debug.Assert(node.SuffixLink == null, "Root node should not have a suffix link");
+            }
+            else if (node.links.Count == 0)
+            {
+                Debug.Assert(node.SuffixLink == null, "Leaf node should not have a suffix link");
+            }
+            else
+            {
+                Debug.Assert(node.SuffixLink != null, "Internal node should have suffix link");
+                Debug.Assert(node.StringDepth == node.SuffixLink.StringDepth + 1, "Should actually point to a suffix");
+            }
+
+            foreach (var link in node.links)
+            {
+                ValidateSuffixLinks(link.Value.Child);
+            }
         }
 
         // startIndex, endIndex are 0 based [) index to the string to be inserted to the current implicit suffix tree
         private bool Extend(int startIndex, int endIndex)
         {
+            this.extensionCount++;
+
             int insertingTextLength = endIndex - startIndex;
             int searchingTextLength = insertingTextLength - 1;
-
             //
             // Step 1: Search for the end of the searchingText
-            //         The search result could be 
-            //         nodeCursor == rootNode, in this case the searchingText is the empty string
-            //         followingLink != null and 0 < linkCursor <= followingLink.Length(), that represents the exclusive end index of a pointer on the link
-            //         note that if linkCursor == followingLink.Length(), it means we are at the followingLink.child node
+            //
+            // The search result could be 
+            // nodeCursor == rootNode, in this case the searchingText is the empty string
+            // followingLink != null and 0 < linkCursor <= followingLink.Length(), that represents the exclusive end index of a pointer on the link
+            // note that if linkCursor == followingLink.Length(), it means we are at the followingLink.child node
             //
             // We decided to use followingLink != null && linkCursor == followingLink.Length() to represent the cursor is at the next node is because we need 
             // to manipulate the link at times (e.g. extending it in leaf case)
@@ -67,112 +99,11 @@
             SuffixTreeLink followingLink;
             int linkCursor;
             this.SearchPrefix(startIndex, searchingTextLength, out nodeCursor, out followingLink, out linkCursor);
-            
+
             //
             // Step 2: Extend the tree by the last character
             //
             return ExtendByLastCharacter(insertingTextLength, endIndex, nodeCursor, followingLink, linkCursor);
-        }
-
-        private bool ExtendByLastCharacter(int insertingTextLength, int endIndex, SuffixTreeNode nodeCursor, SuffixTreeLink followingLink, int linkCursor)
-        {
-            char characterToExtend = text[endIndex - 1];
-            SuffixTreeNode newlyCreatedInternalNode = null;
-            if (followingLink != null)
-            {
-                if (linkCursor == followingLink.Length())
-                {
-                    if (followingLink.Child.links.Count == 0)
-                    {
-                        // Rule 1 - we have reached a leaf - extend the leaf, done
-                        followingLink.End++;
-                        followingLink.Child.StringDepth++;
-                        this.lastExtensionLeafNode = followingLink.Child;
-                    }
-                    else
-                    {
-                        if (followingLink.Child.links.ContainsKey(characterToExtend))
-                        {
-                            // Rule 3 - no op - and be done with the phase
-                            return true;
-                        }
-                        else
-                        {
-                            // Rule 2 - but not creating internal nodes
-                            SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
-                            SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
-                            newLeaf.ParentLink = newExtendingLink;
-                            followingLink.Child.links.Add(characterToExtend, newExtendingLink);
-                            this.lastExtensionLeafNode = newLeaf;
-                        }
-                    }
-                }
-                else
-                {
-                    if (followingLink.EdgeLabel(text, linkCursor) == characterToExtend)
-                    {
-                        // Rule 3 - no op - and be done with the phase
-                        return true;
-                    }
-                    else
-                    {
-                        // Rule 2 - creating internal node
-                        int originalEnd = followingLink.End;
-                        SuffixTreeNode originalChild = followingLink.Child;
-                        newlyCreatedInternalNode = followingLink.Child = new SuffixTreeNode(insertingTextLength - 1, 1);
-                        newlyCreatedInternalNode.ParentLink = followingLink;
-                        followingLink.End = followingLink.Start + linkCursor;
-                        SuffixTreeLink brokenLink2 = new SuffixTreeLink { Parent = followingLink.Child, Start = followingLink.Start + linkCursor, End = originalEnd, Child = originalChild };
-                        originalChild.ParentLink = brokenLink2;
-                        followingLink.Child.links.Add(text[followingLink.Start + linkCursor], brokenLink2);
-
-                        SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
-                        SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
-                        newLeaf.ParentLink = newExtendingLink;
-                        followingLink.Child.links.Add(characterToExtend, newExtendingLink);
-                        this.lastExtensionLeafNode = newLeaf;
-                    }
-                }
-            }
-            else
-            {
-                if (nodeCursor.links.ContainsKey(characterToExtend))
-                {
-                    // Rule 3 - no op - and be done with the phase
-                    return true;
-                }
-                else
-                {
-                    // Rule 2 - but not creating internal nodes
-                    SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
-                    SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = nodeCursor, Start = endIndex - 1, End = endIndex, Child = newLeaf };
-                    newLeaf.ParentLink = newExtendingLink;
-                    nodeCursor.links.Add(characterToExtend, newExtendingLink);
-                    this.lastExtensionLeafNode = newLeaf;
-                }
-            }
-
-            if (this.lastInternalNode != null)
-            {
-                if (followingLink != null)
-                {
-                    Debug.Assert(linkCursor == followingLink.Length(), "We should always end up in another node if we applied rule 2");
-                    this.lastInternalNode.SuffixLink = followingLink.Child;
-                }
-                else
-                {
-                    this.lastInternalNode.SuffixLink = nodeCursor;
-                }
-
-                this.lastInternalNode = null;
-            }
-
-            if (newlyCreatedInternalNode != null)
-            {
-                this.lastInternalNode = newlyCreatedInternalNode;
-            }
-
-            return false;
         }
 
         private void SearchPrefix(int startIndex, int searchingTextLength, out SuffixTreeNode nodeCursor, out SuffixTreeLink followingLink, out int linkCursor)
@@ -189,6 +120,41 @@
             }
             else
             {
+                if (assertOn)
+                {
+                    if (this.lastExtensionLeafNode == null)
+                    {
+                        throw new Exception("Last extension should end up with a leaf node");
+                    }
+                    if (this.lastExtensionLeafNode.links.Count != 0)
+                    {
+                        throw new Exception("Leaf node should not have any children");
+                    }
+                    if (this.lastExtensionLeafNode.SuffixLink != null)
+                    {
+                        throw new Exception("Leaf node should not have a suffix link");
+                    }
+                    if (this.lastExtensionLeafNode == this.rootNode)
+                    {
+                        throw new Exception("Last extension should not end up in the root node");
+                    }
+                    if (this.lastExtensionLeafNode.ParentLink == null)
+                    {
+                        throw new Exception("Any non-root node should have a parent link");
+                    }
+                    if (this.lastExtensionLeafNode.ParentLink.Parent == null)
+                    {
+                        throw new Exception("Any link should have a parent node");
+                    }
+                    if (this.lastExtensionLeafNode.ParentLink.Parent != this.rootNode)
+                    {
+                        if (this.lastExtensionLeafNode.ParentLink.Parent.SuffixLink == null)
+                        {
+                            Console.WriteLine("That sucks!");
+                        }
+                    }
+                }
+
                 int remainingSearchingTextLength = searchingTextLength;
                 int textCursor = startIndex;
                 while (remainingSearchingTextLength > 0)
@@ -226,6 +192,127 @@
                 }
             }
         }
+
+        private bool ExtendByLastCharacter(int insertingTextLength, int endIndex, SuffixTreeNode nodeCursor, SuffixTreeLink followingLink, int linkCursor)
+        {
+            bool rule3Applied = false;
+            char characterToExtend = text[endIndex - 1];
+            SuffixTreeNode newlyCreatedInternalNode = null;
+            if (followingLink != null)
+            {
+                if (linkCursor == followingLink.Length())
+                {
+                    if (followingLink.Child.links.Count == 0)
+                    {
+                        // Rule 1 - we have reached a leaf - extend the leaf, done
+                        followingLink.End++;
+                        followingLink.Child.StringDepth++;
+                        this.lastExtensionLeafNode = followingLink.Child;
+                    }
+                    else
+                    {
+                        if (followingLink.Child.links.ContainsKey(characterToExtend))
+                        {
+                            if (assertOn)
+                            {
+                                Debug.Assert(this.lastInternalNode == null, "Why do we have a last internal node while we end up in rule 3?");
+                            }
+
+                            rule3Applied = true;
+                        }
+                        else
+                        {
+                            // Rule 2 - but not creating internal nodes
+                            SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
+                            SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
+                            newLeaf.ParentLink = newExtendingLink;
+                            followingLink.Child.links.Add(characterToExtend, newExtendingLink);
+                            this.lastExtensionLeafNode = newLeaf;
+                        }
+                    }
+                }
+                else
+                {
+                    if (followingLink.EdgeLabel(text, linkCursor) == characterToExtend)
+                    {
+                        if (assertOn)
+                        {
+                            Debug.Assert(this.lastInternalNode == null, "Why do we have a last internal node while we end up in rule 3?");
+                        }
+
+                        rule3Applied = true;
+                    }
+                    else
+                    {
+                        // Rule 2 - creating internal node
+                        int originalEnd = followingLink.End;
+                        SuffixTreeNode originalChild = followingLink.Child;
+                        newlyCreatedInternalNode = followingLink.Child = new SuffixTreeNode(insertingTextLength - 1, 1);
+                        newlyCreatedInternalNode.ParentLink = followingLink;
+                        followingLink.End = followingLink.Start + linkCursor;
+                        SuffixTreeLink brokenLink2 = new SuffixTreeLink { Parent = followingLink.Child, Start = followingLink.Start + linkCursor, End = originalEnd, Child = originalChild };
+                        originalChild.ParentLink = brokenLink2;
+                        followingLink.Child.links.Add(text[followingLink.Start + linkCursor], brokenLink2);
+
+                        SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
+                        SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = followingLink.Child, Start = endIndex - 1, End = endIndex, Child = newLeaf };
+                        newLeaf.ParentLink = newExtendingLink;
+                        followingLink.Child.links.Add(characterToExtend, newExtendingLink);
+                        this.lastExtensionLeafNode = newLeaf;
+                    }
+                }
+            }
+            else
+            {
+                if (nodeCursor.links.ContainsKey(characterToExtend))
+                {
+                    rule3Applied = true;
+                }
+                else
+                {
+                    // Rule 2 - but not creating internal nodes
+                    SuffixTreeNode newLeaf = new SuffixTreeNode(insertingTextLength, 1);
+                    SuffixTreeLink newExtendingLink = new SuffixTreeLink { Parent = nodeCursor, Start = endIndex - 1, End = endIndex, Child = newLeaf };
+                    newLeaf.ParentLink = newExtendingLink;
+                    nodeCursor.links.Add(characterToExtend, newExtendingLink);
+                    this.lastExtensionLeafNode = newLeaf;
+                }
+            }
+
+            if (this.lastInternalNode != null)
+            {
+                if (assertOn)
+                {
+                    Debug.Assert(lastInternalNodeBirthday == this.extensionCount - 1);
+                }
+                if (followingLink != null)
+                {
+                    if (assertOn)
+                    {
+                        Debug.Assert(linkCursor == followingLink.Length(), "We should always end up in another node if we applied rule 2");
+                    }
+                    this.lastInternalNode.SuffixLink = followingLink.Child;
+                }
+                else
+                {
+                    this.lastInternalNode.SuffixLink = nodeCursor;
+                }
+
+                this.lastInternalNode = null;
+            }
+
+            if (newlyCreatedInternalNode != null)
+            {
+                this.lastInternalNode = newlyCreatedInternalNode;
+                this.lastInternalNodeBirthday = this.extensionCount;
+            }
+
+            return rule3Applied;
+        }
+
+        // debugging
+        private int extensionCount;
+        private int lastInternalNodeBirthday;
 
         private class SuffixTreeLink
         {
@@ -271,7 +358,7 @@
                 sb.Append(new string('+', indent));
                 sb.AppendFormat("({0})", this.StringDepth);
                 sb.AppendLine();
-                    
+
                 foreach (var link in links)
                 {
                     sb.Append(new string('-', indent));
