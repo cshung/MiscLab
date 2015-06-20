@@ -16,7 +16,7 @@
         private string text;
 
         // debugging only fields
-        private static bool assertOn = false;
+        private static bool assertOn = true;
         private int extensionCount;
         private int lastInternalNodeBirthday;
 
@@ -201,11 +201,6 @@
                     {
                         if (followingLink.Child.links.ContainsKey(characterToExtend))
                         {
-                            if (assertOn)
-                            {
-                                Debug.Assert(this.lastInternalNode == null, "Why do we have a last internal node while we end up in rule 3?");
-                            }
-
                             appliedRuleNumber = 3;
                         }
                         else
@@ -225,11 +220,6 @@
                 {
                     if (followingLink.EdgeLabel(text, linkCursor) == characterToExtend)
                     {
-                        if (assertOn)
-                        {
-                            Debug.Assert(this.lastInternalNode == null, "Why do we have a last internal node while we end up in rule 3?");
-                        }
-
                         appliedRuleNumber = 3;
                     }
                     else
@@ -275,16 +265,10 @@
 
             if (this.lastInternalNode != null)
             {
-                if (assertOn)
-                {
-                    Debug.Assert(lastInternalNodeBirthday == this.extensionCount - 1);
-                }
+                Debug.Assert(lastInternalNodeBirthday == this.extensionCount - 1);
                 if (followingLink != null)
                 {
-                    if (assertOn)
-                    {
-                        Debug.Assert(linkCursor == followingLink.Length(), "We should always end up in another node if we applied rule 2");
-                    }
+                    Debug.Assert(linkCursor == followingLink.Length(), "We should always end up in another node if we applied rule 2");
                     this.lastInternalNode.SuffixLink = followingLink.Child;
                 }
                 else
