@@ -8,8 +8,8 @@ class Trie
 public:
     Trie();
     ~Trie();
-    bool  Add(string key, void* value);
-    void* Get(string key);
+    bool  Add(const string key, void* value);
+    void* Get(const string key) const;
 private:
 
     class TrieNode
@@ -22,4 +22,3 @@ private:
     };
     TrieNode* m_root;
 };
-

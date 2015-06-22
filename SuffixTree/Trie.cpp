@@ -12,7 +12,7 @@ Trie::~Trie()
     delete this->m_root;
 }
 
-bool Trie::Add(string key, void* value)
+bool Trie::Add(const string key, void* value)
 {
     Trie::TrieNode* current = this->m_root;
     for (unsigned int i = 0; i < key.length(); i++)
@@ -41,7 +41,7 @@ bool Trie::Add(string key, void* value)
     }
 }
 
-void* Trie::Get(string key)
+void* Trie::Get(const string key) const
 {
     Trie::TrieNode* current = this->m_root;
     for (unsigned int i = 0; i < key.length(); i++)

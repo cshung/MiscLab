@@ -1,4 +1,5 @@
 #include "Trie.h"
+#include "CompressedTrie.h"
 #include <iostream>
 using namespace std;
 
@@ -16,8 +17,23 @@ void TestTrie()
     cout << (&c == trie.Get("Halloween")) << endl;
 }
 
+void TestCompressedTrie()
+{
+    int a = 1;
+    int b = 2;
+    int c = 3;
+    CompressedTrie compressedTrie;
+    compressedTrie.Add("Hello", &a);
+    compressedTrie.Add("Happy", &b);
+    compressedTrie.Add("Halloween", &c);
+    cout << (&a == compressedTrie.Get("Hello")) << endl;
+    cout << (&b == compressedTrie.Get("Happy")) << endl;
+    cout << (&c == compressedTrie.Get("Halloween")) << endl;
+}
+
 int main()
 {
     TestTrie();
+    TestCompressedTrie();
     return 0;
 }
