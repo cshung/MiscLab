@@ -1,6 +1,7 @@
 #include "Trie.h"
 #include "CompressedTrie.h"
 #include <iostream>
+#include <cassert>
 using namespace std;
 
 void TestTrie()
@@ -31,9 +32,21 @@ void TestCompressedTrie()
     cout << (&c == compressedTrie.Get("Halloween")) << endl;
 }
 
+void TestSuffixTree()
+{
+    CompressedTrie compressedTrie;
+    string s = "xabxac";
+    unsigned int end = s.length();
+    for (unsigned int start = 0; start < end; start++)
+    {
+        compressedTrie.Add(s.substr(start), &s);
+    }
+}
+
 int main()
 {
     TestTrie();
     TestCompressedTrie();
+    TestSuffixTree();
     return 0;
 }

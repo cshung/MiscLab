@@ -40,7 +40,7 @@ CompressedTrie::CompressedTrieEdge::~CompressedTrieEdge()
 bool CompressedTrie::Add(const string key, void* value)
 {
     CompressedTrie::CompressedTrieNode* currentNode = this->m_root;
-    int keyCursor = 0;
+    unsigned int keyCursor = 0;
     while (keyCursor < key.length())
     {
         char currentCharacter = key[keyCursor];
@@ -90,12 +90,14 @@ bool CompressedTrie::Add(const string key, void* value)
             currentNode = currentEdge->m_child;
         }
     }
+
+    return false;
 }
 
 void* CompressedTrie::Get(const string key) const
 {
     CompressedTrie::CompressedTrieNode* currentNode = this->m_root;
-    int keyCursor = 0;
+    unsigned int keyCursor = 0;
     while (keyCursor < key.length())
     {
         char currentCharacter = key[keyCursor];

@@ -1,7 +1,11 @@
 Debug
 Release
 ipch
-SuffixTree.opensdf
-SuffixTree.sdf
-SuffixTree.v12.suo
-SuffixTree.vcxproj.user
+SuffixTree.vs2013.opensdf
+SuffixTree.vs2013.sdf
+SuffixTree.vs2013.v12.suo
+SuffixTree.vs2013.vcxproj.user
+SuffixTree.vs2012.opensdf
+SuffixTree.vs2012.sdf
+SuffixTree.vs2012.v11.suo
+SuffixTree.vs2012.vcxproj.user
