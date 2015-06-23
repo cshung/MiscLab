@@ -32,6 +32,7 @@ void TestCompressedTrie()
     cout << (&a == compressedTrie.Get("Hello")) << endl;
     cout << (&b == compressedTrie.Get("Happy")) << endl;
     cout << (&c == compressedTrie.Get("Halloween")) << endl;
+    cout << compressedTrie.Show() << endl;
 }
 
 void TestSuffixTree()
@@ -43,6 +44,7 @@ void TestSuffixTree()
     {
         compressedTrie.Add(s.substr(start), &s);
     }
+    cout << compressedTrie.Show() << endl;
 }
 
 int main()

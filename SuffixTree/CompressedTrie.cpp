@@ -1,4 +1,8 @@
 #include "CompressedTrie.h"
+#include <queue>
+#include <list>
+#include <string>
+#include <sstream>
 #include <algorithm>
 
 CompressedTrie::CompressedTrie() : m_root(new CompressedTrie::CompressedTrieNode())
@@ -121,4 +125,41 @@ void* CompressedTrie::Get(const string key) const
         }
     }
     return currentNode->m_value;
+}
+
+string CompressedTrie::Show() const
+{
+    list<pair<int, pair<string, int>>> edges;
+    queue<pair<int, CompressedTrie::CompressedTrieNode*>> bfsQueue;
+    int nodeId = 0;
+    bfsQueue.push(pair<int, CompressedTrie::CompressedTrieNode*>(0, this->m_root));
+    while (bfsQueue.size() > 0)
+    {
+        pair<int, CompressedTrie::CompressedTrieNode*> current = bfsQueue.front();
+        bfsQueue.pop();
+
+        int currentNodeId = current.first;
+        CompressedTrie::CompressedTrieNode* currentNode = current.second;
+        map<char, CompressedTrie::CompressedTrieEdge*>& currentNodeChildren = currentNode->m_children;
+        for (map<char, CompressedTrie::CompressedTrieEdge*>::iterator ci = currentNodeChildren.begin(); ci != currentNodeChildren.end(); ci++)
+        {
+            int nextNodeId = ++nodeId;
+            CompressedTrie::CompressedTrieEdge* nextEdge = ci->second;
+            CompressedTrie::CompressedTrieNode* nextNode = nextEdge->m_child;
+            bfsQueue.push(pair<int, CompressedTrie::CompressedTrieNode*>(nextNodeId, nextNode));
+            edges.push_back(pair<int, pair<string, int>>(currentNodeId, pair<string, int>(nextEdge->m_edgeLabel, nextNodeId)));
+        }
+    }
+    ostringstream stringBuilder;
+    stringBuilder << "graph {" << endl;
+    for (int i = 0; i <= nodeId; i++)
+    {
+        stringBuilder << i << "[label = \"\"];" << endl;
+    }
+    for (list<pair<int, pair<string, int>>>::iterator ei = edges.begin(); ei != edges.end(); ei++)
+    {
+        stringBuilder << ei->first << "--" << ei->second.second << "[label = \" " << ei->second.first << " \"]" << endl;
+    }
+    stringBuilder << "}" << endl;
+    return stringBuilder.str();
 }
