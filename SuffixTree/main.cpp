@@ -1,6 +1,7 @@
 #include "Trie.h"
 #include "CompressedTrie.h"
 #include <iostream>
+#include <string>
 #include <cassert>
 using namespace std;
 
@@ -16,6 +17,7 @@ void TestTrie()
     cout << (&a == trie.Get("Hello")) << endl;
     cout << (&b == trie.Get("Happy")) << endl;
     cout << (&c == trie.Get("Halloween")) << endl;
+    cout << trie.Show() << endl;
 }
 
 void TestCompressedTrie()

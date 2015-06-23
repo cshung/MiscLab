@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 using namespace std;
 
 class Trie
@@ -10,6 +11,7 @@ public:
     ~Trie();
     bool  Add(const string key, void* value);
     void* Get(const string key) const;
+    string Show() const;
 private:
 
     class TrieNode
