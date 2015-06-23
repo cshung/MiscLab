@@ -15,9 +15,9 @@ Trie::~Trie()
 bool Trie::Add(const string key, void* value)
 {
     Trie::TrieNode* current = this->m_root;
-    for (unsigned int i = 0; i < key.length(); i++)
+    for (unsigned int keyCursor = 0; keyCursor < key.length(); keyCursor++)
     {
-        char currentCharacter = key[i];
+        char currentCharacter = key[keyCursor];
         map<char, Trie::TrieNode*>::iterator probe = current->m_children.find(currentCharacter);
         if (probe == current->m_children.end())
         {
@@ -44,9 +44,9 @@ bool Trie::Add(const string key, void* value)
 void* Trie::Get(const string key) const
 {
     Trie::TrieNode* current = this->m_root;
-    for (unsigned int i = 0; i < key.length(); i++)
+    for (unsigned int keyCursor = 0; keyCursor < key.length(); keyCursor++)
     {
-        char currentCharacter = key[i];
+        char currentCharacter = key[keyCursor];
         map<char, Trie::TrieNode*>::iterator probe = current->m_children.find(currentCharacter);
         if (probe == current->m_children.end())
         {
