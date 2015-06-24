@@ -1,6 +1,6 @@
 #include "Trie.h"
 #include "CompressedTrie.h"
-#include "SuffixTree3Builder.h"
+#include "SuffixTree1Builder.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -36,7 +36,7 @@ void TestCompressedTrie()
     cout << compressedTrie.Show() << endl;
 }
 
-void TestSuffixTree()
+void TestSuffixTree0()
 {
     CompressedTrie compressedTrie;
     string s = "xabxac";
@@ -48,17 +48,17 @@ void TestSuffixTree()
     cout << compressedTrie.Show() << endl;
 }
 
-void TestSuffixTree3()
+void TestSuffixTree1()
 {
-    SuffixTree3Builder builder;
+    SuffixTree1Builder builder;
     builder.BuildSuffixTree("xabxac");
 }
 
 int main()
 {
-    TestTrie();
-    TestCompressedTrie();
-    TestSuffixTree();
-    TestSuffixTree3();
+    //TestTrie();
+    //TestCompressedTrie();
+    //TestSuffixTree0();
+    TestSuffixTree1();
     return 0;
 }

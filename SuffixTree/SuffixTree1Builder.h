@@ -2,7 +2,7 @@
 #include <string>
 using namespace std;
 
-class SuffixTree3Builder
+class SuffixTree1Builder
 {
 public:
     void BuildSuffixTree(string input);

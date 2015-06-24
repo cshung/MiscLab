@@ -1,39 +1,39 @@
-#include "SuffixTree3.h"
+#include "SuffixTree1.h"
 #include <queue>
 #include <list>
 #include <string>
 #include <sstream>
 #include <algorithm>
 
-SuffixTree3::SuffixTree3() : m_root(new SuffixTree3::SuffixTree3Node())
+SuffixTree1::SuffixTree1() : m_root(new SuffixTree1::SuffixTree1Node())
 {
 
 }
 
-SuffixTree3::~SuffixTree3()
+SuffixTree1::~SuffixTree1()
 {
     delete this->m_root;
 }
 
-SuffixTree3::SuffixTree3Node::SuffixTree3Node()
+SuffixTree1::SuffixTree1Node::SuffixTree1Node()
 {
 
 }
 
-SuffixTree3::SuffixTree3Node::~SuffixTree3Node()
+SuffixTree1::SuffixTree1Node::~SuffixTree1Node()
 {
-    for (map<char, SuffixTree3::SuffixTree3Edge*>::iterator ci = this->m_children.begin(); ci != this->m_children.end(); ci++)
+    for (map<char, SuffixTree1::SuffixTree1Edge*>::iterator ci = this->m_children.begin(); ci != this->m_children.end(); ci++)
     {
         delete ci->second;
     }
 }
 
-SuffixTree3::SuffixTree3Edge::SuffixTree3Edge() : m_child(nullptr)
+SuffixTree1::SuffixTree1Edge::SuffixTree1Edge() : m_child(nullptr)
 {
 
 }
 
-SuffixTree3::SuffixTree3Edge::~SuffixTree3Edge()
+SuffixTree1::SuffixTree1Edge::~SuffixTree1Edge()
 {
     if (this->m_child != nullptr)
     {
@@ -41,26 +41,26 @@ SuffixTree3::SuffixTree3Edge::~SuffixTree3Edge()
     }
 }
 
-bool SuffixTree3::Add(const string key)
+bool SuffixTree1::Add(const string key)
 {
-    SuffixTree3::SuffixTree3Node* currentNode = this->m_root;
+    SuffixTree1::SuffixTree1Node* currentNode = this->m_root;
     unsigned int keyCursor = 0;
     while (keyCursor < key.length())
     {
         char currentCharacter = key[keyCursor];
-        map<char, SuffixTree3::SuffixTree3Edge*>::iterator probe = currentNode->m_children.find(currentCharacter);
+        map<char, SuffixTree1::SuffixTree1Edge*>::iterator probe = currentNode->m_children.find(currentCharacter);
         if (probe == currentNode->m_children.end())
         {
-            SuffixTree3Edge* newEdge = new SuffixTree3Edge();
-            SuffixTree3Node* newLeaf = new SuffixTree3Node();
+            SuffixTree1Edge* newEdge = new SuffixTree1Edge();
+            SuffixTree1Node* newLeaf = new SuffixTree1Node();
             newEdge->m_edgeLabel = key.substr(keyCursor);
             newEdge->m_child = newLeaf;
-            currentNode->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(currentCharacter, newEdge));
+            currentNode->m_children.insert(pair<char, SuffixTree1::SuffixTree1Edge*>(currentCharacter, newEdge));
             return true;
         }
         else
         {
-            SuffixTree3Edge* currentEdge = probe->second;
+            SuffixTree1Edge* currentEdge = probe->second;
             int limit = min(key.length() - keyCursor, currentEdge->m_edgeLabel.length());
             for (int edgeCursor = 0; edgeCursor < limit; keyCursor++, edgeCursor++)
             {
@@ -71,10 +71,10 @@ bool SuffixTree3::Add(const string key)
                     string edgeSuffix = currentEdge->m_edgeLabel.substr(edgeCursor);
                     currentEdge->m_edgeLabel = edgePrefix;
 
-                    SuffixTree3Node* newNode = new SuffixTree3Node();
-                    SuffixTree3Edge* oldEdge = new SuffixTree3Edge();
-                    SuffixTree3Edge* newEdge = new SuffixTree3Edge();
-                    SuffixTree3Node* newLeaf = new SuffixTree3Node();
+                    SuffixTree1Node* newNode = new SuffixTree1Node();
+                    SuffixTree1Edge* oldEdge = new SuffixTree1Edge();
+                    SuffixTree1Edge* newEdge = new SuffixTree1Edge();
+                    SuffixTree1Node* newLeaf = new SuffixTree1Node();
 
                     oldEdge->m_edgeLabel = edgeSuffix;
                     oldEdge->m_child = currentEdge->m_child;
@@ -83,8 +83,8 @@ bool SuffixTree3::Add(const string key)
                     newEdge->m_edgeLabel = key.substr(keyCursor);
                     newEdge->m_child = newLeaf;
 
-                    newNode->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(edgeSuffix[0], oldEdge));
-                    newNode->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(key[keyCursor], newEdge));
+                    newNode->m_children.insert(pair<char, SuffixTree1::SuffixTree1Edge*>(edgeSuffix[0], oldEdge));
+                    newNode->m_children.insert(pair<char, SuffixTree1::SuffixTree1Edge*>(key[keyCursor], newEdge));
 
                     return true;
                 }
@@ -96,26 +96,26 @@ bool SuffixTree3::Add(const string key)
     return false;
 }
 
-string SuffixTree3::Show() const
+string SuffixTree1::Show() const
 {
     list<pair<int, pair<string, int>>> edges;
-    queue<pair<int, SuffixTree3::SuffixTree3Node*>> bfsQueue;
+    queue<pair<int, SuffixTree1::SuffixTree1Node*>> bfsQueue;
     int nodeId = 0;
-    bfsQueue.push(pair<int, SuffixTree3::SuffixTree3Node*>(0, this->m_root));
+    bfsQueue.push(pair<int, SuffixTree1::SuffixTree1Node*>(0, this->m_root));
     while (bfsQueue.size() > 0)
     {
-        pair<int, SuffixTree3::SuffixTree3Node*> current = bfsQueue.front();
+        pair<int, SuffixTree1::SuffixTree1Node*> current = bfsQueue.front();
         bfsQueue.pop();
 
         int currentNodeId = current.first;
-        SuffixTree3::SuffixTree3Node* currentNode = current.second;
-        map<char, SuffixTree3::SuffixTree3Edge*>& currentNodeChildren = currentNode->m_children;
-        for (map<char, SuffixTree3::SuffixTree3Edge*>::iterator ci = currentNodeChildren.begin(); ci != currentNodeChildren.end(); ci++)
+        SuffixTree1::SuffixTree1Node* currentNode = current.second;
+        map<char, SuffixTree1::SuffixTree1Edge*>& currentNodeChildren = currentNode->m_children;
+        for (map<char, SuffixTree1::SuffixTree1Edge*>::iterator ci = currentNodeChildren.begin(); ci != currentNodeChildren.end(); ci++)
         {
             int nextNodeId = ++nodeId;
-            SuffixTree3::SuffixTree3Edge* nextEdge = ci->second;
-            SuffixTree3::SuffixTree3Node* nextNode = nextEdge->m_child;
-            bfsQueue.push(pair<int, SuffixTree3::SuffixTree3Node*>(nextNodeId, nextNode));
+            SuffixTree1::SuffixTree1Edge* nextEdge = ci->second;
+            SuffixTree1::SuffixTree1Node* nextNode = nextEdge->m_child;
+            bfsQueue.push(pair<int, SuffixTree1::SuffixTree1Node*>(nextNodeId, nextNode));
             edges.push_back(pair<int, pair<string, int>>(currentNodeId, pair<string, int>(nextEdge->m_edgeLabel, nextNodeId)));
         }
     }
