@@ -24,12 +24,24 @@
     <ClCompile Include="CompressedTrie.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SuffixTree3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuffixTree3Builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Trie.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CompressedTrie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuffixTree3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuffixTree3Builder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
