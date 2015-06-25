@@ -24,10 +24,22 @@
     <ClCompile Include="CompressedTrie.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SuffixTree3.cpp">
+    <ClCompile Include="SuffixTree1\SuffixTree1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SuffixTree3Builder.cpp">
+    <ClCompile Include="SuffixTree1\SuffixTree1Builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuffixTree2\SuffixTree2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuffixTree2\SuffixTree2Builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuffixTree3\SuffixTree3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuffixTree3\SuffixTree3Builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,10 +50,22 @@
     <ClInclude Include="CompressedTrie.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SuffixTree3.h">
+    <ClInclude Include="SuffixTree3\SuffixTree3Builder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SuffixTree3Builder.h">
+    <ClInclude Include="SuffixTree1\SuffixTree1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuffixTree1\SuffixTree1Builder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuffixTree2\SuffixTree2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuffixTree2\SuffixTree2Builder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuffixTree3\SuffixTree3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
