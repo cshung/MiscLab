@@ -78,10 +78,14 @@
   <ItemGroup>
     <ClCompile Include="CompressedTrie.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SuffixTree1.cpp" />
+    <ClCompile Include="SuffixTree1Builder.cpp" />
     <ClCompile Include="Trie.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CompressedTrie.h" />
+    <ClInclude Include="SuffixTree1.h" />
+    <ClInclude Include="SuffixTree1Builder.h" />
     <ClInclude Include="Trie.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

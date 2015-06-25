@@ -51,7 +51,9 @@ void TestSuffixTree0()
 void TestSuffixTree1()
 {
     SuffixTree1Builder builder;
-    builder.BuildSuffixTree("xabxac");
+    SuffixTree1 suffixTree;
+    builder.BuildSuffixTree("xabxac", &suffixTree);
+    cout << suffixTree.Show() << endl;
 }
 
 int main()

@@ -3,16 +3,14 @@
 #include <iostream>
 using namespace std;
 
-void SuffixTree1Builder::BuildSuffixTree(string input)
+void SuffixTree1Builder::BuildSuffixTree(string input, SuffixTree1* suffixTree)
 {
-    SuffixTree1 suffixTree;
     string s = "xabxac";
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         for (unsigned int start = 0; start < end; start++)
         {
-            suffixTree.Add(s.substr(start));
+            suffixTree->Add(s.substr(start, end - start));
         }
     }
-    cout << suffixTree.Show() << endl;
 }
