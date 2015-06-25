@@ -1,11 +1,15 @@
 #include "Trie.h"
 #include "CompressedTrie.h"
+#include "SuffixTree1.h"
 #include "SuffixTree1Builder.h"
+#include "SuffixTree2.h"
+#include "SuffixTree2Builder.h"
 #include <iostream>
 #include <string>
 #include <cassert>
 using namespace std;
 
+// For Post 1
 void TestTrie()
 {
     int a = 1;
@@ -21,6 +25,7 @@ void TestTrie()
     cout << trie.Show() << endl;
 }
 
+// For Post 2
 void TestCompressedTrie()
 {
     int a = 1;
@@ -36,18 +41,7 @@ void TestCompressedTrie()
     cout << compressedTrie.Show() << endl;
 }
 
-void TestSuffixTree0()
-{
-    CompressedTrie compressedTrie;
-    string s = "xabxac";
-    unsigned int end = s.length();
-    for (unsigned int start = 0; start < end; start++)
-    {
-        compressedTrie.Add(s.substr(start), &s);
-    }
-    cout << compressedTrie.Show() << endl;
-}
-
+// For Post 4
 void TestSuffixTree1()
 {
     SuffixTree1Builder builder;
@@ -56,11 +50,20 @@ void TestSuffixTree1()
     cout << suffixTree.Show() << endl;
 }
 
+// For Post 5
+void TestSuffixTree2()
+{
+    SuffixTree2Builder builder;
+    SuffixTree2 suffixTree;
+    builder.BuildSuffixTree("xabxac", &suffixTree);
+    cout << suffixTree.Show() << endl;
+}
+
 int main()
 {
-    //TestTrie();
-    //TestCompressedTrie();
-    //TestSuffixTree0();
+    TestTrie();
+    TestCompressedTrie();
     TestSuffixTree1();
+    TestSuffixTree2();
     return 0;
 }
