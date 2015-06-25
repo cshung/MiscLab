@@ -1,9 +1,11 @@
 #include "Trie.h"
 #include "CompressedTrie.h"
-#include "SuffixTree1.h"
-#include "SuffixTree1Builder.h"
-#include "SuffixTree2.h"
-#include "SuffixTree2Builder.h"
+#include "SuffixTree1\SuffixTree1.h"
+#include "SuffixTree1\SuffixTree1Builder.h"
+#include "SuffixTree2\SuffixTree2.h"
+#include "SuffixTree2\SuffixTree2Builder.h"
+#include "SuffixTree3\SuffixTree3.h"
+#include "SuffixTree3\SuffixTree3Builder.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -59,11 +61,23 @@ void TestSuffixTree2()
     cout << suffixTree.Show() << endl;
 }
 
+// For Post 7
+void TestSuffixTree3()
+{
+    SuffixTree3Builder builder;
+    SuffixTree3 suffixTree;
+    builder.BuildSuffixTree("xabxac", &suffixTree);
+    cout << suffixTree.Show() << endl;
+}
+
 int main()
 {
+    /*
     TestTrie();
     TestCompressedTrie();
     TestSuffixTree1();
     TestSuffixTree2();
+    */
+    TestSuffixTree3();
     return 0;
 }
