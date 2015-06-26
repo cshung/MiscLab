@@ -1,9 +1,9 @@
-#include "SuffixTree4Builder.h"
-#include "SuffixTree4.h"
+#include "SuffixTree6Builder.h"
+#include "SuffixTree6.h"
 #include <iostream>
 using namespace std;
 
-SuffixTree4Builder::SuffixTree4Builder() : m_lastInternalNode(nullptr)
+SuffixTree6Builder::SuffixTree6Builder() : m_lastInternalNode(nullptr), m_nextStart(nullptr)
 #ifdef _DEBUG
 , m_extensionCount(0)
 , m_lastInternalNodeBirthday(-1)
@@ -12,10 +12,11 @@ SuffixTree4Builder::SuffixTree4Builder() : m_lastInternalNode(nullptr)
 
 }
 
-void SuffixTree4Builder::BuildSuffixTree(string s, SuffixTree4* suffixTree)
+void SuffixTree6Builder::BuildSuffixTree(string s, SuffixTree6* suffixTree)
 {
     for (unsigned int end = 1; end <= s.length(); end++)
     {
+        this->m_nextStart = suffixTree->m_root;
         for (unsigned int start = 0; start < end; start++)
         {
             suffixTree->Add(s.substr(start, end - start), this);

@@ -3,9 +3,8 @@
 #include <iostream>
 using namespace std;
 
-void SuffixTree3Builder::BuildSuffixTree(string input, SuffixTree3* suffixTree)
+void SuffixTree3Builder::BuildSuffixTree(string s, SuffixTree3* suffixTree)
 {
-    string s = "xabxac";
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         for (unsigned int start = 0; start < end; start++)

@@ -12,9 +12,8 @@ SuffixTree5Builder::SuffixTree5Builder() : m_lastInternalNode(nullptr)
 
 }
 
-void SuffixTree5Builder::BuildSuffixTree(string input, SuffixTree5* suffixTree)
+void SuffixTree5Builder::BuildSuffixTree(string s, SuffixTree5* suffixTree)
 {
-    string s = "xabxac";
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         for (unsigned int start = 0; start < end; start++)

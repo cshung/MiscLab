@@ -88,6 +88,8 @@
     <ClCompile Include="SuffixTree4\SuffixTree4Builder.cpp" />
     <ClCompile Include="SuffixTree5\SuffixTree5.cpp" />
     <ClCompile Include="SuffixTree5\SuffixTree5Builder.cpp" />
+    <ClCompile Include="SuffixTree6\SuffixTree6.cpp" />
+    <ClCompile Include="SuffixTree6\SuffixTree6Builder.cpp" />
     <ClCompile Include="Trie.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +104,8 @@
     <ClInclude Include="SuffixTree4\SuffixTree4Builder.h" />
     <ClInclude Include="SuffixTree5\SuffixTree5.h" />
     <ClInclude Include="SuffixTree5\SuffixTree5Builder.h" />
+    <ClInclude Include="SuffixTree6\SuffixTree6.h" />
+    <ClInclude Include="SuffixTree6\SuffixTree6Builder.h" />
     <ClInclude Include="Trie.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
