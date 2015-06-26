@@ -6,6 +6,9 @@ using namespace std;
 
 class SuffixTree4Builder;
 
+/*
+ * Building the suffix links
+ */
 class SuffixTree4
 {
 public:

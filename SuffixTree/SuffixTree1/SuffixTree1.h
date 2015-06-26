@@ -4,6 +4,12 @@
 #include <string>
 using namespace std;
 
+/*
+ * A very primitive suffix tree that works.
+ * This version just insert all the suffix in a compressed trie
+ * It runs in quadratic time, and it serves as a baseline for us 
+ * to check correctness for advanced algorithms.
+ */
 class SuffixTree1
 {
 public:

@@ -4,6 +4,12 @@
 #include <string>
 using namespace std;
 
+/*
+ * A false start from the Ukkonen's algorithm
+ * The standard compressed trie force a node at the end 
+ * of a string inserted, so this essentially fall back to 
+ * a uncompressed trie
+ */
 class SuffixTree2
 {
 public:
