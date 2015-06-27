@@ -48,7 +48,7 @@ void TestSuffixTree1()
 {
     SuffixTree1Builder builder;
     SuffixTree1 suffixTree;
-    builder.BuildSuffixTree("xabxac", &suffixTree);
+    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
@@ -57,7 +57,7 @@ void TestSuffixTree2()
 {
     SuffixTree2Builder builder;
     SuffixTree2 suffixTree;
-    builder.BuildSuffixTree("xabxac", &suffixTree);
+    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
@@ -66,7 +66,7 @@ void TestSuffixTree3()
 {
     SuffixTree3Builder builder;
     SuffixTree3 suffixTree;
-    builder.BuildSuffixTree("xabxac", &suffixTree);
+    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
@@ -75,7 +75,7 @@ void TestSuffixTree4()
 {
     SuffixTree4Builder builder;
     SuffixTree4 suffixTree;
-    builder.BuildSuffixTree("xabxac", &suffixTree);
+    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
