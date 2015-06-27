@@ -4,7 +4,6 @@
 #include "SuffixTree2\SuffixTree2Builder.h"
 #include "SuffixTree3\SuffixTree3Builder.h"
 #include "SuffixTree4\SuffixTree4Builder.h"
-#include "SuffixTree5\SuffixTree5Builder.h"
 #include "SuffixTree6\SuffixTree6Builder.h"
 #include "SuffixTree7\SuffixTree7Builder.h"
 #include "SuffixTree8\SuffixTree8Builder.h"
@@ -83,15 +82,6 @@ void TestSuffixTree4()
     cout << suffixTree.Show() << endl;
 }
 
-// For next next post
-//void TestSuffixTree5()
-//{
-//    SuffixTree5Builder builder;
-//    SuffixTree5 suffixTree;
-//    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
-//    cout << suffixTree.Show() << endl;
-//}
-
 // For next next next post
 void TestSuffixTree6()
 {
@@ -147,7 +137,6 @@ int main()
     TestSuffixTree2();
     TestSuffixTree3();
     TestSuffixTree4();
-    TestSuffixTree5();
     TestSuffixTree6();
     TestSuffixTree7();
     TestSuffixTree8();
