@@ -1,9 +1,9 @@
-#include "SuffixTree8Builder.h"
-#include "SuffixTree8.h"
+#include "SuffixTree9Builder.h"
+#include "SuffixTree9.h"
 #include <iostream>
 using namespace std;
 
-SuffixTree8Builder::SuffixTree8Builder() : m_lastInternalNode(nullptr), m_nextStart(nullptr), m_fullStringLeaf(nullptr)
+SuffixTree9Builder::SuffixTree9Builder() : m_lastInternalNode(nullptr), m_nextStart(nullptr), m_fullStringLeaf(nullptr)
 #ifdef _DEBUG
 , m_extensionCount(0)
 , m_lastInternalNodeBirthday(-1)
@@ -12,11 +12,11 @@ SuffixTree8Builder::SuffixTree8Builder() : m_lastInternalNode(nullptr), m_nextSt
 
 }
 
-void SuffixTree8Builder::BuildSuffixTree(string s, SuffixTree8* suffixTree)
+void SuffixTree9Builder::BuildSuffixTree(string s, SuffixTree9* suffixTree)
 {
     this->m_input = s;
     for (unsigned int end = 1; end <= s.length(); end++)
-    {   
+    {
         if (this->m_fullStringLeaf == nullptr)
         {
             this->m_nextStart = suffixTree->m_root;
@@ -27,7 +27,10 @@ void SuffixTree8Builder::BuildSuffixTree(string s, SuffixTree8* suffixTree)
         }
         for (unsigned int start = 0; start < end; start++)
         {
-            suffixTree->Add(start, end, this);
+            if (suffixTree->Add(start, end, this))
+            {
+                break;
+            }
         }
     }
 }

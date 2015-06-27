@@ -4,31 +4,33 @@
 #include <string>
 using namespace std;
 
-class SuffixTree6Builder;
+class SuffixTree7Builder;
 
 /*
- * Using the suffix links to reduce time
+ * Implementation Trick 1 - Skip Count Trick
  */
-class SuffixTree6
+class SuffixTree7
 {
 public:
-    SuffixTree6();
-    ~SuffixTree6();
-    bool  Add(const string key, SuffixTree6Builder* suffixTreeBuilder);
-    string Show() const;
+    SuffixTree7();
+    ~SuffixTree7();
+    bool  Add(int keyBegin, int keyEnd, SuffixTree7Builder* suffixTreeBuilder);
+    string Show(string& input) const;
 private:
-    class SuffixTree6Edge
+    class SuffixTree7Edge
     {
     public:
-        SuffixTree6Edge();
-        ~SuffixTree6Edge();
-        string m_edgeLabel;
-        SuffixTree6Edge* m_suffixLink;
-        map<char, SuffixTree6Edge*> m_children;
+        SuffixTree7Edge();
+        ~SuffixTree7Edge();
+        unsigned int m_begin;
+        unsigned int m_end;
+        unsigned int length();
+        SuffixTree7Edge* m_suffixLink;
+        map<char, SuffixTree7Edge*> m_children;
     };
 
-    SuffixTree6Edge* m_root;
+    SuffixTree7Edge* m_root;
 
-    friend class SuffixTree6Builder;
+    friend class SuffixTree7Builder;
 };
 

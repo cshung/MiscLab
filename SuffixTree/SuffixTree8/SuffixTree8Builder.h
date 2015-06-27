@@ -1,20 +1,20 @@
 #pragma once
 
 #include <string>
-#include "SuffixTree8.h"
+#include "SuffixTree9.h"
 using namespace std;
 
-class SuffixTree8Builder
+class SuffixTree9Builder
 {
 public:
-    SuffixTree8Builder();
-    void BuildSuffixTree(string input, SuffixTree8* suffixTree);
+    SuffixTree9Builder();
+    void BuildSuffixTree(string input, SuffixTree9* suffixTree);
 private:
-    SuffixTree8::SuffixTree8Edge* m_lastInternalNode;
-    SuffixTree8::SuffixTree8Edge* m_nextStart;
+    SuffixTree9::SuffixTree9Edge* m_lastInternalNode;
+    SuffixTree9::SuffixTree9Edge* m_nextStart;
     unsigned int m_nextDepth;
-    SuffixTree8::SuffixTree8Edge* m_fullStringLeaf;
-    friend class SuffixTree8;
+    SuffixTree9::SuffixTree9Edge* m_fullStringLeaf;
+    friend class SuffixTree9;
 
     string m_input;
 #ifdef _DEBUG
