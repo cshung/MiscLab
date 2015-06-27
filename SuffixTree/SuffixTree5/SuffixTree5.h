@@ -4,31 +4,31 @@
 #include <string>
 using namespace std;
 
-class SuffixTree6Builder;
+class SuffixTree5Builder;
 
 /*
  * Using the suffix links to reduce time
  */
-class SuffixTree6
+class SuffixTree5
 {
 public:
-    SuffixTree6();
-    ~SuffixTree6();
-    bool  Add(const string key, SuffixTree6Builder* suffixTreeBuilder);
+    SuffixTree5();
+    ~SuffixTree5();
+    bool  Add(const string key, SuffixTree5Builder* suffixTreeBuilder);
     string Show() const;
 private:
-    class SuffixTree6Edge
+    class SuffixTree5Edge
     {
     public:
-        SuffixTree6Edge();
-        ~SuffixTree6Edge();
+        SuffixTree5Edge();
+        ~SuffixTree5Edge();
         string m_edgeLabel;
-        SuffixTree6Edge* m_suffixLink;
-        map<char, SuffixTree6Edge*> m_children;
+        SuffixTree5Edge* m_suffixLink;
+        map<char, SuffixTree5Edge*> m_children;
     };
 
-    SuffixTree6Edge* m_root;
+    SuffixTree5Edge* m_root;
 
-    friend class SuffixTree6Builder;
+    friend class SuffixTree5Builder;
 };
 

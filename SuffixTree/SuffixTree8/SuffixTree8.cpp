@@ -1,5 +1,5 @@
-#include "SuffixTree9.h"
-#include "SuffixTree9Builder.h"
+#include "SuffixTree8.h"
+#include "SuffixTree8Builder.h"
 #include <queue>
 #include <list>
 #include <string>
@@ -7,43 +7,43 @@
 #include <algorithm>
 #include <cassert>
 
-SuffixTree9::SuffixTree9() : m_root(new SuffixTree9::SuffixTree9Edge())
+SuffixTree8::SuffixTree8() : m_root(new SuffixTree8::SuffixTree8Edge())
 {
     this->m_root->m_begin = 0;
     this->m_root->m_end = 0;
 }
 
-SuffixTree9::~SuffixTree9()
+SuffixTree8::~SuffixTree8()
 {
     delete this->m_root;
 }
 
-SuffixTree9::SuffixTree9Edge::SuffixTree9Edge() : m_suffixLink(nullptr)
+SuffixTree8::SuffixTree8Edge::SuffixTree8Edge() : m_suffixLink(nullptr)
 {
 
 }
 
-SuffixTree9::SuffixTree9Edge::~SuffixTree9Edge()
+SuffixTree8::SuffixTree8Edge::~SuffixTree8Edge()
 {
-    for (map<char, SuffixTree9::SuffixTree9Edge*>::iterator ci = this->m_children.begin(); ci != this->m_children.end(); ci++)
+    for (map<char, SuffixTree8::SuffixTree8Edge*>::iterator ci = this->m_children.begin(); ci != this->m_children.end(); ci++)
     {
         delete ci->second;
     }
 }
 
-unsigned int SuffixTree9::SuffixTree9Edge::length()
+unsigned int SuffixTree8::SuffixTree8Edge::length()
 {
     return this->m_end - this->m_begin;
 }
 
-bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
+bool SuffixTree8::Add(int keyBegin, int keyEnd, SuffixTree8Builder* builder)
 {
     bool noOpApplied = false;
 #ifdef _DEBUG
     builder->m_extensionCount++;
 #endif
     // Step 0: Use the suffix link to speed up the search
-    SuffixTree9::SuffixTree9Edge* treeCursor = builder->m_nextStart;
+    SuffixTree8::SuffixTree8Edge* treeCursor = builder->m_nextStart;
     unsigned int treeEdgeCursor = treeCursor->length();
     unsigned int keyCursor = builder->m_nextDepth;
     unsigned int searchKeyLength = keyEnd - keyBegin - 1;
@@ -57,14 +57,14 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
         char currentCharacter = builder->m_input[keyBegin + keyCursor];
         if (treeEdgeCursor == treeCursor->length())
         {
-            map<char, SuffixTree9::SuffixTree9Edge*>::iterator probe = treeCursor->m_children.find(currentCharacter);
+            map<char, SuffixTree8::SuffixTree8Edge*>::iterator probe = treeCursor->m_children.find(currentCharacter);
             if (probe == treeCursor->m_children.end())
             {
                 assert(false); // The string except the last character should always in the tree"
             }
             else
             {
-                SuffixTree9Edge* currentEdge = probe->second;                
+                SuffixTree8Edge* currentEdge = probe->second;                
                 treeCursor = currentEdge;
                 treeEdgeCursor = 0;
                 if (currentEdge->m_suffixLink)
@@ -96,7 +96,7 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
     // Step 2: Insert the character in the tree
     char characterToExtend = builder->m_input[keyEnd - 1];
 
-    SuffixTree9::SuffixTree9Edge* newInternalNode = nullptr;
+    SuffixTree8::SuffixTree8Edge* newInternalNode = nullptr;
     if (treeEdgeCursor == treeCursor->length())
     {
         // We end up at a node
@@ -107,15 +107,15 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
         }
         else
         {
-            map<char, SuffixTree9::SuffixTree9Edge*>::iterator probe = treeCursor->m_children.find(characterToExtend);
+            map<char, SuffixTree8::SuffixTree8Edge*>::iterator probe = treeCursor->m_children.find(characterToExtend);
             if (probe == treeCursor->m_children.end())
             {
                 // We have reached a non-leaf node - and the tree does not extend with our character
                 // Therefore we will apply the split rule
-                SuffixTree9::SuffixTree9Edge* newEdge = new SuffixTree9::SuffixTree9Edge();
+                SuffixTree8::SuffixTree8Edge* newEdge = new SuffixTree8::SuffixTree8Edge();
                 newEdge->m_begin = keyEnd - 1;
                 newEdge->m_end = keyEnd;
-                treeCursor->m_children.insert(pair<char, SuffixTree9::SuffixTree9Edge*>(characterToExtend, newEdge));
+                treeCursor->m_children.insert(pair<char, SuffixTree8::SuffixTree8Edge*>(characterToExtend, newEdge));
             }
             else
             {
@@ -138,8 +138,8 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
         {
             // We have reach the middle of an edge, and the edge does not extend with our character
             // Therefore we will apply the split rule
-            SuffixTree9::SuffixTree9Edge* oldEdge = new SuffixTree9::SuffixTree9Edge();
-            SuffixTree9::SuffixTree9Edge* newEdge = new SuffixTree9::SuffixTree9Edge();
+            SuffixTree8::SuffixTree8Edge* oldEdge = new SuffixTree8::SuffixTree8Edge();
+            SuffixTree8::SuffixTree8Edge* newEdge = new SuffixTree8::SuffixTree8Edge();
             int originalLength = treeCursor->length();
             
             oldEdge->m_begin = treeCursor->m_begin + treeEdgeCursor;
@@ -150,7 +150,7 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
             newEdge->m_begin = keyEnd - 1;
             newEdge->m_end = keyEnd;
 
-            for (map<char, SuffixTree9Edge*>::iterator ci = treeCursor->m_children.begin(); ci != treeCursor->m_children.end(); ci++)
+            for (map<char, SuffixTree8Edge*>::iterator ci = treeCursor->m_children.begin(); ci != treeCursor->m_children.end(); ci++)
             {
                 oldEdge->m_children.insert(*ci);
             }
@@ -158,8 +158,8 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
             newInternalNode = treeCursor;
 
             treeCursor->m_children.clear();
-            treeCursor->m_children.insert(pair<char, SuffixTree9::SuffixTree9Edge*>(builder->m_input[oldEdge->m_begin], oldEdge));
-            treeCursor->m_children.insert(pair<char, SuffixTree9::SuffixTree9Edge*>(characterToExtend, newEdge));
+            treeCursor->m_children.insert(pair<char, SuffixTree8::SuffixTree8Edge*>(builder->m_input[oldEdge->m_begin], oldEdge));
+            treeCursor->m_children.insert(pair<char, SuffixTree8::SuffixTree8Edge*>(characterToExtend, newEdge));
         }
     }
 
@@ -180,34 +180,34 @@ bool SuffixTree9::Add(int keyBegin, int keyEnd, SuffixTree9Builder* builder)
     return noOpApplied;
 }
 
-string SuffixTree9::Show(string& input) const
+string SuffixTree8::Show(string& input) const
 {
-    map<SuffixTree9::SuffixTree9Edge*, int> nodeIds;
-    list<pair<SuffixTree9::SuffixTree9Edge*, SuffixTree9::SuffixTree9Edge*>> suffixLinks;
+    map<SuffixTree8::SuffixTree8Edge*, int> nodeIds;
+    list<pair<SuffixTree8::SuffixTree8Edge*, SuffixTree8::SuffixTree8Edge*>> suffixLinks;
     list<pair<int, pair<string, int>>> edges;
-    queue<pair<int, SuffixTree9::SuffixTree9Edge*>> bfsQueue;
+    queue<pair<int, SuffixTree8::SuffixTree8Edge*>> bfsQueue;
     int nodeId = 0;
-    bfsQueue.push(pair<int, SuffixTree9::SuffixTree9Edge*>(0, this->m_root));
-    nodeIds.insert(pair<SuffixTree9::SuffixTree9Edge*, int>(this->m_root, 0));
+    bfsQueue.push(pair<int, SuffixTree8::SuffixTree8Edge*>(0, this->m_root));
+    nodeIds.insert(pair<SuffixTree8::SuffixTree8Edge*, int>(this->m_root, 0));
     while (bfsQueue.size() > 0)
     {
-        pair<int, SuffixTree9::SuffixTree9Edge*> current = bfsQueue.front();
+        pair<int, SuffixTree8::SuffixTree8Edge*> current = bfsQueue.front();
         bfsQueue.pop();
         int treeCursorId = current.first;
-        SuffixTree9::SuffixTree9Edge* treeCursor = current.second;
+        SuffixTree8::SuffixTree8Edge* treeCursor = current.second;
 
         if (treeCursor->m_suffixLink != nullptr)
         {
-            suffixLinks.push_back(pair<SuffixTree9::SuffixTree9Edge*, SuffixTree9::SuffixTree9Edge*>(treeCursor, treeCursor->m_suffixLink));
+            suffixLinks.push_back(pair<SuffixTree8::SuffixTree8Edge*, SuffixTree8::SuffixTree8Edge*>(treeCursor, treeCursor->m_suffixLink));
         }
 
-        map<char, SuffixTree9::SuffixTree9Edge*>& treeCursorChildren = treeCursor->m_children;
-        for (map<char, SuffixTree9::SuffixTree9Edge*>::iterator ci = treeCursorChildren.begin(); ci != treeCursorChildren.end(); ci++)
+        map<char, SuffixTree8::SuffixTree8Edge*>& treeCursorChildren = treeCursor->m_children;
+        for (map<char, SuffixTree8::SuffixTree8Edge*>::iterator ci = treeCursorChildren.begin(); ci != treeCursorChildren.end(); ci++)
         {
             int nextNodeId = ++nodeId;
-            SuffixTree9::SuffixTree9Edge* nextEdge = ci->second;
-            bfsQueue.push(pair<int, SuffixTree9::SuffixTree9Edge*>(nextNodeId, nextEdge));
-            nodeIds.insert(pair<SuffixTree9::SuffixTree9Edge*, int>(nextEdge, nextNodeId));
+            SuffixTree8::SuffixTree8Edge* nextEdge = ci->second;
+            bfsQueue.push(pair<int, SuffixTree8::SuffixTree8Edge*>(nextNodeId, nextEdge));
+            nodeIds.insert(pair<SuffixTree8::SuffixTree8Edge*, int>(nextEdge, nextNodeId));
             edges.push_back(pair<int, pair<string, int>>(treeCursorId, pair<string, int>(input.substr(nextEdge->m_begin, nextEdge->m_end - nextEdge->m_begin), nextNodeId)));
         }
     }
@@ -221,7 +221,7 @@ string SuffixTree9::Show(string& input) const
     {
         stringBuilder << ei->first << "->" << ei->second.second << "[label = \" " << ei->second.first << " \"]" << endl;
     }
-    for (list<pair<SuffixTree9::SuffixTree9Edge*, SuffixTree9::SuffixTree9Edge*>>::iterator si = suffixLinks.begin(); si != suffixLinks.end(); si++)
+    for (list<pair<SuffixTree8::SuffixTree8Edge*, SuffixTree8::SuffixTree8Edge*>>::iterator si = suffixLinks.begin(); si != suffixLinks.end(); si++)
     {
         stringBuilder << nodeIds[si->first] << "->" << nodeIds[si->second] << "[style = dashed]" <<endl;
     }

@@ -4,33 +4,33 @@
 #include <string>
 using namespace std;
 
-class SuffixTree8Builder;
+class SuffixTree7Builder;
 
 /*
  * First extension always go to the first leaf
  */
-class SuffixTree8
+class SuffixTree7
 {
 public:
-    SuffixTree8();
-    ~SuffixTree8();
-    bool  Add(int keyBegin, int keyEnd, SuffixTree8Builder* suffixTreeBuilder);
+    SuffixTree7();
+    ~SuffixTree7();
+    bool  Add(int keyBegin, int keyEnd, SuffixTree7Builder* suffixTreeBuilder);
     string Show(string& input) const;
 private:
-    class SuffixTree8Edge
+    class SuffixTree7Edge
     {
     public:
-        SuffixTree8Edge();
-        ~SuffixTree8Edge();
+        SuffixTree7Edge();
+        ~SuffixTree7Edge();
         unsigned int m_begin;
         unsigned int m_end;
         unsigned int length();
-        SuffixTree8Edge* m_suffixLink;
-        map<char, SuffixTree8Edge*> m_children;
+        SuffixTree7Edge* m_suffixLink;
+        map<char, SuffixTree7Edge*> m_children;
     };
 
-    SuffixTree8Edge* m_root;
+    SuffixTree7Edge* m_root;
 
-    friend class SuffixTree8Builder;
+    friend class SuffixTree7Builder;
 };
 
