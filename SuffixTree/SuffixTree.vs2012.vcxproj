@@ -92,8 +92,6 @@
     <ClCompile Include="SuffixTree6\SuffixTree6Builder.cpp" />
     <ClCompile Include="SuffixTree7\SuffixTree7.cpp" />
     <ClCompile Include="SuffixTree7\SuffixTree7Builder.cpp" />
-    <ClCompile Include="SuffixTree8\SuffixTree8.cpp" />
-    <ClCompile Include="SuffixTree8\SuffixTree8Builder.cpp" />
     <ClCompile Include="SuffixTree\SuffixTree.cpp" />
     <ClCompile Include="SuffixTree\SuffixTreeBuilder.cpp" />
     <ClCompile Include="Trie.cpp" />
@@ -114,8 +112,6 @@
     <ClInclude Include="SuffixTree6\SuffixTree6Builder.h" />
     <ClInclude Include="SuffixTree7\SuffixTree7.h" />
     <ClInclude Include="SuffixTree7\SuffixTree7Builder.h" />
-    <ClInclude Include="SuffixTree8\SuffixTree8.h" />
-    <ClInclude Include="SuffixTree8\SuffixTree8Builder.h" />
     <ClInclude Include="SuffixTree\SuffixTree.h" />
     <ClInclude Include="SuffixTree\SuffixTreeBuilder.h" />
     <ClInclude Include="Trie.h" />

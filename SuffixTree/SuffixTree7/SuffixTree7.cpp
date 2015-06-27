@@ -38,6 +38,7 @@ unsigned int SuffixTree7::SuffixTree7Edge::length()
 
 bool SuffixTree7::Add(int keyBegin, int keyEnd, SuffixTree7Builder* builder)
 {
+    bool noOpApplied = false;
 #ifdef _DEBUG
     builder->m_extensionCount++;
 #endif
@@ -120,6 +121,7 @@ bool SuffixTree7::Add(int keyBegin, int keyEnd, SuffixTree7Builder* builder)
             {
                 // We have reached a non-leaf node - and the tree extends with our character
                 // Therefore we will apply the no-op rule
+                noOpApplied = true;
             }
         }
     }
@@ -130,6 +132,7 @@ bool SuffixTree7::Add(int keyBegin, int keyEnd, SuffixTree7Builder* builder)
         {
             // We have reach the middle of an edge, and the edge extends with our character
             // Therefore we will apply the no-op rule
+            noOpApplied = true;
         }
         else
         {
@@ -174,7 +177,7 @@ bool SuffixTree7::Add(int keyBegin, int keyEnd, SuffixTree7Builder* builder)
         builder->m_lastInternalNode = treeCursor;
     }
     
-    return false;
+    return noOpApplied;
 }
 
 string SuffixTree7::Show(string& input) const

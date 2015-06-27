@@ -13,7 +13,6 @@ private:
     SuffixTree7::SuffixTree7Edge* m_lastInternalNode;
     SuffixTree7::SuffixTree7Edge* m_nextStart;
     unsigned int m_nextDepth;
-    SuffixTree7::SuffixTree7Edge* m_fullStringLeaf;
     friend class SuffixTree7;
 
     string m_input;

@@ -60,12 +60,6 @@
     <ClCompile Include="SuffixTree7\SuffixTree7Builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SuffixTree8\SuffixTree8.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SuffixTree8\SuffixTree8Builder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SuffixTree\SuffixTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -120,12 +114,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SuffixTree7\SuffixTree7Builder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SuffixTree8\SuffixTree8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SuffixTree8\SuffixTree8Builder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SuffixTree\SuffixTree.h">
