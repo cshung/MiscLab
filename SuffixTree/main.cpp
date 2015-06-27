@@ -6,6 +6,7 @@
 #include "SuffixTree4\SuffixTree4Builder.h"
 #include "SuffixTree5\SuffixTree5Builder.h"
 #include "SuffixTree6\SuffixTree6Builder.h"
+#include "SuffixTree7\SuffixTree7Builder.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -97,6 +98,16 @@ void TestSuffixTree6()
     cout << suffixTree.Show() << endl;
 }
 
+// For next next next post
+void TestSuffixTree7()
+{
+    SuffixTree7Builder builder;
+    SuffixTree7 suffixTree;
+    string s = "Hello_world_to_suffix_tree";
+    builder.BuildSuffixTree(s, &suffixTree);
+    cout << suffixTree.Show(s) << endl;
+}
+
 int main()
 {
     /*
@@ -109,6 +120,6 @@ int main()
     TestSuffixTree5();
     TestSuffixTree6();
     */
-    TestSuffixTree6();
+    TestSuffixTree7();
     return 0;
 }
