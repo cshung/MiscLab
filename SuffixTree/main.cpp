@@ -126,11 +126,12 @@ void TestSuffixTree()
     SuffixTree suffixTree;
     string s = "Hello_world_to_suffix_tree";
     builder.BuildSuffixTree(s, &suffixTree);
-    cout << suffixTree.Show(s) << endl;
+    cout << suffixTree.Show(s, &builder) << endl;
 }
 
 int main()
 {
+    /*
     TestTrie();
     TestCompressedTrie();
     TestSuffixTree1();
@@ -141,6 +142,7 @@ int main()
     TestSuffixTree6();
     TestSuffixTree7();
     TestSuffixTree8();
+    */
     TestSuffixTree();
     return 0;
 }
