@@ -12,6 +12,7 @@ public:
 private:
     SuffixTree6::SuffixTree6Edge* m_lastInternalNode;
     SuffixTree6::SuffixTree6Edge* m_nextStart;
+    unsigned int m_nextDepth;
     friend class SuffixTree6;
 #ifdef _DEBUG
     int m_extensionCount;

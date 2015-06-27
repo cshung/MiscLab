@@ -25,7 +25,6 @@ private:
         string m_edgeLabel;
         SuffixTree6Edge* m_suffixLink;
         map<char, SuffixTree6Edge*> m_children;
-        int m_stringDepth;
     };
 
     SuffixTree6Edge* m_root;

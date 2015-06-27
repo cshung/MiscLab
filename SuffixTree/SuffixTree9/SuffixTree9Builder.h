@@ -12,6 +12,7 @@ public:
 private:
     SuffixTree9::SuffixTree9Edge* m_lastInternalNode;
     SuffixTree9::SuffixTree9Edge* m_nextStart;
+    unsigned int m_nextDepth;
     SuffixTree9::SuffixTree9Edge* m_fullStringLeaf;
     friend class SuffixTree9;
 

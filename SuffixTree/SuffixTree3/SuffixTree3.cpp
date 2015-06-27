@@ -70,38 +70,29 @@ bool SuffixTree3::Add(const string key)
     if (treeEdgeCursor == treeCursor->m_edgeLabel.length())
     {
         // We end up at a node
-        if (treeCursor == this->m_root)
+        if (treeCursor != this->m_root && treeCursor->m_children.size() == 0)
         {
-            // I have no choice but to branch out for the root node
-            SuffixTree3::SuffixTree3Edge* newEdge = new SuffixTree3::SuffixTree3Edge();
-            newEdge->m_edgeLabel = key;
-            this->m_root->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(key[0], newEdge));
+            // We have reached a leaf - and therefore we will apply the leaf extension rule
+            treeCursor->m_edgeLabel += characterToExtend;
         }
         else
         {
-            if (treeCursor->m_children.size() == 0)
+            map<char, SuffixTree3::SuffixTree3Edge*>::iterator probe = treeCursor->m_children.find(characterToExtend);
+            if (probe == treeCursor->m_children.end())
             {
-                // We have reached a leaf - and therefore we will apply the leaf extension rule
-                treeCursor->m_edgeLabel += characterToExtend;
+                // We have reached a non-leaf node - and the tree does not extend with our character
+                // Therefore we will apply the split rule
+                SuffixTree3::SuffixTree3Edge* newEdge = new SuffixTree3::SuffixTree3Edge();
+                newEdge->m_edgeLabel = characterToExtend;
+                treeCursor->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(characterToExtend, newEdge));
             }
             else
             {
-                map<char, SuffixTree3::SuffixTree3Edge*>::iterator probe = treeCursor->m_children.find(characterToExtend);
-                if (probe == treeCursor->m_children.end())
-                {
-                    // We have reached a non-leaf node - and the tree does not extend with our character
-                    // Therefore we will apply the split rule
-                    SuffixTree3::SuffixTree3Edge* newEdge = new SuffixTree3::SuffixTree3Edge();
-                    newEdge->m_edgeLabel = characterToExtend;
-                    treeCursor->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(characterToExtend, newEdge));
-                }
-                else
-                {
-                    // We have reached a non-leaf node - and the tree extends with our character
-                    // Therefore we will apply the no-op rule
-                }
+                // We have reached a non-leaf node - and the tree extends with our character
+                // Therefore we will apply the no-op rule
             }
         }
+
     }
     else
     {
@@ -131,7 +122,7 @@ bool SuffixTree3::Add(const string key)
             treeCursor->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(characterToExtend, newEdge));
         }
     }
-    
+
     return false;
 }
 

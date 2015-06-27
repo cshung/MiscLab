@@ -27,7 +27,6 @@ private:
         unsigned int length();
         SuffixTree7Edge* m_suffixLink;
         map<char, SuffixTree7Edge*> m_children;
-        int m_stringDepth;
     };
 
     SuffixTree7Edge* m_root;
