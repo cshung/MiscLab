@@ -130,8 +130,8 @@ int main()
     TestSuffixTree4();
     TestSuffixTree5();
     TestSuffixTree6();
-    */
     TestSuffixTree7();
+    */
     TestSuffixTree();
     return 0;
 }
