@@ -7,15 +7,14 @@ using namespace std;
 class SuffixTree6Builder
 {
 public:
-    SuffixTree6Builder();
-    void BuildSuffixTree(string input, SuffixTree6* suffixTree);
+    SuffixTree6Builder(string& input);
+    void BuildSuffixTree(SuffixTree6* suffixTree);
 private:
+    string& m_input;
     SuffixTree6::SuffixTree6Edge* m_lastInternalNode;
     SuffixTree6::SuffixTree6Edge* m_nextStart;
     unsigned int m_nextDepth;
     friend class SuffixTree6;
-
-    string m_input;
 #ifdef _DEBUG
     int m_extensionCount;
     int m_lastInternalNodeBirthday;

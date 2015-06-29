@@ -7,9 +7,10 @@ using namespace std;
 class SuffixTree5Builder
 {
 public:
-    SuffixTree5Builder();
-    void BuildSuffixTree(string input, SuffixTree5* suffixTree);
+    SuffixTree5Builder(string& input);
+    void BuildSuffixTree(SuffixTree5* suffixTree);
 private:
+    string& m_input;
     SuffixTree5::SuffixTree5Edge* m_lastInternalNode;
     SuffixTree5::SuffixTree5Edge* m_nextStart;
     unsigned int m_nextDepth;

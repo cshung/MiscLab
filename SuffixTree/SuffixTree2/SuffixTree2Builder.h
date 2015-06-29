@@ -7,5 +7,8 @@ using namespace std;
 class SuffixTree2Builder
 {
 public:
-    void BuildSuffixTree(string input, SuffixTree2* suffixTree);
+    SuffixTree2Builder(string& input);
+    void BuildSuffixTree(SuffixTree2* suffixTree);
+private:
+    string& m_input;
 };

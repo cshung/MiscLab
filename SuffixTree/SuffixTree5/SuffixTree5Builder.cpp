@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-SuffixTree5Builder::SuffixTree5Builder() : m_lastInternalNode(nullptr), m_nextStart(nullptr)
+SuffixTree5Builder::SuffixTree5Builder(string& input) : m_input(input), m_lastInternalNode(nullptr), m_nextStart(nullptr)
 #ifdef _DEBUG
 , m_extensionCount(0)
 , m_lastInternalNodeBirthday(-1)
@@ -12,8 +12,9 @@ SuffixTree5Builder::SuffixTree5Builder() : m_lastInternalNode(nullptr), m_nextSt
 
 }
 
-void SuffixTree5Builder::BuildSuffixTree(string s, SuffixTree5* suffixTree)
+void SuffixTree5Builder::BuildSuffixTree(SuffixTree5* suffixTree)
 {
+    string& s = this->m_input;
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         this->m_nextStart = suffixTree->m_root;

@@ -49,73 +49,78 @@ void TestCompressedTrie()
 // For Post 4
 void TestSuffixTree1()
 {
-    SuffixTree1Builder builder;
+    string s = "Hello_world_to_suffix_tree";
+    SuffixTree1Builder builder(s);
     SuffixTree1 suffixTree;
-    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
 // For Post 5
 void TestSuffixTree2()
 {
-    SuffixTree2Builder builder;
+    string s = "Hello_world_to_suffix_tree";
+    SuffixTree2Builder builder(s);
     SuffixTree2 suffixTree;
-    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
 // For Post 7
 void TestSuffixTree3()
 {
-    SuffixTree3Builder builder;
+    string s = "Hello_world_to_suffix_tree";
+    SuffixTree3Builder builder(s);
     SuffixTree3 suffixTree;
-    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
 // For next post
 void TestSuffixTree4()
 {
-    SuffixTree4Builder builder;
+    string s = "Hello_world_to_suffix_tree";
+    SuffixTree4Builder builder(s);
     SuffixTree4 suffixTree;
-    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
 void TestSuffixTree5()
 {
-    SuffixTree5Builder builder;
+    string s = "Hello_world_to_suffix_tree";
+    SuffixTree5Builder builder(s);
     SuffixTree5 suffixTree;
-    builder.BuildSuffixTree("Hello_world_to_suffix_tree", &suffixTree);
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show() << endl;
 }
 
 // For next next next post
 void TestSuffixTree6()
 {
-    SuffixTree6Builder builder;
-    SuffixTree6 suffixTree;
     string s = "Hello_world_to_suffix_tree";
-    builder.BuildSuffixTree(s, &suffixTree);
+    SuffixTree6Builder builder(s);
+    SuffixTree6 suffixTree;
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show(s) << endl;
 }
 
 // For next next next post
 void TestSuffixTree7()
 {
-    SuffixTree7Builder builder;
-    SuffixTree7 suffixTree;
     string s = "Hello_world_to_suffix_tree";
-    builder.BuildSuffixTree(s, &suffixTree);
+    SuffixTree7Builder builder(s);
+    SuffixTree7 suffixTree;
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show(s) << endl;
 }
 
 void TestSuffixTree()
 {
-    SuffixTreeBuilder builder;
-    SuffixTree suffixTree;
     string s = "Hello_world_to_suffix_tree";
-    builder.BuildSuffixTree(s, &suffixTree);
+    SuffixTreeBuilder builder(s);
+    SuffixTree suffixTree;
+    builder.BuildSuffixTree(&suffixTree);
     cout << suffixTree.Show(s, &builder) << endl;
 }
 

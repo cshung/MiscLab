@@ -3,8 +3,14 @@
 #include <iostream>
 using namespace std;
 
-void SuffixTree2Builder::BuildSuffixTree(string s, SuffixTree2* suffixTree)
+SuffixTree2Builder::SuffixTree2Builder(string& input) : m_input(input)
 {
+
+}
+
+void SuffixTree2Builder::BuildSuffixTree(SuffixTree2* suffixTree)
+{
+    string& s = this->m_input;
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         for (unsigned int start = 0; start < end; start++)
