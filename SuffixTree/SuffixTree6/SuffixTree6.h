@@ -14,7 +14,7 @@ class SuffixTree6
 public:
     SuffixTree6();
     ~SuffixTree6();
-    bool  Add(int keyBegin, int keyEnd, SuffixTree6Builder* suffixTreeBuilder);
+    void  Add(int keyBegin, int keyEnd, SuffixTree6Builder* suffixTreeBuilder);
     string Show(string& input) const;
 private:
     class SuffixTree6Edge

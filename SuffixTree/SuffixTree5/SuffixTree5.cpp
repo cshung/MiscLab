@@ -30,7 +30,7 @@ SuffixTree5::SuffixTree5Edge::~SuffixTree5Edge()
     }
 }
 
-bool SuffixTree5::Add(const string key, SuffixTree5Builder* builder)
+void SuffixTree5::Add(const string key, SuffixTree5Builder* builder)
 {
 #ifdef _DEBUG
     builder->m_extensionCount++;
@@ -153,8 +153,6 @@ bool SuffixTree5::Add(const string key, SuffixTree5Builder* builder)
 #endif
         builder->m_lastInternalNode = treeCursor;
     }
-    
-    return false;
 }
 
 string SuffixTree5::Show() const

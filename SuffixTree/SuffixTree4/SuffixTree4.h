@@ -14,7 +14,7 @@ class SuffixTree4
 public:
     SuffixTree4();
     ~SuffixTree4();
-    bool  Add(const string key, SuffixTree4Builder* suffixTreeBuilder);
+    void  Add(const string key, SuffixTree4Builder* suffixTreeBuilder);
     string Show() const;
 private:
     class SuffixTree4Edge

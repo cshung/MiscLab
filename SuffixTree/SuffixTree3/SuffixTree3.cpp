@@ -29,7 +29,7 @@ SuffixTree3::SuffixTree3Edge::~SuffixTree3Edge()
     }
 }
 
-bool SuffixTree3::Add(const string key)
+void SuffixTree3::Add(const string key)
 {
     SuffixTree3::SuffixTree3Edge* treeCursor = this->m_root;
     unsigned int treeEdgeCursor = 0;
@@ -122,8 +122,6 @@ bool SuffixTree3::Add(const string key)
             treeCursor->m_children.insert(pair<char, SuffixTree3::SuffixTree3Edge*>(characterToExtend, newEdge));
         }
     }
-
-    return false;
 }
 
 string SuffixTree3::Show() const

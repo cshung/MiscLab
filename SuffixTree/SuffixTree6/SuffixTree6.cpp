@@ -36,7 +36,7 @@ unsigned int SuffixTree6::SuffixTree6Edge::length()
     return this->m_end - this->m_begin;
 }
 
-bool SuffixTree6::Add(int keyBegin, int keyEnd, SuffixTree6Builder* builder)
+void SuffixTree6::Add(int keyBegin, int keyEnd, SuffixTree6Builder* builder)
 {
 #ifdef _DEBUG
     builder->m_extensionCount++;
@@ -173,8 +173,6 @@ bool SuffixTree6::Add(int keyBegin, int keyEnd, SuffixTree6Builder* builder)
 #endif
         builder->m_lastInternalNode = treeCursor;
     }
-    
-    return false;
 }
 
 string SuffixTree6::Show(string& input) const
