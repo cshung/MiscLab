@@ -41,7 +41,7 @@ SuffixTree1::SuffixTree1Edge::~SuffixTree1Edge()
     }
 }
 
-bool SuffixTree1::Add(const string key)
+void SuffixTree1::Add(const string key)
 {
     SuffixTree1::SuffixTree1Node* currentNode = this->m_root;
     unsigned int keyCursor = 0;
@@ -56,7 +56,6 @@ bool SuffixTree1::Add(const string key)
             newEdge->m_edgeLabel = key.substr(keyCursor);
             newEdge->m_child = newLeaf;
             currentNode->m_children.insert(pair<char, SuffixTree1::SuffixTree1Edge*>(currentCharacter, newEdge));
-            return true;
         }
         else
         {
@@ -85,15 +84,11 @@ bool SuffixTree1::Add(const string key)
 
                     newNode->m_children.insert(pair<char, SuffixTree1::SuffixTree1Edge*>(edgeSuffix[0], oldEdge));
                     newNode->m_children.insert(pair<char, SuffixTree1::SuffixTree1Edge*>(key[keyCursor], newEdge));
-
-                    return true;
                 }
             }
             currentNode = currentEdge->m_child;
         }
     }
-
-    return false;
 }
 
 string SuffixTree1::Show() const

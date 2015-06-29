@@ -15,7 +15,7 @@ class SuffixTree1
 public:
     SuffixTree1();
     ~SuffixTree1();
-    bool  Add(const string key);
+    void Add(const string key);
     string Show() const;
 private:
     class SuffixTree1Edge;
