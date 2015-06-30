@@ -56,6 +56,11 @@ void SuffixTree6::Add(int keyBegin, int keyEnd, SuffixTree6Builder* builder)
         char currentCharacter = builder->m_input[keyBegin + keyCursor];
         if (treeEdgeCursor == treeCursor->length())
         {
+            if (treeCursor->m_suffixLink != nullptr)
+            {
+                builder->m_nextStart = treeCursor->m_suffixLink;
+                builder->m_nextDepth = keyCursor - 1;
+            }
             map<char, SuffixTree6::SuffixTree6Edge*>::iterator probe = treeCursor->m_children.find(currentCharacter);
             if (probe == treeCursor->m_children.end())
             {
@@ -66,11 +71,6 @@ void SuffixTree6::Add(int keyBegin, int keyEnd, SuffixTree6Builder* builder)
                 SuffixTree6Edge* currentEdge = probe->second;                
                 treeCursor = currentEdge;
                 treeEdgeCursor = 0;
-                if (currentEdge->m_suffixLink)
-                {
-                    builder->m_nextStart = currentEdge->m_suffixLink;
-                    builder->m_nextDepth = keyCursor;
-                }
             }
         }
         else
@@ -179,7 +179,6 @@ string SuffixTree6::Show(string& input) const
 {
     map<SuffixTree6::SuffixTree6Edge*, int> nodeIds;
     list<pair<SuffixTree6::SuffixTree6Edge*, SuffixTree6::SuffixTree6Edge*>> suffixLinks;
-    map<int, int> stringDepths;
     list<pair<int, pair<string, int>>> edges;
     queue<pair<int, SuffixTree6::SuffixTree6Edge*>> bfsQueue;
     int nodeId = 0;

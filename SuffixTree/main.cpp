@@ -136,7 +136,19 @@ int main()
     TestSuffixTree5();
     TestSuffixTree6();
     TestSuffixTree7();
-    */
     TestSuffixTree();
+    */
+    const unsigned int length = 500;
+    char source[length + 1];
+    for (unsigned int i = 0; i < length; i++)
+    {
+        source[i] = rand() % 26 + 'A';
+    }
+    source[length] = 0;
+    string s = source;
+    SuffixTree7Builder builder(s);
+    SuffixTree7 suffixTree;
+    builder.BuildSuffixTree(&suffixTree);
+    // cout << suffixTree.Show(s, &builder) << endl;
     return 0;
 }

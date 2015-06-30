@@ -6,6 +6,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 
 SuffixTree5::SuffixTree5() : m_root(new SuffixTree5::SuffixTree5Edge())
 {
@@ -50,6 +51,11 @@ void SuffixTree5::Add(const string key, SuffixTree5Builder* builder)
         char currentCharacter = key[keyCursor];
         if (treeEdgeCursor == treeCursor->m_edgeLabel.length())
         {
+            if (treeCursor->m_suffixLink != nullptr)
+            {
+                builder->m_nextStart = treeCursor->m_suffixLink;
+                builder->m_nextDepth = keyCursor - 1;
+            }
             map<char, SuffixTree5::SuffixTree5Edge*>::iterator probe = treeCursor->m_children.find(currentCharacter);
             if (probe == treeCursor->m_children.end())
             {
@@ -60,11 +66,6 @@ void SuffixTree5::Add(const string key, SuffixTree5Builder* builder)
                 SuffixTree5Edge* currentEdge = probe->second;                
                 treeCursor = currentEdge;
                 treeEdgeCursor = 0;
-                if (currentEdge->m_suffixLink)
-                {
-                    builder->m_nextStart = currentEdge->m_suffixLink;
-                    builder->m_nextDepth = keyCursor;
-                }
             }
         }
         else

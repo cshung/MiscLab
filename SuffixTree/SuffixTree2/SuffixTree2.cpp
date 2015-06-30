@@ -56,6 +56,7 @@ void SuffixTree2::Add(const string key)
             newEdge->m_edgeLabel = key.substr(keyCursor);
             newEdge->m_child = newLeaf;
             currentNode->m_children.insert(pair<char, SuffixTree2::SuffixTree2Edge*>(currentCharacter, newEdge));
+            return;
         }
         else
         {
@@ -84,6 +85,7 @@ void SuffixTree2::Add(const string key)
 
                     newNode->m_children.insert(pair<char, SuffixTree2::SuffixTree2Edge*>(edgeSuffix[0], oldEdge));
                     newNode->m_children.insert(pair<char, SuffixTree2::SuffixTree2Edge*>(key[keyCursor], newEdge));
+                    return;
                 }
             }
             currentNode = currentEdge->m_child;

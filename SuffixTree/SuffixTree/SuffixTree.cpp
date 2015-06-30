@@ -69,6 +69,11 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         char currentCharacter = builder->m_input[keyBegin + keyCursor];
         if (treeEdgeCursor == treeCursor->length(this->m_root, builder))
         {
+            if (treeCursor->m_suffixLink != nullptr)
+            {
+                builder->m_nextStart = treeCursor->m_suffixLink;
+                builder->m_nextDepth = keyCursor - 1;
+            }
             map<char, SuffixTree::SuffixTreeEdge*>::iterator probe = treeCursor->m_children.find(currentCharacter);
             if (probe == treeCursor->m_children.end())
             {
@@ -79,11 +84,6 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
                 SuffixTreeEdge* currentEdge = probe->second;                
                 treeCursor = currentEdge;
                 treeEdgeCursor = 0;
-                if (currentEdge->m_suffixLink)
-                {
-                    builder->m_nextStart = currentEdge->m_suffixLink;
-                    builder->m_nextDepth = keyCursor;
-                }
             }
         }
         else
