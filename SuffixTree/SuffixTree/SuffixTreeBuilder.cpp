@@ -15,11 +15,11 @@ SuffixTreeBuilder::SuffixTreeBuilder(string& input) : m_input(input), m_lastInte
 void SuffixTreeBuilder::BuildSuffixTree(SuffixTree* suffixTree)
 {
     string& s = this->m_input;
-    this->m_nextStart = suffixTree->m_root;
-    this->m_nextDepth = 0;
     unsigned int start = 0;
     for (unsigned int end = 1; end <= s.length(); end++)
     {
+        this->m_nextStart = suffixTree->m_root;
+        this->m_nextDepth = 0;
         this->m_currentEnd = end;
         for (; start < end; start++)
         {

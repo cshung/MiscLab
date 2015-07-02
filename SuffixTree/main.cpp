@@ -146,9 +146,6 @@ int main()
     }
     source[length] = 0;
     string s = source;
-    SuffixTree7Builder builder1(s);
-    SuffixTree7 suffixTree1;
-    builder1.BuildSuffixTree(&suffixTree1);
     SuffixTreeBuilder builder(s);
     SuffixTree suffixTree;
     builder.BuildSuffixTree(&suffixTree);
