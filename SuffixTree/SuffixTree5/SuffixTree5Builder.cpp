@@ -18,6 +18,7 @@ void SuffixTree5Builder::BuildSuffixTree(SuffixTree5* suffixTree)
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         this->m_nextStart = suffixTree->m_root;
+        this->m_nextDepth = 0;
         for (unsigned int start = 0; start < end; start++)
         {
             suffixTree->Add(s.substr(start, end - start), this);

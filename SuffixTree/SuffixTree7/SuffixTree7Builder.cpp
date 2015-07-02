@@ -18,6 +18,7 @@ void SuffixTree7Builder::BuildSuffixTree(SuffixTree7* suffixTree)
     for (unsigned int end = 1; end <= s.length(); end++)
     {
         this->m_nextStart = suffixTree->m_root;
+        this->m_nextDepth = 0;
         for (unsigned int start = 0; start < end; start++)
         {
             if (suffixTree->Add(start, end, this))

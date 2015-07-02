@@ -146,8 +146,11 @@ int main()
     }
     source[length] = 0;
     string s = source;
-    SuffixTree7Builder builder(s);
-    SuffixTree7 suffixTree;
+    SuffixTree7Builder builder1(s);
+    SuffixTree7 suffixTree1;
+    builder1.BuildSuffixTree(&suffixTree1);
+    SuffixTreeBuilder builder(s);
+    SuffixTree suffixTree;
     builder.BuildSuffixTree(&suffixTree);
     // cout << suffixTree.Show(s, &builder) << endl;
     return 0;
