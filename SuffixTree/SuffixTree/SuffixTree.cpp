@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cassert>
 
+const bool SuffixTree::verify  = false;
+
 SuffixTree::SuffixTree() : m_root(new SuffixTree::SuffixTreeEdge())
 {
     this->m_root->m_begin = 0;
@@ -18,7 +20,7 @@ SuffixTree::~SuffixTree()
     delete this->m_root;
 }
 
-SuffixTree::SuffixTreeEdge::SuffixTreeEdge() : m_suffixLink(nullptr)
+SuffixTree::SuffixTreeEdge::SuffixTreeEdge() : m_begin(0), m_end(0), m_suffixLink(nullptr)
 {
 
 }
@@ -55,10 +57,19 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
     builder->m_extensionCount++;
 #endif
     // Step 0: Use the suffix link to speed up the search
+
+    SuffixTree::SuffixTreeEdge* shouldReachStart = builder->m_nextStart;
+    unsigned int shouldReachDepth = builder->m_nextDepth;
+
     SuffixTree::SuffixTreeEdge* treeCursor = builder->m_nextStart;
     unsigned int treeEdgeCursor = treeCursor->length(this->m_root, builder);
     unsigned int keyCursor = builder->m_nextDepth;
     unsigned int searchKeyLength = keyEnd - keyBegin - 1;
+
+    // Debug
+    treeCursor = this->m_root;
+    keyCursor = builder->m_nextDepth = 0;
+    treeEdgeCursor = 0;
 
     builder->m_nextStart = this->m_root;
     builder->m_nextDepth = 0;
@@ -69,6 +80,10 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         char currentCharacter = builder->m_input[keyBegin + keyCursor];
         if (treeEdgeCursor == treeCursor->length(this->m_root, builder))
         {
+            if (keyCursor == shouldReachDepth)
+            {
+                assert(treeCursor == shouldReachStart); // "The suffix link should be a proper shortcut"
+            }
             if (treeCursor->m_suffixLink != nullptr)
             {
                 builder->m_nextStart = treeCursor->m_suffixLink;
@@ -89,17 +104,19 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         else
         {
             unsigned int move = min(searchKeyLength - keyCursor, treeCursor->length(this->m_root, builder));
-#ifdef _DEBUG
-            unsigned int myTreeEdgeCursor = treeEdgeCursor;
-            unsigned int myKeyCursor = keyCursor;
-            for (myTreeEdgeCursor = 0; myTreeEdgeCursor < move; myKeyCursor++, myTreeEdgeCursor++)
+            if (SuffixTree::verify)
             {
-                if (builder->m_input[keyBegin + myKeyCursor] != builder->m_input[treeCursor->m_begin + myTreeEdgeCursor])
+                unsigned int myTreeEdgeCursor = treeEdgeCursor;
+                unsigned int myKeyCursor = keyCursor;
+                for (myTreeEdgeCursor = 0; myTreeEdgeCursor < move; myKeyCursor++, myTreeEdgeCursor++)
                 {
-                    assert(false); // The string except the last character should always in the tree"
+                    if (builder->m_input[keyBegin + myKeyCursor] != builder->m_input[treeCursor->m_begin + myTreeEdgeCursor])
+                    {
+                        assert(false); // The string except the last character should always in the tree"
+                    }
                 }
             }
-#endif
+
             keyCursor += move;
             treeEdgeCursor += move;
         }

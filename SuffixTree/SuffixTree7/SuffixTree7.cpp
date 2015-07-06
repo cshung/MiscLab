@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <cassert>
 
+const bool SuffixTree7::verify  = false;
+
 SuffixTree7::SuffixTree7() : m_root(new SuffixTree7::SuffixTree7Edge())
 {
     this->m_root->m_begin = 0;
@@ -18,7 +20,7 @@ SuffixTree7::~SuffixTree7()
     delete this->m_root;
 }
 
-SuffixTree7::SuffixTree7Edge::SuffixTree7Edge() : m_suffixLink(nullptr)
+SuffixTree7::SuffixTree7Edge::SuffixTree7Edge() : m_begin(0), m_end(0), m_suffixLink(nullptr)
 {
 
 }
@@ -77,17 +79,18 @@ bool SuffixTree7::Add(int keyBegin, int keyEnd, SuffixTree7Builder* builder)
         else
         {
             unsigned int move = min(searchKeyLength - keyCursor, treeCursor->length());
-#ifdef _DEBUG
-            unsigned int myTreeEdgeCursor = treeEdgeCursor;
-            unsigned int myKeyCursor = keyCursor;
-            for (myTreeEdgeCursor = 0; myTreeEdgeCursor < move; myKeyCursor++, myTreeEdgeCursor++)
+            if (SuffixTree7::verify)
             {
-                if (builder->m_input[keyBegin + myKeyCursor] != builder->m_input[treeCursor->m_begin + myTreeEdgeCursor])
+                unsigned int myTreeEdgeCursor = treeEdgeCursor;
+                unsigned int myKeyCursor = keyCursor;
+                for (myTreeEdgeCursor = 0; myTreeEdgeCursor < move; myKeyCursor++, myTreeEdgeCursor++)
                 {
-                    assert(false); // The string except the last character should always in the tree"
+                    if (builder->m_input[keyBegin + myKeyCursor] != builder->m_input[treeCursor->m_begin + myTreeEdgeCursor])
+                    {
+                        assert(false); // The string except the last character should always in the tree"
+                    }
                 }
             }
-#endif
             keyCursor += move;
             treeEdgeCursor += move;
         }

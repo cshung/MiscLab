@@ -34,5 +34,7 @@ private:
     SuffixTreeEdge* m_root;
 
     friend class SuffixTreeBuilder;
+
+    static const bool verify;
 };
 

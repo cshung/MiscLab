@@ -32,5 +32,7 @@ private:
     SuffixTree7Edge* m_root;
 
     friend class SuffixTree7Builder;
+
+    static const bool verify;
 };
 

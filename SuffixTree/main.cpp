@@ -140,6 +140,7 @@ int main()
     TestSuffixTree();
     */
     
+    cout << "Enter the length of the string: ";
     unsigned int length;
     cin >> length;
     char* source = new char[length + 1];
