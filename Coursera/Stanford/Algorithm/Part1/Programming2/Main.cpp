@@ -3,80 +3,82 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
 typedef long long int64;
 
-int64 inversion(int* input, int length);
-int64 inversion(int* input, int* output, int* buffer, int begin, int end);
-
-int64 inversion(int* input, int length)
+void QuickSort(int* data, int l, int r, int64& comparisonCount, int problemNumber)
 {
-    int* output = new int[length];
-    int* buffer = new int[length];
-    int64 result = inversion(input, output, buffer, 0, length);
-    delete[] output;
-    delete[] buffer;
-    return result;
-}
-
-int64 inversion(int* input, int* output, int* buffer, int begin, int end)
-{
-    if (end - begin == 1)
+    if (r <= l)
     {
-        output[begin] = input[begin];
-        // With only one element, there is nothing to sort, and there is no inversion
-        return 0;
+        return;
     }
-    else
+    comparisonCount += (r - l);
+
+    if (problemNumber == 2)
     {
-        assert(end - begin > 1);
-        int mid = (begin + end) / 2;
-        int64 inversion1 = inversion(input, buffer, output, begin, mid);
-        int64 inversion2 = inversion(input, buffer, output, mid, end);
-        int i = begin;
-        int j = mid;
-        int k = begin;
-        int64 inversion3 = 0;
-        while ((i < mid) || (j < end))
+        swap(data[l], data[r]);
+    }
+    else if (problemNumber == 3)
+    {
+        int three[3];
+        int index[3];
+        index[0] = l;
+        index[1] = r;
+        index[2] = (l + r)/2;
+        for (int i = 0; i < 3; i++)
         {
-            if (i < mid && j < end)
+            three[i] = data[index[i]];
+        }
+        for (int p = 0; p < 3; p++)
+        {
+            for (int q = p + 1; q < 3; q++)
             {
-                if (buffer[i] < buffer[j])
+                if (three[p] > three[q])
                 {
-                    output[k++] = buffer[i++];
+                    swap(three[p], three[q]);
+                    swap(index[p], index[q]);
                 }
-                else
-                {
-                    assert(buffer[i] > buffer[j]);
-                    inversion3 += mid - i;
-                    output[k++] = buffer[j++];
-                }
-            }
-            else if (i < mid)
-            {
-                output[k++] = buffer[i++];
-            }
-            else
-            {
-                assert(j < end);
-                output[k++] = buffer[j++];
             }
         }
-        return inversion1 + inversion2 + inversion3;
+        swap(data[l], data[index[1]]);
     }
+    int p = data[l];
+    int i = l + 1;
+    for (int j = l + 1; j <= r; j++)
+    {
+        if (data[j] < p)
+        {
+            swap(data[j], data[i]);
+            i++;
+        }
+    }
+    swap(data[l], data[i - 1]);
+    QuickSort(data, l, i - 2, comparisonCount, problemNumber);
+    QuickSort(data, i, r, comparisonCount, problemNumber);
 }
 
 int main()
 {
-    ifstream fin("integerArray.txt");
-    const int size = 100000;
+    ifstream fin("QuickSort.txt");
+    const int size = 10000;
+    int source[size];
     int data[size];
     for (int i = 0; i < size; i++)
     {
-        fin >> data[i];
+        fin >> source[i];
     }
     fin.close();
-    cout << inversion(data, size) << endl;
+    for (int problemNumber = 1; problemNumber <= 3; problemNumber++)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            data[i] = source[i];
+        }
+        int64 comparisonCount = 0;
+        QuickSort(data, 0, size - 1, comparisonCount, problemNumber);
+        cout << comparisonCount << endl;
+    }
 }
