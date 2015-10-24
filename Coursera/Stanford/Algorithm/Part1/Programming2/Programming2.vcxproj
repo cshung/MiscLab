@@ -79,7 +79,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="IntegerArray.txt">
+    <Text Include="QuickSort.txt">
       <DeploymentContent>true</DeploymentContent>
     </Text>
   </ItemGroup>
