@@ -1,4 +1,4 @@
-﻿namespace ConsoleApplication2
+﻿namespace NumericalPolynomialSolver
 {
     using System;
     using System.Collections.Generic;
@@ -70,22 +70,19 @@
                     }
                 }
 
-                if (coefficients[0] > 0)
+                // For sufficiently large x, the polynomial should grow to expected sign
+                double probe = Math.Max(1, extremaX.Count > 0 ? extremaX[extremaX.Count - 1] : 1);
+                while (Eval(coefficients, probe) * expectedSignOnPositiveInfinity < 0)
                 {
-                    // For sufficiently large x, the polynomial should grow to expected sign
-                    double probe = Math.Max(1, extremaX.Count > 0 ? extremaX[extremaX.Count - 1] : 1);
-                    while (Eval(coefficients, probe) * expectedSignOnPositiveInfinity < 0)
-                    {
-                        probe *= 2;
-                    }
-                    extremaX.Add(probe);
-                    probe = Math.Min(-1, extremaX.Count > 0 ? extremaX[0] : -1);
-                    while (Eval(coefficients, probe) * expectedSignOnNegativeInfinity < 0)
-                    {
-                        probe *= 2;
-                    }
-                    extremaX.Insert(0, probe);
+                    probe *= 2;
                 }
+                extremaX.Add(probe);
+                probe = Math.Min(-1, extremaX.Count > 0 ? extremaX[0] : -1);
+                while (Eval(coefficients, probe) * expectedSignOnNegativeInfinity < 0)
+                {
+                    probe *= 2;
+                }
+                extremaX.Insert(0, probe);
 
                 for (int i = 0; i < extremaX.Count - 1; i++)
                 {
