@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity type="win32" name="ManagedLibrary" version="1.0.0.0" />
+  <clrClass clsid="{b015d72f-a8ea-4f8e-925a-d95cc25c51f9}" progid="ManagedLibrary.ManagedComponent" threadingModel="Both" name="ManagedLibrary.ManagedComponent" runtimeVersion="v4.0.30319">
+  </clrClass>
+</assembly>
