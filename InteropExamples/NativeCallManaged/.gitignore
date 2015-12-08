@@ -3,3 +3,6 @@ ManagedLibrary.tlb
 managedlibrary.tlh
 NativeApplication.exe
 NativeApplication.obj
+NativeApplication.ilk
+NativeApplication.pdb
+vc120.pdb
