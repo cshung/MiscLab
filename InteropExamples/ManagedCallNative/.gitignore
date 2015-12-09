@@ -7,3 +7,5 @@ NativeLibrary.dll
 NativeLibrary.exp
 NativeLibrary.lib
 NativeLibrary.obj
+NativeInterface.dll
+NativeInterface.tlb

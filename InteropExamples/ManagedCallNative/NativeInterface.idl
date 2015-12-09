@@ -1,7 +1,11 @@
 import "Unknwn.idl";
 
-[object, uuid(d1511a66-54c9-4dab-a324-a5b0ac990d47)]
-interface INativeComponent : IUnknown
+[uuid(f60db640-bf50-4195-82e4-bfc61c32b2e8)]
+library NativeInterface
 {
-  HRESULT NativeMethod([in] long input, [out] long* output);
+    [object, uuid(d1511a66-54c9-4dab-a324-a5b0ac990d47)]
+    interface INativeComponent : IUnknown
+    {
+      HRESULT NativeMethod([in] long input, [out] long* output);
+    }
 }

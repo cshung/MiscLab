@@ -1,3 +1,4 @@
 midl NativeInterface.idl
 cl /LD NativeLibrary.cpp
-csc ManagedApplication.cs
+tlbimp NativeInterface.tlb
+csc /reference:NativeInterface.dll ManagedApplication.cs
