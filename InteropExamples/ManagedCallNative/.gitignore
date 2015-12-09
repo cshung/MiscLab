@@ -1,0 +1,9 @@
+dlldata.c
+ManagedApplication.exe
+NativeInterface.h
+NativeInterface_i.c
+NativeInterface_p.c
+NativeLibrary.dll
+NativeLibrary.exp
+NativeLibrary.lib
+NativeLibrary.obj
