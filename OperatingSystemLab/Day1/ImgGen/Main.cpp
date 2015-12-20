@@ -32,13 +32,14 @@ int main(int argc, char** argv)
   const int program_length = _countof(program);
   const int boot_signature_length = _countof(boot_signature);
 
-  FILE* imgFile = fopen("disk.img", "w");
+  // Be careful with file mode
+  FILE* imgFile = fopen("disk.img", "wb");
 
   memcpy(disk, program, program_length);
-  memcpy(disk + 509, boot_signature, boot_signature_length);
+  memcpy(disk + 510, boot_signature, boot_signature_length);
 
   int written = 0;
-  while (written < program_length)
+  while (written < disk_length)
   {
     written += fwrite(disk + written, sizeof(char), disk_length - written, imgFile);
   }
