@@ -4,7 +4,6 @@
 
 int main(int argc, char** argv)
 {
-
   /*
    * If I run these code directly in Windows, it crashes, for I believe Windows 
    * do not allow accessing the BIOS directly, that make sense
@@ -15,18 +14,26 @@ int main(int argc, char** argv)
   /*
   __asm
   {
-    mov ah, 0x0a
+    mov ah, 0x0e
     mov al, 0x41
-    mov bh, 0
-    mov bl, 3
+    mov bx, 15
     int 0x10
     hlt
+lp: jmp lp   
   }
-  */
+   */
   int disk_length = 80 * 18 * 512 * 2;
   char* disk = (char*)calloc(disk_length, sizeof(char));
 
-  const char program[] = {0xb4,0x0a,0xb0,0x41,0xb7,0x00,0xb3,0x03,0xcd,0x10,0xf4};
+  const char program[] =
+  {
+    0xb4, 0x0e,             //     mov ah, 0EH
+    0xb0, 0x41,             //     mov al, 41H
+    0x66, 0xbb, 0x0f, 0x00, //     mov bx, 0FH
+    0xcd, 0x10,             //     int 10H
+    0xf4,                   //     hlt
+    0xeb, 0xfe              // lp: jmp lp
+  };
   const char boot_signature[] = {0x55, 0xAA};
 
   const int program_length = _countof(program);
