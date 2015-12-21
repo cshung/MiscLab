@@ -29,7 +29,7 @@ lp: jmp lp
   {
     0xb4, 0x0e,             //     mov ah, 0EH
     0xb0, 0x41,             //     mov al, 41H
-    0x66, 0xbb, 0x0f, 0x00, //     mov bx, 0FH
+    0xbb, 0x0f, 0x00,       //     mov bx, 0FH
     0xcd, 0x10,             //     int 10H
     0xf4,                   //     hlt
     0xeb, 0xfe              // lp: jmp lp
