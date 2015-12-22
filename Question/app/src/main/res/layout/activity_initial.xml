@@ -11,16 +11,19 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="0dp"
-        android:layout_weight="0.9"
+        android:layout_weight="0.7734375"
         android:padding="0dp"
+        android:scaleType="fitXY"
         android:src="@drawable/bg" />
 
-    <Button
-        android:id="@+id/button"
+    <TextView
+        android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="0dp"
-        android:layout_weight="0.1"
+        android:layout_weight="0.2265625"
         android:padding="0dp"
-        android:text="Hello, I am a Button" />
+        android:text="Hello, I am a Button"
+        android:background="#ce1919"
+        android:gravity="center_vertical|center_horizontal" />
 </LinearLayout>
