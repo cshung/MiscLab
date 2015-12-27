@@ -10,13 +10,8 @@
     {
         private static Complex Integrand(Complex input)
         {
-            // [(w - 50)(w + 50)]^(-2/3)
-            Complex inside = (input - 50) * (input + 50);
-            return Complex.Pow(inside, -2.0 / 3.0);
-            // Experiment, let integrate w = z instead and see if the output make sense
-            // The good thing about trapezoidal rule is that its result is *exact* for linear function, so we can check if the answer make sense
-            // Experiment passed, it does indeed give us what we wanted
-            // return input;
+            // (w - 50)^(-2/3) w^(-2/3) (w + 50)^(-2/3)
+            return Complex.Pow((input + 50), -2.0 / 3.0) * Complex.Pow(input, -2.0 / 3.0) * Complex.Pow((input - 50), -2.0 / 3.0);
         }
 
         private static IEnumerable<Tuple<Complex, Complex>> TrapezoidReal(Complex integrateSrc, Complex integrateDst, int numIntervals, Func<Complex, Complex> f)
@@ -58,7 +53,7 @@
         private static void Main(string[] args)
         {
             // This avoid evaluating the integrand at the poles
-            double shift = 0.1;
+            double shift = 0.0;
 
             // The program implements the Schwarz-Christoffel Mapping
             // The function build a conformal mapping that maps the upper 
@@ -80,9 +75,6 @@
             // Sample every 1,000 elements for the marks
             var xMarks = Sample(xAxis, 1000);
             var yMarks = Sample(yAxis, 1000);
-
-            //PrintPoints(xAxis);
-            //PrintPoints(yAxis);
 
             // Build the horizontal grid lines
             foreach (var yMark in yMarks)
