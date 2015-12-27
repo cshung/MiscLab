@@ -53,7 +53,7 @@
         private static void Main(string[] args)
         {
             // This avoid evaluating the integrand at the poles
-            double shift = 0.0;
+            double shift = 0.1;
 
             // The program implements the Schwarz-Christoffel Mapping
             // The function build a conformal mapping that maps the upper 
