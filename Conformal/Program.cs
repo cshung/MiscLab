@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Numerics;
 
-    // There is still some bugs, but not sure what is that ...
+    // http://math.aalto.fi/~mnummeli/tutkimus/esitelma071015.pdf
     internal static class Program
     {
         private static Complex Integrand(Complex input)
