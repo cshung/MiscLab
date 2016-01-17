@@ -107,9 +107,18 @@ bool splay_tree::try_delete(int key)
     }
     else
     {
-        splay_tree::splay_tree_node* new_root = this->splay(this->m_root->m_left, ~(1 << 31));
-        assert(new_root->m_right == nullptr);
-        new_root->m_right = this->m_root->m_right;
+        splay_tree::splay_tree_node* new_root = nullptr;
+        if (this->m_root->m_left != nullptr)
+        {
+            new_root = this->splay(this->m_root->m_left, ~(1 << 31));
+            assert(new_root->m_right == nullptr);
+            new_root->m_right = this->m_root->m_right;
+        }
+        else
+        {
+            new_root = this->m_root->m_right;
+        }
+
         delete this->m_root;
         this->m_root = new_root;
         return true;
