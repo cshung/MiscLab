@@ -143,6 +143,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="splay_tree.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="splay_tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
