@@ -12,7 +12,7 @@ class rational(object):
         return cls(i, 1)
 
     @classmethod
-    def from_numerator_denominator(cls,  numerator,  denonminator):
+    def from_numerator_denominator(cls,  numerator,  denominator):
         return cls(numerator, denominator)
 
     @staticmethod
