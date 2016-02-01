@@ -7,7 +7,10 @@ class polynomial(object):
         self.__coefficients = coefficients
 
     # expecting a string like 2x^2 + 3x - 2
-    # The grammar of a polynomial is as follow
+    # The grammar of a polynomial is as follow:
+    #
+    # Currently the grammar has a bug, it does not support representing -2 as a literal
+    #
     # <polynomial> := <term>
     # <polynomial> := <term> + <polynomial>
     # <polynomial> := <term> - <polynomial>
@@ -19,10 +22,12 @@ class polynomial(object):
     @classmethod
     def from_string(cls, s):
         parser = polynomial.__parser(s)
-        (a, b, c) = parser._parser__parse_term()
+        (a, [(b, c),(d, e)]) = parser.parse()
         print a
         print b
         print c
+        print d
+        print e
         return cls([])
 
     tokens = enum('RBRACKET','LBRACKET','SLASH','CARET', 'X', 'PLUS', 'MINUS', 'EOF', 'INTEGER', 'ERROR')
@@ -78,7 +83,28 @@ class polynomial(object):
             self.__token = self.__scanner.scan()
 
         def parse(self):
-            (succeed, term) = self.__parse_term()
+            (succeed, term_coefficient, term_power) = self.__parse_term()
+            first_term = (term_coefficient, term_power)
+            if succeed:
+                if (self.__token[0] == polynomial.tokens.PLUS):
+                    self.__scan()
+                    (succeed, remaining_terms) = self.parse()
+                    if succeed:
+                        remaining_terms.append(first_term)
+                        return (True, remaining_terms)
+                elif (self.__token[0] == polynomial.tokens.MINUS):
+                    self.__scan()
+                    (succeed, remaining_terms) = self.parse()
+                    if succeed:
+                        remaining_leading_term = remaining_terms[len(remaining_terms) - 1]
+                        remaining_leading_term_coefficient = remaining_leading_term[0]
+                        remaining_leading_term_coefficient = rational.multiply(rational.from_integer(-1), remaining_leading_term_coefficient)
+                        remaining_leading_term = (remaining_leading_term_coefficient, remaining_leading_term[1])
+                        remaining_terms[len(remaining_terms) - 1] = remaining_leading_term
+                        remaining_terms.append(first_term)
+                        return (True, remaining_terms)
+                elif (self.__token[0] == polynomial.tokens.EOF):
+                    return (True, [first_term])
 
         def __parse_term(self):
             (succeed, coefficient) = self.__parse_rational()
@@ -115,6 +141,6 @@ class polynomial(object):
             elif (self.__token[0] == polynomial.tokens.INTEGER):
                 value = self.__token[1]
                 self.__scan()
-                return (True, rational.from_integer())
+                return (True, rational.from_integer(value))
 
             return (False, None)

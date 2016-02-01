@@ -32,6 +32,10 @@ class rational(object):
         return rational(operand1.__numerator * operand2.__denominator, operand1.__denominator * operand2.__numerator)
 
     def __gcd(self, a, b):
+        if (a < 0):
+            a = -a
+        if (b < 0):
+            b = -b
         if (b > a):
             return self.__gcd(b, a)
         else:
