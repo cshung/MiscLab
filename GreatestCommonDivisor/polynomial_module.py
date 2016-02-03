@@ -10,6 +10,7 @@ class polynomial(object):
     # The grammar of a polynomial is as follow:
     #
     # Currently the grammar has a bug, it does not support representing -2 as a literal
+    # One also need to enter 1x, which is kind of odd
     #
     # <polynomial> := <term>
     # <polynomial> := <term> + <polynomial>
@@ -22,13 +23,62 @@ class polynomial(object):
     @classmethod
     def from_string(cls, s):
         parser = polynomial.__parser(s)
-        (a, [(b, c),(d, e)]) = parser.parse()
-        print a
-        print b
-        print c
-        print d
-        print e
-        return cls([])
+        (succeed, terms) = parser.parse()
+        if not succeed:
+            raise ValueError(s + " is not a well formed polynomial")
+        else:
+            max_power = -1
+            coefficients = {}
+            for i in range(0, len(terms)):
+                term = terms[i]
+                coefficient = term[0]
+                power = term[1]
+                max_power = max(max_power, power)
+                if power in coefficients:
+                    coefficients[power] = rational.add(coefficients[power], coefficient)
+                else:
+                    coefficients[power] = coefficient
+            result = []
+            for i in range(0, max_power + 1):
+                if i in coefficients:
+                    result.append(coefficients[i])
+                else:
+                    result.append(0)
+            return cls(result)
+
+    def degree(self):
+        return len(self.__coefficients) - 1
+
+    @staticmethod
+    def polynomial_add(operand1, operand2):
+        length1 = operand1.degree() + 1
+        length2 = operand2.degree() + 1
+        result = []
+        if (length1 < length2):
+            for i in range(0, length1):
+                result.append(rational.add(operand1.__coefficients[i], operand2.__coefficients[i]))
+            for i in range(length1, length2):
+                result.append(rational.add(operand2.__coefficients[i]))
+        else:
+            for i in range(0, length2):
+                result.append(rational.add(operand1.__coefficients[i], operand2.__coefficients[i]))
+            for i in range(length2, length1):
+                result.append(rational.add(operand1.__coefficients[i]))
+        return polynomial(result)
+
+    # TODO: produce a better display
+    def __str__(self):
+        result = ""
+        for j in range(0, len(self.__coefficients)):
+            i = len(self.__coefficients) - 1 - j
+            result += str(self.__coefficients[i])
+            if not i == 0:
+                result += "x"
+                if not i == 1:
+                    result += "^"
+                    result += str(i)
+                result += " + " 
+        return result
 
     tokens = enum('RBRACKET','LBRACKET','SLASH','CARET', 'X', 'PLUS', 'MINUS', 'EOF', 'INTEGER', 'ERROR')
     
