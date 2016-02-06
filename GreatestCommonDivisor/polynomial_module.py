@@ -56,6 +56,9 @@ class polynomial(object):
     def degree(self):
         return len(self.__coefficients) - 1
 
+    def isZero(self):
+        return (len(self.__coefficients) == 1) and self.__coefficients[0].isZero()
+
     @staticmethod
     def polynomial_add(operand1, operand2):
         length1 = operand1.degree() + 1
@@ -131,6 +134,17 @@ class polynomial(object):
             else:
                 quoient_coefficients.append(rational.from_integer(0))
         return (polynomial(quoient_coefficients), dividend)
+
+    @staticmethod
+    def polynomial_gcd(operand1, operand2):
+        if (operand1.degree() < operand2.degree()):
+            return polynomial.polynomial_gcd(operand2, operand1)
+        else:
+            (quoient, remainder) = polynomial.polynomial_divide(operand1, operand2)
+            if remainder.isZero():
+                return operand2
+            else:
+                return polynomial.polynomial_gcd(operand2, remainder)
 
     # TODO: for subtract term, do not output as adding a negative number
     # TODO: do not output the coefficient if it is just 1
