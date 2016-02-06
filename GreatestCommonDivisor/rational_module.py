@@ -34,6 +34,9 @@ class rational(object):
     def divide(operand1, operand2):
         return rational(operand1.__numerator * operand2.__denominator, operand1.__denominator * operand2.__numerator)
 
+    def isZero(self):
+        return self.__numerator == 0 
+
     def __gcd(self, a, b):
         if (a < 0):
             a = -a

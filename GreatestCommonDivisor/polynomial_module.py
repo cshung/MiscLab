@@ -5,7 +5,11 @@ class polynomial(object):
     # expecting a list of coefficients starting from constant to higher degree
     def __init__(self, coefficients):
         self.__coefficients = coefficients
-
+        self.__simplify()
+    
+    def __simplify(self):
+        while len(self.__coefficients) > 1 and self.__coefficients[len(self.__coefficients) - 1].isZero():
+            self.__coefficients.pop()
     #
     # expecting a string like 2x^2 + 3x - 2
     # The grammar of a polynomial is as follow:
@@ -46,7 +50,7 @@ class polynomial(object):
                 if i in coefficients:
                     result.append(coefficients[i])
                 else:
-                    result.append(0)
+                    result.append(rational.from_integer(0))
             return cls(result)
 
     def degree(self):
@@ -102,6 +106,31 @@ class polynomial(object):
         for i in range(0, len(operand2.__coefficients)):
             result = polynomial.polynomial_add(result, polynomial.__polynomial_multiply_term(operand1, operand2.__coefficients[i], i))
         return result
+
+    @staticmethod
+    def polynomial_divide(operand1, operand2):
+        max_power = -1
+        quoient_terms = {}
+        dividend = operand1
+        divisor = operand2
+        while divisor.degree() <= dividend.degree():
+            divisor_degree = divisor.degree()
+            dividend_degree = dividend.degree()
+            divisor_leading_term_coefficient = divisor.__coefficients[divisor_degree]
+            dividend_leading_term_coefficient = dividend.__coefficients[dividend_degree]
+            quoient_term_coefficient = rational.divide(dividend_leading_term_coefficient, divisor_leading_term_coefficient)
+            quoient_term_power = dividend_degree - divisor_degree
+            max_power = max(max_power, quoient_term_power)
+            quoient_terms[quoient_term_power] = quoient_term_coefficient
+            dividend = polynomial.polynomial_subtract(dividend, polynomial.__polynomial_multiply_term(divisor, quoient_term_coefficient, quoient_term_power))
+
+        quoient_coefficients = []
+        for i in range(0, max_power + 1):
+            if i in quoient_terms:
+                quoient_coefficients.append(quoient_terms[i])
+            else:
+                quoient_coefficients.append(rational.from_integer(0))
+        return (polynomial(quoient_coefficients), dividend)
 
     # TODO: for subtract term, do not output as adding a negative number
     # TODO: do not output the coefficient if it is just 1
