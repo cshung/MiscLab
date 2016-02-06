@@ -1,6 +1,9 @@
 class rational(object):
     def __init__(self,  numerator,  denonminator):
         # __ is a python convention for private fields
+        if denonminator == 0:
+            raise ValueError("denonminator should not be 0")
+
         self.__numerator = numerator
         self.__denominator = denonminator
         self.__simplify()
@@ -45,9 +48,18 @@ class rational(object):
                 return self.__gcd(b, a % b)
 
     def __simplify(self):
-        cancel = self.__gcd(self.__numerator, self.__denominator)
-        self.__numerator = self.__numerator/cancel
-        self.__denominator = self.__denominator/cancel
+        if self.__numerator == 0:
+            self.__denominator = 1
+        else:
+            cancel = self.__gcd(self.__numerator, self.__denominator)
+            self.__numerator = self.__numerator / cancel
+            self.__denominator = self.__denominator / cancel
+            if self.__denominator < 0:
+                self.__numerator = self.__numerator * -1
+                self.__denominator = self.__denominator * -1
 
     def __str__(self):
-        return str(self.__numerator) + "/" + str(self.__denominator)
+        if self.__denominator == 1:
+            return str(self.__numerator)
+        else:
+            return str(self.__numerator) + "/" + str(self.__denominator)

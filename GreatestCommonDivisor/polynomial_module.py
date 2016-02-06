@@ -6,10 +6,12 @@ class polynomial(object):
     def __init__(self, coefficients):
         self.__coefficients = coefficients
 
+    #
     # expecting a string like 2x^2 + 3x - 2
     # The grammar of a polynomial is as follow:
     #
-    # Currently the grammar has a bug, it does not support representing -2 as a literal
+    # Currently the grammar has a bug, it does not support representing -2 as a
+    # literal
     # One also need to enter 1x, which is kind of odd
     #
     # <polynomial> := <term>
@@ -20,6 +22,7 @@ class polynomial(object):
     # <term> := <rational>x^<integer>
     # <rational> := <integer>
     # <rational> := (<integer>/<integer>)
+    #
     @classmethod
     def from_string(cls, s):
         parser = polynomial.__parser(s)
@@ -58,7 +61,7 @@ class polynomial(object):
             for i in range(0, length1):
                 result.append(rational.add(operand1.__coefficients[i], operand2.__coefficients[i]))
             for i in range(length1, length2):
-                result.append(rational.add(operand2.__coefficients[i]))
+                result.append(operand2.__coefficients[i])
         else:
             for i in range(0, length2):
                 result.append(rational.add(operand1.__coefficients[i], operand2.__coefficients[i]))
@@ -66,7 +69,42 @@ class polynomial(object):
                 result.append(rational.add(operand1.__coefficients[i]))
         return polynomial(result)
 
-    # TODO: produce a better display
+    @staticmethod
+    def polynomial_subtract(operand1, operand2):
+        length1 = operand1.degree() + 1
+        length2 = operand2.degree() + 1
+        result = []
+        if (length1 < length2):
+            for i in range(0, length1):
+                result.append(rational.subtract(operand1.__coefficients[i], operand2.__coefficients[i]))
+            for i in range(length1, length2):
+                result.append(rational.subtract(operand2.__coefficients[i]))
+        else:
+            for i in range(0, length2):
+                result.append(rational.subtract(operand1.__coefficients[i], operand2.__coefficients[i]))
+            for i in range(length2, length1):
+                result.append(operand1.__coefficients[i])
+        return polynomial(result)
+
+    @staticmethod
+    def __polynomial_multiply_term(operand1, operand2_coefficient, operand2_power):
+        result = []
+        # shift the coefficients
+        for i in range(0, operand2_power):
+            result.append(rational.from_integer(0))
+        for i in operand1.__coefficients:
+            result.append(rational.multiply(i, operand2_coefficient))
+        return polynomial(result)
+
+    @staticmethod
+    def polynomial_multiply(operand1, operand2):
+        result = polynomial([rational.from_integer(0)])
+        for i in range(0, len(operand2.__coefficients)):
+            result = polynomial.polynomial_add(result, polynomial.__polynomial_multiply_term(operand1, operand2.__coefficients[i], i))
+        return result
+
+    # TODO: for subtract term, do not output as adding a negative number
+    # TODO: do not output the coefficient if it is just 1
     def __str__(self):
         result = ""
         for j in range(0, len(self.__coefficients)):
