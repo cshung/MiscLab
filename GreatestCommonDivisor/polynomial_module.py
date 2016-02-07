@@ -6,7 +6,7 @@ class polynomial(object):
     def __init__(self, coefficients):
         self.__coefficients = coefficients
         self.__simplify()
-    
+
     def __simplify(self):
         while len(self.__coefficients) > 1 and self.__coefficients[len(self.__coefficients) - 1].isZero():
             self.__coefficients.pop()
@@ -14,16 +14,16 @@ class polynomial(object):
     # expecting a string like 2x^2 + 3x - 2
     # The grammar of a polynomial is as follow:
     #
-    # Currently the grammar has a bug, it does not support representing -2 as a
-    # literal
-    # One also need to enter 1x, which is kind of odd
+    # Currently the grammar has a bug, it does not support representing -2 as a literal
+    # To workaround this, just enter 0 - 2
     #
     # <polynomial> := <term>
     # <polynomial> := <term> + <polynomial>
     # <polynomial> := <term> - <polynomial>
-    # <term> := <rational>
-    # <term> := <rational>x
-    # <term> := <rational>x^<integer>
+    # <term> := <rational><power>
+    # <term> := <power>
+    # <power> := x
+    # <power> := x^<integer>
     # <rational> := <integer>
     # <rational> := (<integer>/<integer>)
     #
@@ -137,6 +137,14 @@ class polynomial(object):
 
     @staticmethod
     def polynomial_gcd(operand1, operand2):
+        result = polynomial.__polynomial_gcd(operand1, operand2)
+        if len(result.__coefficients) > 0:
+            leading_term_coefficient = result.__coefficients[result.degree()]
+            result = polynomial.__polynomial_multiply_term(result, rational.divide(rational.from_integer(1), leading_term_coefficient), 0)
+        return result
+
+    @staticmethod
+    def __polynomial_gcd(operand1, operand2):
         if (operand1.degree() < operand2.degree()):
             return polynomial.polynomial_gcd(operand2, operand1)
         else:
@@ -146,23 +154,53 @@ class polynomial(object):
             else:
                 return polynomial.polynomial_gcd(operand2, remainder)
 
-    # TODO: for subtract term, do not output as adding a negative number
-    # TODO: do not output the coefficient if it is just 1
     def __str__(self):
         result = ""
         for j in range(0, len(self.__coefficients)):
-            i = len(self.__coefficients) - 1 - j
-            result += str(self.__coefficients[i])
-            if not i == 0:
+            power = len(self.__coefficients) - 1 - j
+            coefficient = self.__coefficients[power]
+
+            if power == 0:
+                displayCoefficient = True
+                displayPower = False
+            else:
+                if (not coefficient.isInteger()):
+                    displayPower = True
+                    displayCoefficient = True
+                elif coefficient.integerValue() == 0:
+                    displayPower = False
+                    displayCoefficient = False
+                elif coefficient.integerValue() == 1:
+                    displayPower = True
+                    displayCoefficient = False
+                elif coefficient.integerValue() == -1:
+                    displayPower = True
+                    displayCoefficient = False
+                else:
+                    displayPower = True
+                    displayCoefficient = True
+
+            if displayPower or displayCoefficient:
+                if j != 0:
+                    if (coefficient.isPositive()):
+                        result += " + "
+                    else:
+                        coefficient = rational.multiply(coefficient, rational.from_integer(-1))
+                        result += " - ";
+
+            if displayCoefficient:
+                result += str(coefficient)
+
+            if displayPower:
                 result += "x"
-                if not i == 1:
+                if not power == 1:
                     result += "^"
-                    result += str(i)
-                result += " + " 
+                    result += str(power)
+
         return result
 
     tokens = enum('RBRACKET','LBRACKET','SLASH','CARET', 'X', 'PLUS', 'MINUS', 'EOF', 'INTEGER', 'ERROR')
-    
+
     class __scanner(object):
         def __init__(self, s):
             self.__s = s
@@ -173,7 +211,7 @@ class polynomial(object):
             # Skip all spaces
             while (self.__position < len(self.__s)) and (self.__s[self.__position] == ' '):
                 self.__position = self.__position + 1
-    
+
             # Check EOF early to make sure we read within bound
             if self.__position == len(self.__s):
                 return (polynomial.tokens.EOF, 0)
@@ -236,24 +274,32 @@ class polynomial(object):
                         return (True, remaining_terms)
                 elif (self.__token[0] == polynomial.tokens.EOF):
                     return (True, [first_term])
+            else:
+                return (False, None)
 
         def __parse_term(self):
-            (succeed, coefficient) = self.__parse_rational()
-            if (succeed):
-                if (self.__token[0] == polynomial.tokens.X):
-                    self.__scan()
-                    if (self.__token[0] == polynomial.tokens.CARET):
-                        self.__scan()
-                        if (self.__token[0] == polynomial.tokens.INTEGER):
-                            power = self.__token[1]
-                            self.__scan()
-                            return (True, coefficient, power)
-                    else:
-                        return (True, coefficient, 1)
-                else:
-                    return (True, coefficient, 0)
+            if (self.__token[0] == polynomial.tokens.X):
+                return self.__parse_power(rational.from_integer(1))
+            else:
+                (succeed, coefficient) = self.__parse_rational()
+                if (succeed):
+                    return self.__parse_power(coefficient)
 
             return (False, None, None)
+
+        def __parse_power(self, coefficient):
+            if (self.__token[0] == polynomial.tokens.X):
+                self.__scan()
+                if (self.__token[0] == polynomial.tokens.CARET):
+                    self.__scan()
+                    if (self.__token[0] == polynomial.tokens.INTEGER):
+                        power = self.__token[1]
+                        self.__scan()
+                        return (True, coefficient, power)
+                else:
+                    return (True, coefficient, 1)
+            else:
+                return (True, coefficient, 0)
 
         def __parse_rational(self):
             if (self.__token[0] == polynomial.tokens.LBRACKET):

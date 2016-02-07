@@ -1,10 +1,16 @@
 from polynomial_module import *
 
-p1 = polynomial.from_string("1x^2 + 7x + 6")
-p2 = polynomial.from_string("1x^2 - 5x - 6")
+# Problem 8a
+print polynomial.polynomial_gcd(
+    polynomial.polynomial_gcd(
+        polynomial.from_string("x^4 + x^2 + 1"),
+        polynomial.from_string("x^4 - x^2 - 2x - 1")),
+    polynomial.from_string("x^3 - 1"))
 
-p3 = polynomial.polynomial_gcd(p1, p2)
+# Problem 8b
+print polynomial.polynomial_gcd(
+    polynomial.polynomial_gcd(
+        polynomial.from_string("x^3 + 2x^2 - x - 2"),
+        polynomial.from_string("x^3 - 2x^2 - x + 2")),
+    polynomial.from_string("x^3 - x^2 - 4x + 4"))
 
-print p3
-print polynomial.polynomial_divide(p1, p3)[1]
-print polynomial.polynomial_divide(p2, p3)[1]

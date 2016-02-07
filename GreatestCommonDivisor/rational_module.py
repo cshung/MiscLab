@@ -35,7 +35,19 @@ class rational(object):
         return rational(operand1.__numerator * operand2.__denominator, operand1.__denominator * operand2.__numerator)
 
     def isZero(self):
-        return self.__numerator == 0 
+        return self.__numerator == 0
+
+    def isInteger(self):
+        return self.__denominator == 1
+
+    def integerValue(self):
+        if self.isInteger():
+            return self.__numerator
+        else:
+            raise ValueError("Not an integer")
+
+    def isPositive(self):
+        return self.__numerator >= 0
 
     def __gcd(self, a, b):
         if (a < 0):
