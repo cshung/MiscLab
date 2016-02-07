@@ -73,7 +73,7 @@ class polynomial(object):
             for i in range(0, length2):
                 result.append(rational.add(operand1.__coefficients[i], operand2.__coefficients[i]))
             for i in range(length2, length1):
-                result.append(rational.add(operand1.__coefficients[i]))
+                result.append(operand1.__coefficients[i])
         return polynomial(result)
 
     @staticmethod
@@ -85,7 +85,7 @@ class polynomial(object):
             for i in range(0, length1):
                 result.append(rational.subtract(operand1.__coefficients[i], operand2.__coefficients[i]))
             for i in range(length1, length2):
-                result.append(rational.subtract(operand2.__coefficients[i]))
+                result.append(rational.multiply(rational.from_integer(-1), operand2.__coefficients[i]))
         else:
             for i in range(0, length2):
                 result.append(rational.subtract(operand1.__coefficients[i], operand2.__coefficients[i]))
@@ -113,7 +113,7 @@ class polynomial(object):
     @staticmethod
     def polynomial_divide(operand1, operand2):
         max_power = -1
-        quoient_terms = {}
+        quotient_terms = {}
         dividend = operand1
         divisor = operand2
         while divisor.degree() <= dividend.degree():
@@ -121,19 +121,19 @@ class polynomial(object):
             dividend_degree = dividend.degree()
             divisor_leading_term_coefficient = divisor.__coefficients[divisor_degree]
             dividend_leading_term_coefficient = dividend.__coefficients[dividend_degree]
-            quoient_term_coefficient = rational.divide(dividend_leading_term_coefficient, divisor_leading_term_coefficient)
-            quoient_term_power = dividend_degree - divisor_degree
-            max_power = max(max_power, quoient_term_power)
-            quoient_terms[quoient_term_power] = quoient_term_coefficient
-            dividend = polynomial.polynomial_subtract(dividend, polynomial.__polynomial_multiply_term(divisor, quoient_term_coefficient, quoient_term_power))
+            quotient_term_coefficient = rational.divide(dividend_leading_term_coefficient, divisor_leading_term_coefficient)
+            quotient_term_power = dividend_degree - divisor_degree
+            max_power = max(max_power, quotient_term_power)
+            quotient_terms[quotient_term_power] = quotient_term_coefficient
+            dividend = polynomial.polynomial_subtract(dividend, polynomial.__polynomial_multiply_term(divisor, quotient_term_coefficient, quotient_term_power))
 
-        quoient_coefficients = []
+        quotient_coefficients = []
         for i in range(0, max_power + 1):
-            if i in quoient_terms:
-                quoient_coefficients.append(quoient_terms[i])
+            if i in quotient_terms:
+                quotient_coefficients.append(quotient_terms[i])
             else:
-                quoient_coefficients.append(rational.from_integer(0))
-        return (polynomial(quoient_coefficients), dividend)
+                quotient_coefficients.append(rational.from_integer(0))
+        return (polynomial(quotient_coefficients), dividend)
 
     @staticmethod
     def polynomial_gcd(operand1, operand2):
@@ -148,11 +148,45 @@ class polynomial(object):
         if (operand1.degree() < operand2.degree()):
             return polynomial.polynomial_gcd(operand2, operand1)
         else:
-            (quoient, remainder) = polynomial.polynomial_divide(operand1, operand2)
+            (quotient, remainder) = polynomial.polynomial_divide(operand1, operand2)
             if remainder.isZero():
                 return operand2
             else:
-                return polynomial.polynomial_gcd(operand2, remainder)
+                return polynomial.__polynomial_gcd(operand2, remainder)
+
+    @staticmethod
+    def polynomial_extended_gcd(operand1, operand2):
+        (p, q, h) = polynomial.__polynomial_extended_gcd(operand1, operand2)
+        if len(h.__coefficients) > 0:
+            leading_term_coefficient = h.__coefficients[h.degree()]
+            # p * operand1 + q * operand2 = h
+            # p * a * operand1 + q * a * operand2 = h * a
+            a = rational.divide(rational.from_integer(1), leading_term_coefficient)
+            p = polynomial.__polynomial_multiply_term(p, a, 0)
+            q = polynomial.__polynomial_multiply_term(q, a, 0)
+            h = polynomial.__polynomial_multiply_term(h, a, 0)
+        return (p, q, h)
+
+    @staticmethod
+    def __polynomial_extended_gcd(operand1, operand2):
+        if (operand1.degree() < operand2.degree()):
+            return polynomial.polynomial_extended_gcd(operand2, operand1)
+        else:
+            (quotient, remainder) = polynomial.polynomial_divide(operand1, operand2)
+            if remainder.isZero():
+                # operand1 = operand2 * quotient
+                # operand1 - operand2 * quotient = 0
+                # operand1 + operand 2 - operand2 * quotient = 0
+                # operand1 + operand2 * (1 - quotient) = operand2
+                one = polynomial.from_string("1")
+                return (one, polynomial.polynomial_subtract(one, quotient),  operand2)
+            else:
+                (p, q, h) = polynomial.__polynomial_extended_gcd(operand2, remainder)
+                # operand1 - operand2 * quotient = remainder
+                # p * operand2 + q * remainder = h
+                # p * operand2 + q * (operand1 - operand2 * quotient) = h
+                # q * operand1 + (p - q * quotient) * operand2 = h
+                return (q, polynomial.polynomial_subtract(p, polynomial.polynomial_multiply(q, quotient)), h)
 
     def __str__(self):
         result = ""
@@ -186,7 +220,7 @@ class polynomial(object):
                         result += " + "
                     else:
                         coefficient = rational.multiply(coefficient, rational.from_integer(-1))
-                        result += " - ";
+                        result += " - "
 
             if displayCoefficient:
                 result += str(coefficient)
