@@ -188,6 +188,12 @@ class polynomial(object):
                 # q * operand1 + (p - q * quotient) * operand2 = h
                 return (q, polynomial.polynomial_subtract(p, polynomial.polynomial_multiply(q, quotient)), h)
 
+    def derivative(self):
+        result = []
+        for i in range(1, self.degree() + 1):
+            result.append(rational.multiply(self.__coefficients[i], rational.from_integer(i)))
+        return polynomial(result)
+
     def __str__(self):
         result = ""
         for j in range(0, len(self.__coefficients)):

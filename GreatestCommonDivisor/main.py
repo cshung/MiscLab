@@ -32,6 +32,25 @@ s = polynomial.polynomial_add(af, bg)
 d = polynomial.polynomial_subtract(h, s)
 print d
 
+print "Problem 15"
+f = polynomial.from_string("x^11 - x^10 + 2x^8 - 4x^7 + 3x^5 - 3x^4 + x^3 + 3x^2 - x - 1")
+fd = f.derivative()
+g = polynomial.polynomial_gcd(f, fd)
+(q, r) = polynomial.polynomial_divide(f, g)
+print q
+
+print "Problem 17"
+f = polynomial.from_string("x^5 - 2x^4 + 2x^2 - x")
+g = polynomial.from_string("x^5 - x^4 - 2x^3 + 2x^2 + x - 1")
+gcd = polynomial.polynomial_gcd(f, g)
+gcdd = gcd.derivative()
+d = polynomial.polynomial_gcd(gcd, gcdd)
+(gred, r) = polynomial.polynomial_divide(gcd, d)
+print gcd
+print gcdd
+print d
+print gred
+
 # TODO, a bug in printing polynomial
 print "Bug"
 print polynomial.from_string("0 - 1x") # should print -x, but currently print x + 0
