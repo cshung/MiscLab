@@ -36,6 +36,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="problem_1_5_8.py" />
+    <Compile Include="problem_2_1_1.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="rational_module.py" />
   </ItemGroup>
   <ItemGroup>

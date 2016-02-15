@@ -117,7 +117,7 @@ class polynomial(object):
         quotient_terms = {}
         dividend = operand1
         divisor = operand2
-        while divisor.degree() <= dividend.degree():
+        while divisor.degree() <= dividend.degree() and (not dividend.isZero()):
             divisor_degree = divisor.degree()
             dividend_degree = dividend.degree()
             divisor_leading_term_coefficient = divisor.__coefficients[divisor_degree]
@@ -152,6 +152,8 @@ class polynomial(object):
             (quotient, remainder) = polynomial.polynomial_divide(operand1, operand2)
             if remainder.isZero():
                 return operand2
+            elif remainder.degree() == 0:
+                return polynomial.from_string("1")
             else:
                 return polynomial.__polynomial_gcd(operand2, remainder)
 
