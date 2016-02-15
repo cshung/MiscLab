@@ -32,7 +32,22 @@
     <Compile Include="polynomial_module.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="problem_1_5_17.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="problem_1_5_8.py" />
     <Compile Include="rational_module.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="problem_1_5_10.py">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="problem_1_5_15.py">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="problem_1_5_9.py">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

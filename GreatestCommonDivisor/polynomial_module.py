@@ -203,9 +203,10 @@ class polynomial(object):
 
             if power == 0:
                 displayCoefficient = True
-                if coefficient.isInteger():
-                    if (coefficient.integerValue() == 0):
-                        displayCoefficient = False
+                if (self.degree() > 0):
+                    if coefficient.isInteger():
+                        if (coefficient.integerValue() == 0):
+                            displayCoefficient = False
                 displayPower = False
             else:
                 if (not coefficient.isInteger()):

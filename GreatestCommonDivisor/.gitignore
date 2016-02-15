@@ -1,2 +1,4 @@
 .vs
 *.pyc
+*.suo
+*.user
