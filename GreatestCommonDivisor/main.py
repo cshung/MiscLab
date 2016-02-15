@@ -1,4 +1,4 @@
-from polynomial_module import *
+﻿from polynomial_module import *
 
 print "Problem 8a"
 print polynomial.polynomial_gcd(
@@ -50,7 +50,3 @@ print gcd
 print gcdd
 print d
 print gred
-
-# TODO, a bug in printing polynomial
-print "Bug"
-print polynomial.from_string("0 - 1x") # should print -x, but currently print x + 0

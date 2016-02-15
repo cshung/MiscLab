@@ -1,4 +1,4 @@
-from enum import *
+﻿from enum import *
 from rational_module import *
 
 class polynomial(object):
@@ -16,6 +16,7 @@ class polynomial(object):
     #
     # Currently the grammar has a bug, it does not support representing -2 as a literal
     # To workaround this, just enter 0 - 2
+    # Introducing -ve sign is a lot more work
     #
     # <polynomial> := <term>
     # <polynomial> := <term> + <polynomial>
@@ -202,6 +203,9 @@ class polynomial(object):
 
             if power == 0:
                 displayCoefficient = True
+                if coefficient.isInteger():
+                    if (coefficient.integerValue() == 0):
+                        displayCoefficient = False
                 displayPower = False
             else:
                 if (not coefficient.isInteger()):
@@ -221,7 +225,11 @@ class polynomial(object):
                     displayCoefficient = True
 
             if displayPower or displayCoefficient:
-                if j != 0:
+                if j == 0:
+                    if (coefficient.isInteger()):
+                        if coefficient.integerValue() == -1:
+                            result += "-"
+                else:
                     if (coefficient.isPositive()):
                         result += " + "
                     else:
