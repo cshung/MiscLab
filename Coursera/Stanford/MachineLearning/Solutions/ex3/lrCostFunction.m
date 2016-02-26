@@ -36,14 +36,25 @@ grad = zeros(size(theta));
 %           grad = grad + YOUR_CODE_HERE (using the temp variable)
 %
 
+% Find Indices of Positive and Negative Examples
+pos = find(y==1); neg = find(y == 0);
 
+Xpos = X(pos,:);
+Xneg = X(neg,:);
 
+hpos = sigmoid(Xpos * theta);
+hneg = sigmoid(Xneg * theta);
 
+cpos = -log(hpos);
+cneg = -log(ones(size(hneg)) - hneg);
 
+J = sum([cpos;cneg])/m + lambda/2/m * sum(theta(2:end) .* theta(2:end));
 
+grad_theta = lambda * theta /m;
+grad_theta(1) = 0;
 
-
-
+e = sigmoid(X * theta) - y;
+grad = (sum(repmat(e, 1, size(X, 2)) .* X) / m)' + grad_theta;
 
 % =============================================================
 
