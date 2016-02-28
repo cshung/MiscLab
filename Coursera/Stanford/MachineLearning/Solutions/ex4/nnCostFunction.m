@@ -62,30 +62,49 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+a1 = X;
+a1 = [ones(m, 1) a1];
+z2 = a1 * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(m, 1) a2];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
 
+for c = 1:num_labels
+    pos = find(y == c);
+    neg = find(y ~= c);
+    expected_labels(pos,c) = 1;
+    hpos = a3(pos,c);
+    hneg = a3(neg,c);
+    cpos = -log(hpos);
+    cneg = -log(ones(size(hneg)) - hneg);
+    J = J + sum([cpos;cneg]);
+end
 
+% Regularization
+J = J + lambda * sum(sum(Theta1(:,2:end) .* Theta1(:,2:end))) / 2;
+J = J + lambda * sum(sum(Theta2(:,2:end) .* Theta2(:,2:end))) / 2;
+J = J / m;
 
+e3 = a3 - expected_labels;
+e2 = e3 * Theta2;
+e2 = e2(:,2:end);
+e2 = e2 .* sigmoidGradient(z2);
 
+Theta1_grad = e2' * a1 / m;
+Theta2_grad = e3' * a2 / m;
 
+% Regularization
 
+Theta1(:,1) = 0;
+Theta2(:,1) = 0;
 
-
-
-
-
-
-
-
-
-
-
-
-% -------------------------------------------------------------
+Theta1_grad = Theta1_grad + lambda / m * Theta1;
+Theta2_grad = Theta2_grad + lambda / m * Theta2;
 
 % =========================================================================
 
 % Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
-
 
 end
