@@ -13,6 +13,8 @@ public:
     bool try_insert(double value);
     bool try_get_min(double* min_value) const;
     bool try_get_max(double* max_value) const;
+    bool try_delete_min(double* min_value);
+    bool try_delete_max(double* max_value);
 private:
     int m_capacity;
     int m_size;
@@ -23,6 +25,8 @@ private:
     int parent_node(int node_number);
     void bubble_up_min_node(int node_number);
     void bubble_up_max_node(int node_number);
+    void bubble_down_min_node(int node_number);
+    void bubble_down_max_node(int node_number);
 };
 
 min_max_heap::min_max_heap(int capacity) : m_capacity(capacity), m_size(0), m_storage(new double[capacity])
@@ -58,7 +62,7 @@ bool min_max_heap::try_insert(double value)
     {
         this->bubble_up_max_node(node_number);
     }
-    
+
     return true;
 }
 
@@ -174,6 +178,115 @@ void min_max_heap::bubble_up_max_node(int node_number)
     }
 }
 
+bool min_max_heap::try_delete_min(double* min_value)
+{
+    if (min_value == nullptr)
+    {
+        return false;
+    }
+    else if (this->m_size == 0)
+    {
+        return false;
+    }
+    else
+    {
+        *min_value = this->m_storage[0];
+        this->m_size--;
+        this->m_storage[0] = this->m_storage[this->m_size];
+        this->bubble_down_min_node(1);
+        return true;
+    }
+}
+
+void min_max_heap::bubble_down_min_node(int node_number)
+{
+    double min_value = this->m_storage[node_number - 1];
+    int min_node_number = node_number;
+    for (int i = 0; i < 4; i++)
+    {
+        int candidate_node_number = node_number * 4 + i;
+        if (candidate_node_number > this->m_size)
+        {
+            break;
+        }
+        else
+        {
+            double candidate_value = this->m_storage[candidate_node_number - 1];
+            if (candidate_value < min_value)
+            {
+                min_value = candidate_value;
+                min_node_number = candidate_node_number;
+            }
+        }
+    }
+    if (min_node_number != node_number)
+    {
+        swap(this->m_storage[node_number - 1], this->m_storage[min_node_number - 1]);
+        this->bubble_down_min_node(min_node_number);
+    }
+}
+
+bool min_max_heap::try_delete_max(double* max_value)
+{
+    if (max_value == nullptr)
+    {
+        return false;
+    }
+    else if (this->m_size == 0)
+    {
+        return false;
+    }
+    else if (this->m_size == 1)
+    {
+        *max_value = this->m_storage[0];
+        this->m_size--;
+        return true;
+    }
+    else if (this->m_size == 2)
+    {
+        *max_value = this->m_storage[1];
+        this->m_size--;
+        return true;
+    }
+    else
+    {
+        int max_node_number = (this->m_storage[1] > this->m_storage[2]) ? 2 : 3;
+        this->m_size--;
+        *max_value = this->m_storage[max_node_number - 1];
+        this->m_storage[max_node_number - 1] = this->m_storage[this->m_size];
+        this->bubble_down_max_node(max_node_number);
+        return true;
+    }
+}
+
+void min_max_heap::bubble_down_max_node(int node_number)
+{
+    double max_value = this->m_storage[node_number - 1];
+    int max_node_number = node_number;
+    for (int i = 0; i < 4; i++)
+    {
+        int candidate_node_number = node_number * 4 + i;
+        if (candidate_node_number > this->m_size)
+        {
+            break;
+        }
+        else
+        {
+            double candidate_value = this->m_storage[candidate_node_number - 1];
+            if (candidate_value < max_value)
+            {
+                max_value = candidate_value;
+                max_node_number = candidate_node_number;
+            }
+        }
+    }
+    if (max_node_number != node_number)
+    {
+        swap(this->m_storage[node_number - 1], this->m_storage[max_node_number - 1]);
+        this->bubble_down_max_node(max_node_number);
+    }
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
     min_max_heap heap(20);
@@ -183,8 +296,8 @@ int _tmain(int argc, _TCHAR* argv[])
     heap.try_insert(5);
     double min;
     double max;
-    heap.try_get_min(&min);
-    heap.try_get_max(&max);
+    heap.try_delete_min(&min);
+    heap.try_delete_max(&max);
     cout << min << endl;
     cout << max << endl;
     return 0;
