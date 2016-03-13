@@ -18,13 +18,13 @@
     <ClCompile Include="min_max_heap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Program.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="splay_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="kd_tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

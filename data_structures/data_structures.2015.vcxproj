@@ -144,7 +144,7 @@
   <ItemGroup>
     <ClCompile Include="kd_tree.cpp" />
     <ClCompile Include="min_max_heap.cpp" />
-    <ClCompile Include="Program.cpp" />
+    <ClCompile Include="program.cpp" />
     <ClCompile Include="splay_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
