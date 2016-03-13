@@ -1,33 +1,6 @@
-// min_max_heap.cpp : Defines the entry point for the console application.
-
-#include "stdafx.h"
+#include "min_max_heap.h"
 #include <algorithm>
-#include <iostream>
 using namespace std;
-
-class min_max_heap
-{
-public:
-    min_max_heap(int capacity);
-    ~min_max_heap();
-    bool try_insert(double value);
-    bool try_get_min(double* min_value) const;
-    bool try_get_max(double* max_value) const;
-    bool try_delete_min(double* min_value);
-    bool try_delete_max(double* max_value);
-private:
-    int m_capacity;
-    int m_size;
-    double* m_storage;
-
-    bool is_min_node(int node_number);
-    bool has_parent_node(int node_number);
-    int parent_node(int node_number);
-    void bubble_up_min_node(int node_number);
-    void bubble_up_max_node(int node_number);
-    void bubble_down_min_node(int node_number);
-    void bubble_down_max_node(int node_number);
-};
 
 min_max_heap::min_max_heap(int capacity) : m_capacity(capacity), m_size(0), m_storage(new double[capacity])
 {
@@ -285,20 +258,4 @@ void min_max_heap::bubble_down_max_node(int node_number)
         swap(this->m_storage[node_number - 1], this->m_storage[max_node_number - 1]);
         this->bubble_down_max_node(max_node_number);
     }
-}
-
-int _tmain(int argc, _TCHAR* argv[])
-{
-    min_max_heap heap(20);
-    heap.try_insert(30);
-    heap.try_insert(20);
-    heap.try_insert(10);
-    heap.try_insert(5);
-    double min;
-    double max;
-    heap.try_delete_min(&min);
-    heap.try_delete_max(&max);
-    cout << min << endl;
-    cout << max << endl;
-    return 0;
 }

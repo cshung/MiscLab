@@ -1,6 +1,7 @@
 Debug
 Release
 ipch
+*.opendb
 *.opensdf
 *.sdf
 *.suo

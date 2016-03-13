@@ -1,43 +1,6 @@
+#include "kd_tree.h"
 #include <algorithm>
 #include <iostream>
-#include <vector>
-#include <map>
-#include <cassert>
-
-using namespace std;
-
-class kdtree
-{
-public:
-    kdtree(const vector<pair<int, int>>& points);
-    void print() const;
-private:
-    class kdtree_node
-    {
-    public:
-        int m_dimension; // 0 represent x, 1 represent y
-        pair<int, int> m_point;
-        kdtree_node* m_left;
-        kdtree_node* m_right;
-        void print(int indent) const;
-    };
-
-    class kdtree_builder
-    {
-    public:
-        kdtree_builder(const vector<pair<int, int>>& points);
-
-        const vector<pair<int, int>>& m_points;
-        vector<int> m_buffer_1;
-        vector<int> m_buffer_2;
-        vector<int> m_x_sorted_points;
-        vector<int> m_y_sorted_points;
-
-        kdtree_node* build(int begin, int end, int dimension);
-    };
-
-    kdtree_node* m_root;
-};
 
 kdtree::kdtree(const vector<pair<int, int>>& points)
 {
@@ -138,19 +101,4 @@ void kdtree::kdtree_node::print(int indent) const
     cout << this->m_point.first << ", " << this->m_point.second << endl;
     if (this->m_left != nullptr) { this->m_left->print(indent + 2); }
     if (this->m_right != nullptr) { this->m_right->print(indent + 2); }
-}
-
-int main(int argc, char** argv)
-{
-    vector<pair<int, int>> points;
-    points.push_back(pair<int, int>(1, 7));
-    points.push_back(pair<int, int>(2, 6));
-    points.push_back(pair<int, int>(3, 5));
-    points.push_back(pair<int, int>(4, 4));
-    points.push_back(pair<int, int>(5, 3));
-    points.push_back(pair<int, int>(6, 2));
-    points.push_back(pair<int, int>(7, 1));
-    kdtree tree(points);
-    tree.print();
-    return 0;
 }
