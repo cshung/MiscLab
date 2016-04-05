@@ -140,9 +140,8 @@ int main()
     TestSuffixTree();
     */
     
-    cout << "Enter the length of the string: ";
-    unsigned int length;
-    cin >> length;
+    // This will hit an assertion in character 86903
+    unsigned int length = 100000;
     char* source = new char[length + 1];
     for (unsigned int i = 0; i < length; i++)
     {
