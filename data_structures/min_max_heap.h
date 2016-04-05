@@ -5,6 +5,7 @@ class min_max_heap
 public:
     min_max_heap(int capacity);
     ~min_max_heap();
+    int get_size() const;
     bool try_insert(double value);
     bool try_get_min(double* min_value) const;
     bool try_get_max(double* max_value) const;

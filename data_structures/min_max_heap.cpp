@@ -14,6 +14,11 @@ min_max_heap::~min_max_heap()
     }
 }
 
+int min_max_heap::get_size() const
+{
+    return this->m_size;
+}
+
 bool min_max_heap::try_insert(double value)
 {
     if (this->m_size == this->m_capacity)
