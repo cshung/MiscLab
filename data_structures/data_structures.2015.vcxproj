@@ -144,13 +144,16 @@
   <ItemGroup>
     <ClCompile Include="kd_tree.cpp" />
     <ClCompile Include="min_max_heap.cpp" />
+    <ClCompile Include="min_max_heap_test.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="splay_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kd_tree.h" />
     <ClInclude Include="min_max_heap.h" />
+    <ClInclude Include="min_max_heap_test.h" />
     <ClInclude Include="splay_tree.h" />
+    <ClInclude Include="test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
