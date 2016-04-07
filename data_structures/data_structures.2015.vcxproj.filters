@@ -30,6 +30,12 @@
     <ClCompile Include="min_max_heap_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fenwick_tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fenwick_tree_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="min_max_heap.h">
@@ -45,6 +51,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="min_max_heap_test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fenwick_tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fenwick_tree_test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
