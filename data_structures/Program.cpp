@@ -29,11 +29,11 @@ fenwick_tree::~fenwick_tree()
 void fenwick_tree::update(int index, int delta)
 {
     int tree_index = index + 1;
-    while (tree_index > 0)
+    while (tree_index <= this->m_capacity)
     {
         int array_index = tree_index - 1;
         this->m_elements[array_index] += delta;
-        tree_index = tree_index - (tree_index & -tree_index);
+        tree_index = tree_index + (tree_index & -tree_index);
     }
 }
 
@@ -62,6 +62,9 @@ int main(int argc, char** argv)
     {
         tree.update(i, i);
     }
-    cout << tree.running_sum(9) << endl;
+    for (int i = 1; i < 10; i++)
+    {
+        cout << tree.running_sum(i) << endl;
+    }
     return 0;
 }
