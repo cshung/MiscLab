@@ -11,6 +11,9 @@ public:
     bool try_get_max(double* max_value) const;
     bool try_delete_min(double* min_value);
     bool try_delete_max(double* max_value);
+
+    bool verify_consistency();
+
 private:
     int m_capacity;
     int m_size;
@@ -23,4 +26,5 @@ private:
     void bubble_up_max_node(int node_number);
     void bubble_down_min_node(int node_number);
     void bubble_down_max_node(int node_number);
+    bool verify_consistency(int node_number, double minimum, double maximum);
 };

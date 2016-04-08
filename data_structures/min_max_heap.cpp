@@ -179,7 +179,27 @@ bool min_max_heap::try_delete_min(double* min_value)
 void min_max_heap::bubble_down_min_node(int node_number)
 {
     double min_value = this->m_storage[node_number - 1];
-    int min_node_number = node_number;
+    bool is_next_node_type_max_node = true;
+    int next_node_number = node_number;
+
+    for (int i = 0; i < 2; i++)
+    {
+        int candidate_node_number = node_number * 2 + i;
+        if (candidate_node_number > this->m_size)
+        {
+            break;
+        }
+        else
+        {
+            double candidate_value = this->m_storage[candidate_node_number - 1];
+            if (candidate_value < min_value)
+            {
+                min_value = candidate_value;
+                next_node_number = candidate_node_number;
+            }
+        }
+    }
+
     for (int i = 0; i < 4; i++)
     {
         int candidate_node_number = node_number * 4 + i;
@@ -193,14 +213,22 @@ void min_max_heap::bubble_down_min_node(int node_number)
             if (candidate_value < min_value)
             {
                 min_value = candidate_value;
-                min_node_number = candidate_node_number;
+                next_node_number = candidate_node_number;
+                is_next_node_type_max_node = false;
             }
         }
     }
-    if (min_node_number != node_number)
+    if (next_node_number != node_number)
     {
-        swap(this->m_storage[node_number - 1], this->m_storage[min_node_number - 1]);
-        this->bubble_down_min_node(min_node_number);
+        swap(this->m_storage[node_number - 1], this->m_storage[next_node_number - 1]);
+        if (is_next_node_type_max_node)
+        {
+            this->bubble_down_max_node(next_node_number);
+        }
+        else
+        {
+            this->bubble_down_min_node(next_node_number);
+        }
     }
 }
 
@@ -240,7 +268,26 @@ bool min_max_heap::try_delete_max(double* max_value)
 void min_max_heap::bubble_down_max_node(int node_number)
 {
     double max_value = this->m_storage[node_number - 1];
-    int max_node_number = node_number;
+    bool is_next_node_type_min_node = true;
+    int next_node_number = node_number;
+    for (int i = 0; i < 2; i++)
+    {
+        int candidate_node_number = node_number * 2 + i;
+        if (candidate_node_number > this->m_size)
+        {
+            break;
+        }
+        else
+        {
+            double candidate_value = this->m_storage[candidate_node_number - 1];
+            if (candidate_value > max_value)
+            {
+                max_value = candidate_value;
+                next_node_number = candidate_node_number;
+            }
+        }
+    }
+
     for (int i = 0; i < 4; i++)
     {
         int candidate_node_number = node_number * 4 + i;
@@ -251,16 +298,70 @@ void min_max_heap::bubble_down_max_node(int node_number)
         else
         {
             double candidate_value = this->m_storage[candidate_node_number - 1];
-            if (candidate_value < max_value)
+            if (candidate_value > max_value)
             {
                 max_value = candidate_value;
-                max_node_number = candidate_node_number;
+                next_node_number = candidate_node_number;
+                is_next_node_type_min_node = false;
             }
         }
     }
-    if (max_node_number != node_number)
+    if (next_node_number != node_number)
     {
-        swap(this->m_storage[node_number - 1], this->m_storage[max_node_number - 1]);
-        this->bubble_down_max_node(max_node_number);
+        swap(this->m_storage[node_number - 1], this->m_storage[next_node_number - 1]);
+        if (is_next_node_type_min_node)
+        {
+            this->bubble_down_min_node(next_node_number);
+        }
+        else
+        {
+            this->bubble_down_max_node(next_node_number);
+        }
     }
+}
+
+bool min_max_heap::verify_consistency()
+{
+    if (this->m_size == 0)
+    {
+        return true;
+    }
+
+    return this->verify_consistency(1, (1 << 31), ~(1 << 31));
+}
+
+bool min_max_heap::verify_consistency(int node_number, double minimum, double maximum)
+{
+    double this_value = this->m_storage[node_number - 1];
+    if (this_value < minimum)
+    {
+        return false;
+    }
+    if (this_value > maximum)
+    {
+        return false;
+    }
+
+    if (this->is_min_node(node_number))
+    {
+        minimum = this_value;
+    }
+    else
+    {
+        maximum = this_value;
+    }
+
+    int left_child = node_number * 2;
+    int right_child = left_child + 1;
+    bool result = true;
+    if (left_child <= this->m_size)
+    {
+        result = result && verify_consistency(left_child, minimum, maximum);
+    }
+    if (result && right_child <= this->m_size)
+    {
+        result = result && verify_consistency(right_child, minimum, maximum);
+    }
+
+    return result;
 }

@@ -69,6 +69,10 @@ void min_max_heap_test()
             {
                 cout << "Fail" << endl;
             }
+            if (!my_min_max_heap.verify_consistency())
+            {
+                cout << "Fail" << endl;
+            }
         }
         else if (operation == 2)
         {
@@ -94,6 +98,10 @@ void min_max_heap_test()
                 cout << "Fail" << endl;
             }
             if (test_max_value != max_value)
+            {
+                cout << "Fail" << endl;
+            }
+            if (!my_min_max_heap.verify_consistency())
             {
                 cout << "Fail" << endl;
             }

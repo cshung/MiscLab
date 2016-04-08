@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv)
 {
-    // min_max_heap_test();
-    fenwick_tree_test();
+    min_max_heap_test();
+    // fenwick_tree_test();
 }
