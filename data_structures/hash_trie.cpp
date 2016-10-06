@@ -43,37 +43,54 @@ bool hash_trie::insert_trie(const char* key, int value, int hash, int num_bits, 
 {
 	int bit = hash & 1;
 	bool succeed = false;
-	if (num_bits > 1)
+	node* result;
+	trie_node* trie_result;
+	bucket_node* bucket_result;
+	if (bit == 0)
 	{
-		trie_node* result;
-		if (bit == 0)
+		if (num_bits > 1)
 		{
-			succeed = insert_trie(key, value, hash >> 1, num_bits - 1, (trie_node*)current->m_left, &result);
-			if (!succeed)
-			{
-				return false;
-			}
-			*ppResult = new trie_node();
-			(*ppResult)->m_left = result;
-			(*ppResult)->m_right= current->m_right;
+			succeed = insert_trie(key, value, hash >> 1, num_bits - 1, (trie_node*)current->m_left, &trie_result);
+			result = trie_result;
 		}
 		else
 		{
-			succeed = insert_trie(key, value, hash >> 1, num_bits - 1, (trie_node*)current->m_right, &result);
-			if (!succeed)
-			{
-				return false;
-			}
-			*ppResult = new trie_node();
-			(*ppResult)->m_left = result;
-			(*ppResult)->m_right = current->m_right;
+			succeed = insert_bucket(key, value, (bucket_node*)current->m_left, &bucket_result);
+			result = bucket_result;
 		}
-		return true;
+		if (!succeed)
+		{
+			return false;
+		}
+		*ppResult = new trie_node();
+		(*ppResult)->m_left = result;
+		(*ppResult)->m_right= current->m_right;
 	}
 	else
 	{
-		// TODO: insert bucket node here
+		if (num_bits > 1)
+		{
+			succeed = insert_trie(key, value, hash >> 1, num_bits - 1, (trie_node*)current->m_left, &trie_result);
+			result = trie_result;
+		}
+		else
+		{
+			succeed = insert_bucket(key, value, (bucket_node*)current->m_left, &bucket_result);
+			result = bucket_result;
+		}
+		if (!succeed)
+		{
+			return false;
+		}
+		*ppResult = new trie_node();
+		(*ppResult)->m_left = result;
+		(*ppResult)->m_right = current->m_right;
 	}
+	return true;
+}
+
+bool hash_trie::insert_bucket(const char* key, int value, bucket_node* current, bucket_node** ppResult)
+{
 }
 
 hash_trie::node::~node()

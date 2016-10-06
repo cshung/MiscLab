@@ -31,4 +31,5 @@ private:
 
 	int hash(const char* key);
 	bool insert_trie(const char* key, int value, int hash, int num_bits, trie_node* current, trie_node** ppResult);
+	bool insert_bucket(const char* key, int value, bucket_node* current, bucket_node** ppResult);
 };
