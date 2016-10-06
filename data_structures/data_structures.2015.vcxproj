@@ -144,6 +144,8 @@
   <ItemGroup>
     <ClCompile Include="fenwick_tree.cpp" />
     <ClCompile Include="fenwick_tree_test.cpp" />
+    <ClCompile Include="hash_trie.cpp" />
+    <ClCompile Include="hash_trie_test.cpp" />
     <ClCompile Include="kd_tree.cpp" />
     <ClCompile Include="min_max_heap.cpp" />
     <ClCompile Include="min_max_heap_test.cpp" />
@@ -153,6 +155,8 @@
   <ItemGroup>
     <ClInclude Include="fenwick_tree.h" />
     <ClInclude Include="fenwick_tree_test.h" />
+    <ClInclude Include="hash_trie.h" />
+    <ClInclude Include="hash_trie_test.h" />
     <ClInclude Include="kd_tree.h" />
     <ClInclude Include="min_max_heap.h" />
     <ClInclude Include="min_max_heap_test.h" />
