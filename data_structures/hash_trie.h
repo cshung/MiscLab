@@ -22,14 +22,14 @@ private:
 	};
 	struct trie_node : node
 	{
-		trie_node();
+		trie_node(node* left, node* right);
 		virtual ~trie_node();
 		node* m_left;
 		node* m_right;
 	};
 	struct bucket_node : node
 	{
-		bucket_node(const char* key, int value);
+		bucket_node(const char* key, int value, bucket_node* next);
 		~bucket_node();
 		char* m_key;
 		int m_value;

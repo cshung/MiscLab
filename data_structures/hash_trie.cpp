@@ -5,7 +5,7 @@ using namespace std;
 
 hash_trie::hash_trie()
 {
-	this->m_root = new trie_node();	
+	this->m_root = new trie_node(nullptr, nullptr);
 	this->m_root->add_ref();
 }
 
@@ -64,7 +64,7 @@ bool hash_trie::get(const char* key, int* pValue) const
 
 bool hash_trie::set(const char* key, int value)
 {
-	int hash = this->hash(key);	
+	int hash = this->hash(key);
 	trie_node* new_root;
 	bool succeed = this->insert_trie(key, value, hash, 32, this->m_root, &new_root);
 	if (!succeed)
@@ -119,9 +119,7 @@ bool hash_trie::insert_trie(const char* key, int value, int hash, int num_bits, 
 		{
 			return false;
 		}
-		*ppResult = new trie_node();
-		(*ppResult)->m_left = result;
-		(*ppResult)->m_right= right_trie_node;
+		*ppResult = new trie_node(result, right_trie_node);
 	}
 	else
 	{
@@ -139,9 +137,7 @@ bool hash_trie::insert_trie(const char* key, int value, int hash, int num_bits, 
 		{
 			return false;
 		}
-		*ppResult = new trie_node();
-		(*ppResult)->m_left = left_trie_node;
-		(*ppResult)->m_right = result;
+		*ppResult = new trie_node(left_trie_node, result);
 	}
 
 	return true;
@@ -151,7 +147,7 @@ bool hash_trie::insert_bucket(const char* key, int value, bucket_node* current, 
 {
 	if (current == nullptr)
 	{
-		*ppResult = new bucket_node(key, value);
+		*ppResult = new bucket_node(key, value, nullptr);
 		return true;
 	}
 	else if (strcmp(current->m_key, key) == 0)
@@ -166,8 +162,7 @@ bool hash_trie::insert_bucket(const char* key, int value, bucket_node* current, 
 		{
 			return false;
 		}
-		*ppResult = new bucket_node(current->m_key, current->m_value);
-		(*ppResult)->m_next = result;
+		*ppResult = new bucket_node(current->m_key, current->m_value, result);
 	}
 	return true;
 }
@@ -193,9 +188,16 @@ void hash_trie::node::release()
 	}
 }
 
-hash_trie::trie_node::trie_node() : m_left(nullptr), m_right(nullptr)
+hash_trie::trie_node::trie_node(node* left, node* right) : m_left(left), m_right(right)
 {
-
+	if (left != nullptr)
+	{
+		left->add_ref();
+	}
+	if (right != nullptr)
+	{
+		right->add_ref();
+	}
 }
 
 hash_trie::trie_node::~trie_node()
@@ -210,13 +212,17 @@ hash_trie::trie_node::~trie_node()
 	}
 }
 
-hash_trie::bucket_node::bucket_node(const char* key, int value)
+hash_trie::bucket_node::bucket_node(const char* key, int value, bucket_node* next) 
 {
 	this->m_value = value;
 	int key_length = strlen(key);
 	this->m_key = new char[key_length + 1];
 	strcpy(this->m_key, key);
-	this->m_next = nullptr;
+	this->m_next = next;
+	if (this->m_next != nullptr)
+	{
+		this->m_next->add_ref();
+	}
 }
 
 hash_trie::bucket_node::~bucket_node()
