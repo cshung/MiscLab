@@ -203,12 +203,10 @@ hash_trie::trie_node::~trie_node()
 	if (this->m_left != nullptr)
 	{
 		this->m_left->release();
-		delete this->m_left;
 	}
 	if (this->m_right != nullptr)
 	{
 		this->m_right->release();
-		delete this->m_right;
 	}
 }
 
@@ -226,7 +224,6 @@ hash_trie::bucket_node::~bucket_node()
 	if (this->m_next != nullptr)
 	{
 		this->m_next->release();
-		delete this->m_next;
 	}
 	delete[] this->m_key;
 }
