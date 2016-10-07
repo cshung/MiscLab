@@ -6,11 +6,12 @@ using namespace std;
 hash_trie::hash_trie()
 {
 	this->m_root = new trie_node();	
+	this->m_root->add_ref();
 }
 
 hash_trie::~hash_trie()
 {
-	delete this->m_root;
+	this->m_root->release();
 }
 
 bool hash_trie::get(const char* key, int* pValue) const
@@ -58,7 +59,7 @@ bool hash_trie::get(const char* key, int* pValue) const
 			bucket = bucket->m_next;
 		}
 	}
-	return true;
+	return false;
 }
 
 bool hash_trie::set(const char* key, int value)
@@ -71,7 +72,9 @@ bool hash_trie::set(const char* key, int value)
 		return false;
 	}
 	// optionally, we can keep the old root for persistence
+	this->m_root->release();
 	this->m_root = (hash_trie::trie_node*)new_root;
+	this->m_root->add_ref();
 	return true;
 }
 
@@ -169,9 +172,25 @@ bool hash_trie::insert_bucket(const char* key, int value, bucket_node* current, 
 	return true;
 }
 
+hash_trie::node::node() : m_ref(0)
+{
+}
+
 hash_trie::node::~node()
 {
+}
 
+void hash_trie::node::add_ref()
+{
+	this->m_ref++;
+}
+
+void hash_trie::node::release()
+{
+	if (--this->m_ref == 0)
+	{
+		delete this;
+	}
 }
 
 hash_trie::trie_node::trie_node() : m_left(nullptr), m_right(nullptr)
@@ -183,10 +202,12 @@ hash_trie::trie_node::~trie_node()
 {
 	if (this->m_left != nullptr)
 	{
+		this->m_left->release();
 		delete this->m_left;
 	}
 	if (this->m_right != nullptr)
 	{
+		this->m_right->release();
 		delete this->m_right;
 	}
 }
@@ -200,7 +221,33 @@ hash_trie::bucket_node::bucket_node(const char* key, int value)
 	this->m_next = nullptr;
 }
 
-hash_trie::bucket_node::bucket_node()
+hash_trie::bucket_node::~bucket_node()
 {
+	if (this->m_next != nullptr)
+	{
+		this->m_next->release();
+		delete this->m_next;
+	}
 	delete[] this->m_key;
+}
+
+hash_trie_snapshot hash_trie::snapshot()
+{
+	return hash_trie_snapshot(this->m_root);
+}
+
+void hash_trie::restore(hash_trie_snapshot& snapshot)
+{
+	this->m_root->release();
+	this->m_root = snapshot.m_root;
+}
+
+hash_trie_snapshot::hash_trie_snapshot(hash_trie::trie_node* root) : m_root(root)
+{
+	this->m_root->add_ref();
+}
+
+hash_trie_snapshot::~hash_trie_snapshot()
+{
+	this->m_root->release();
 }
