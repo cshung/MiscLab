@@ -6,6 +6,11 @@ using namespace std;
 void hash_trie_test()
 {
 	hash_trie map;
-	map.set("ab", 1);
-	cout << "Done" << endl;
+	cout << map.set("ab", 10086) << endl;
+	cout << map.set("ba", 12580) << endl;
+	int result;
+	cout << map.get("ab", &result) << endl;
+	cout << result << endl;
+	cout << map.get("ba", &result) << endl;
+	cout << result << endl;
 }

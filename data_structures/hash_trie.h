@@ -5,7 +5,7 @@ class hash_trie
 public:
 	hash_trie();
 	~hash_trie();
-	bool get(const char* key, int* pValue);
+	bool get(const char* key, int* pValue) const;
 	bool set(const char* key, int value);
 private:
 	struct node
@@ -29,7 +29,7 @@ private:
 	};
 	trie_node* m_root;
 
-	int hash(const char* key);
+	int hash(const char* key) const;
 	bool insert_trie(const char* key, int value, int hash, int num_bits, trie_node* current, trie_node** ppResult);
 	bool insert_bucket(const char* key, int value, bucket_node* current, bucket_node** ppResult);
 };

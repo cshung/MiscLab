@@ -13,6 +13,54 @@ hash_trie::~hash_trie()
 	delete this->m_root;
 }
 
+bool hash_trie::get(const char* key, int* pValue) const
+{
+	int hash = this->hash(key);
+	int bit = -1;
+	trie_node* cursor = this->m_root;
+	for (int i = 0; i < 31; i++)
+	{
+		bit = hash & 1;
+		hash = hash >> 1;
+		if (cursor == nullptr)
+		{
+			return false;
+		}
+		hash = hash & 1;
+		if (bit == 0)
+		{
+			cursor = (trie_node*)cursor->m_left;
+		}
+		else
+		{
+			cursor = (trie_node*)cursor->m_right;
+		}
+	}
+	bit = hash & 1;
+	bucket_node* bucket = nullptr;
+	if (bit == 0)
+	{
+		bucket = (bucket_node*)cursor->m_left;
+	}
+	else
+	{
+		bucket = (bucket_node*)cursor->m_right;
+	}
+	while (bucket != nullptr)
+	{
+		if (strcmp(bucket->m_key, key) == 0)
+		{
+			*pValue = bucket->m_value;
+			return true;
+		}
+		else
+		{
+			bucket = bucket->m_next;
+		}
+	}
+	return true;
+}
+
 bool hash_trie::set(const char* key, int value)
 {
 	int hash = this->hash(key);	
@@ -27,7 +75,7 @@ bool hash_trie::set(const char* key, int value)
 	return true;
 }
 
-int hash_trie::hash(const char* key)
+int hash_trie::hash(const char* key) const
 {
 	int hash = 0;
 	const char* key_cursor = key;
@@ -115,7 +163,7 @@ bool hash_trie::insert_bucket(const char* key, int value, bucket_node* current, 
 		{
 			return false;
 		}
-		*ppResult = new bucket_node(current->m_key, value);
+		*ppResult = new bucket_node(current->m_key, current->m_value);
 		(*ppResult)->m_next = result;
 	}
 	return true;
