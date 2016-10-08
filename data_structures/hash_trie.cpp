@@ -243,6 +243,7 @@ void hash_trie::restore(hash_trie_snapshot& snapshot)
 {
     this->m_root->release();
     this->m_root = snapshot.m_root;
+    this->m_root->add_ref();
 }
 
 hash_trie_snapshot::hash_trie_snapshot(hash_trie::trie_node* root) : m_root(root)
