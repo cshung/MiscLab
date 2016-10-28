@@ -83,6 +83,8 @@
     <ClCompile Include="kd_tree.cpp" />
     <ClCompile Include="min_max_heap.cpp" />
     <ClCompile Include="min_max_heap_test.cpp" />
+    <ClCompile Include="min_max_queue.cpp" />
+    <ClCompile Include="min_max_queue_test.cpp" />
     <ClCompile Include="Program.cpp" />
     <ClCompile Include="splay_tree.cpp" />
   </ItemGroup>
@@ -94,6 +96,8 @@
     <ClInclude Include="kd_tree.h" />
     <ClInclude Include="min_max_heap.h" />
     <ClInclude Include="min_max_heap_test.h" />
+    <ClInclude Include="min_max_queue.h" />
+    <ClInclude Include="min_max_queue_test.h" />
     <ClInclude Include="splay_tree.h" />
     <ClInclude Include="test.h" />
   </ItemGroup>
