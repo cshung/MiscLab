@@ -76,6 +76,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cartesian_tree.cpp" />
+    <ClCompile Include="cartesian_tree_test.cpp" />
     <ClCompile Include="fenwick_tree.cpp" />
     <ClCompile Include="fenwick_tree_test.cpp" />
     <ClCompile Include="hash_trie.cpp" />
@@ -89,6 +91,8 @@
     <ClCompile Include="splay_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cartesian_tree.h" />
+    <ClInclude Include="cartesian_tree_test.h" />
     <ClInclude Include="fenwick_tree.h" />
     <ClInclude Include="fenwick_tree_test.h" />
     <ClInclude Include="hash_trie.h" />
