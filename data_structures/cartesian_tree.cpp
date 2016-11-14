@@ -1,15 +1,33 @@
 #include "cartesian_tree.h"
 #include <stack>
-
 using namespace std;
 
 cartesian_tree::cartesian_tree() : m_root(nullptr)
 {
 }
 
+cartesian_tree::~cartesian_tree()
+{
+    if (this->m_root != nullptr)
+    {
+        delete this->m_root;
+    }
+}
+
 cartesian_tree::cartesian_tree_node::cartesian_tree_node(int value, int priority) : m_value(value), m_priority(priority), m_left(nullptr), m_right(nullptr)
 {
+}
 
+cartesian_tree::cartesian_tree_node::~cartesian_tree_node()
+{
+    if (this->m_left != nullptr)
+    {
+        delete this->m_left;
+    }
+    if (this->m_right != nullptr)
+    {
+        delete this->m_right;
+    }
 }
 
 cartesian_tree::cartesian_tree_node* cartesian_tree::insert(cartesian_tree::cartesian_tree_node* current, int value, int priority)
