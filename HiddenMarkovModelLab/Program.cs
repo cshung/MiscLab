@@ -110,7 +110,7 @@ namespace HiddenMarkovModelLab
                 {
                     for (int c = 0; c < this.numberOfOutcomes; c++)
                     {
-                        Console.Write(Math.Exp(this.outcomeProbabilities[i, c]));
+                        Console.Write(Math.Exp(this.outcomeProbabilities[i, c]).ToString("0.0000"));
                         Console.Write(" ");
                     }
                     Console.WriteLine();
@@ -172,7 +172,7 @@ namespace HiddenMarkovModelLab
                 base.Show();
                 for (int i = 0; i < this.numberOfStates; i++)
                 {
-                    Console.WriteLine(this.means[i] + ", " + this.variances[i]);
+                    Console.WriteLine(this.means[i].ToString("0.0000") + ", " + this.variances[i].ToString("0.0000"));
                 }
                 Console.WriteLine();
             }
@@ -229,7 +229,7 @@ namespace HiddenMarkovModelLab
                 this.TrainObservations(sequence, gamma);
 
                 double log_likelihood = this.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, sequence.Length - 1]));
-                Console.WriteLine(log_likelihood);
+                Console.WriteLine(log_likelihood.ToString("0.0000"));
             }
 
             public int[] BestStateSequence(int[] sequence)
@@ -411,13 +411,13 @@ namespace HiddenMarkovModelLab
             {
                 for (int i = 0; i < this.numberOfStates; i++)
                 {
-                    Console.WriteLine(Math.Exp(this.initialProbabilities[i]));
+                    Console.WriteLine(Math.Exp(this.initialProbabilities[i]).ToString("0.0000"));
                 }
                 for (int i = 0; i < this.numberOfStates; i++)
                 {
                     for (int j = 0; j < this.numberOfStates; j++)
                     {
-                        Console.Write(Math.Exp(this.transitionProbabilities[i, j]));
+                        Console.Write(Math.Exp(this.transitionProbabilities[i, j]).ToString("0.0000"));
                         Console.Write(" ");
                     }
                     Console.WriteLine();
