@@ -78,7 +78,6 @@ namespace HiddenMarkovModelLab
             public void Bootstrap()
             {
                 double p = Math.Log(1.0 / this.numberOfStates);
-                double q = Math.Log(1.0 / this.numberOfOutcomes);
                 for (int s = 0; s < this.numberOfStates; s++)
                 {
                     this.initialProbabilities[s] = p;
@@ -86,13 +85,15 @@ namespace HiddenMarkovModelLab
                     {
                         this.transitionProbabilities[s, t] = p;
                     }
+
+                    // For outcome probabilities, we have to break the symmetry - without that all states look identical and it will stay that way
                     var randomValues = Enumerable.Range(0, this.numberOfOutcomes).Select(_ => r.NextDouble());
                     var sum = randomValues.Sum();
-                    var randomProbabilities = randomValues.Select(v => v - sum).ToArray();
+                    var randomProbabilities = randomValues.Select(v => v / sum).ToArray();
 
                     for (int c = 0; c < this.numberOfOutcomes; c++)
                     {
-                        this.outcomeProbabilities[s, c] = randomProbabilities[c];
+                        this.outcomeProbabilities[s, c] = Math.Log(randomProbabilities[c]);
                     }
                 }
             }
