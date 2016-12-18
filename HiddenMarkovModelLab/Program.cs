@@ -29,7 +29,7 @@ namespace HiddenMarkovModelLab
             for (int i = 0; i < 200; i++)
             {
                 hmm.Train(sequence);
-                hmm.Show();
+                // hmm.Show();
             }
             Console.WriteLine(string.Join("", hmm.BestStateSequence(sequence)));
         }
@@ -61,12 +61,12 @@ namespace HiddenMarkovModelLab
         }
 
         // A model based on there are only a handful of observation values
-        private class DicreteHiddenMarkovModel : HiddenMarkovModel
+        private class DiscreteHiddenMarkovModel : HiddenMarkovModel
         {
             private int numberOfOutcomes;
             private double[,] outcomeProbabilities;
 
-            public DicreteHiddenMarkovModel(int numberOfStates, int numberOfOutcomes) : base(numberOfStates)
+            public DiscreteHiddenMarkovModel(int numberOfStates, int numberOfOutcomes) : base(numberOfStates)
             {
                 this.numberOfOutcomes = numberOfOutcomes;
                 this.outcomeProbabilities = new double[numberOfStates, numberOfOutcomes];
@@ -94,10 +94,10 @@ namespace HiddenMarkovModelLab
                 for (int j = 0; j < this.numberOfStates; j++)
                 {
                     var time = Enumerable.Range(0, sequence.Length);
-                    double d = this.LogSum(time.Select(t => gamma[j, t]));
+                    double d = Utilities.LogSum(time.Select(t => gamma[j, t]));
                     for (int c = 0; c < this.numberOfOutcomes; c++)
                     {
-                        double n = this.LogSum(time.Where(t => sequence[t] == c).Select(t => gamma[j, t]));
+                        double n = Utilities.LogSum(time.Where(t => sequence[t] == c).Select(t => gamma[j, t]));
                         this.outcomeProbabilities[j, c] = n - d;
                     }
                 }
@@ -136,7 +136,7 @@ namespace HiddenMarkovModelLab
 
             protected override double OutcomeProbability(int state, int observation)
             {
-                return -Math.Log(2 * Math.PI) / 2 - SafeLog(variances[state]) - (observation - means[state]) * (observation - means[state]) / 2 / variances[state];
+                return -Math.Log(2 * Math.PI) / 2 - Utilities.Log(variances[state]) - (observation - means[state]) * (observation - means[state]) / 2 / variances[state];
             }
 
             protected override void TrainObservations(int[] sequence, double[,] gamma)
@@ -144,9 +144,9 @@ namespace HiddenMarkovModelLab
                 for (int j = 0; j < this.numberOfStates; j++)
                 {
                     var time = Enumerable.Range(0, sequence.Length);
-                    double d = this.LogSum(time.Select(t => gamma[j, t]));
-                    double nm = this.LogSum(time.Select(t => this.SafeLog(sequence[t]) + gamma[j, t]));
-                    double nv = this.LogSum(time.Select(t => 2 * this.SafeLog(Math.Abs(sequence[t] - means[j])) + gamma[j, t]));
+                    double d = Utilities.LogSum(time.Select(t => gamma[j, t]));
+                    double nm = Utilities.LogSum(time.Select(t => Utilities.Log(sequence[t]) + gamma[j, t]));
+                    double nv = Utilities.LogSum(time.Select(t => 2 * Utilities.Log(Math.Abs(sequence[t] - means[j])) + gamma[j, t]));
                     means[j] = Math.Exp(nm - d);
                     variances[j] = Math.Exp(nv - d);
                     // Make sure the variance is not too small 
@@ -220,15 +220,15 @@ namespace HiddenMarkovModelLab
                     for (int j = 0; j < this.numberOfStates; j++)
                     {
                         var time = Enumerable.Range(0, sequence.Length - 1);
-                        double n = this.LogSum(time.Select(t => xi[i, j, t]));
-                        double d = this.LogSum(time.Select(t => gamma[i, t]));
+                        double n = Utilities.LogSum(time.Select(t => xi[i, j, t]));
+                        double d = Utilities.LogSum(time.Select(t => gamma[i, t]));
                         this.transitionProbabilities[i, j] = n - d;
                     }
                 }
 
                 this.TrainObservations(sequence, gamma);
 
-                double log_likelihood = this.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, sequence.Length - 1]));
+                double log_likelihood = Utilities.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, sequence.Length - 1]));
                 Console.WriteLine(log_likelihood.ToString("0.0000"));
             }
 
@@ -292,7 +292,7 @@ namespace HiddenMarkovModelLab
 
                 for (int t = 0; t < sequence.Length - 1; t++)
                 {
-                    double temp = this.LogSum(statePairs.Select(p => alpha[p.Item1, t] + this.transitionProbabilities[p.Item1, p.Item2] + this.OutcomeProbability(p.Item2, sequence[t + 1]) + beta[p.Item2, t + 1]));
+                    double temp = Utilities.LogSum(statePairs.Select(p => alpha[p.Item1, t] + this.transitionProbabilities[p.Item1, p.Item2] + this.OutcomeProbability(p.Item2, sequence[t + 1]) + beta[p.Item2, t + 1]));
                     for (int i = 0; i < this.numberOfStates; i++)
                     {
                         for (int j = 0; j < this.numberOfStates; j++)
@@ -320,7 +320,7 @@ namespace HiddenMarkovModelLab
                 {
                     for (int j = 0; j < this.numberOfStates; j++)
                     {
-                        double temp = this.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, t] + this.transitionProbabilities[i, j]));
+                        double temp = Utilities.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, t] + this.transitionProbabilities[i, j]));
                         alpha[j, t + 1] = temp + this.OutcomeProbability(j, sequence[t + 1]);
                     }
                 }
@@ -339,7 +339,7 @@ namespace HiddenMarkovModelLab
                 {
                     for (int i = 0; i < this.numberOfStates; i++)
                     {
-                        beta[i, t] = this.LogSum(Enumerable.Range(0, this.numberOfStates).Select(j => this.transitionProbabilities[i, j] + this.OutcomeProbability(j, sequence[t + 1]) + beta[j, t + 1]));
+                        beta[i, t] = Utilities.LogSum(Enumerable.Range(0, this.numberOfStates).Select(j => this.transitionProbabilities[i, j] + this.OutcomeProbability(j, sequence[t + 1]) + beta[j, t + 1]));
                     }
                 }
 
@@ -351,60 +351,13 @@ namespace HiddenMarkovModelLab
                 double[,] gamma = new double[this.numberOfStates, sequenceLength];
                 for (int t = 0; t < sequenceLength; t++)
                 {
-                    double temp = LogSum(Enumerable.Range(0, numberOfStates).Select(i => alpha[i, t] + beta[i, t]));
+                    double temp = Utilities.LogSum(Enumerable.Range(0, numberOfStates).Select(i => alpha[i, t] + beta[i, t]));
                     for (int i = 0; i < numberOfStates; i++)
                     {
                         gamma[i, t] = alpha[i, t] + beta[i, t] - temp;
                     }
                 }
                 return gamma;
-            }
-
-            protected double LogSum(IEnumerable<double> input)
-            {
-                return input.Aggregate((x, y) => this.LogAdd(x, y));
-            }
-
-            protected double SafeLog(double x)
-            {
-                if (x == 0)
-                {
-                    return -23;
-                }
-                else
-                {
-                    return Math.Log(x);
-                }
-            }
-
-            private double LogAdd(double x, double y)
-            {
-                if (double.IsNaN(x))
-                {
-                    throw new Exception();
-                }
-                if (double.IsNaN(y))
-                {
-                    throw new Exception();
-                }
-                double temp, diff, z;
-
-                if (x < y)
-                {
-                    temp = x; x = y; y = temp;
-                }
-
-                diff = y - x;
-
-                if (diff < -23)
-                {
-                    return (x < -0.5e10) ? -1e10 : x;
-                }
-                else
-                {
-                    z = Math.Exp(diff);
-                    return x + Math.Log(1.0 + z);
-                }
             }
 
             public virtual void Show()
@@ -423,7 +376,66 @@ namespace HiddenMarkovModelLab
                     Console.WriteLine();
                 }
             }
+        }
 
+        private static class Utilities
+        {
+            public static double Add(double x, double y)
+            {
+                double result = x + y;
+                Check(result);
+                return result;
+            }
+
+            public static double LogSum(IEnumerable<double> input)
+            {
+                return input.Aggregate((x, y) => Utilities.LogAdd(x, y));
+            }
+
+            public static double Log(double x)
+            {
+                if (x == 0)
+                {
+                    return -23;
+                }
+                else
+                {
+                    double result = Math.Log(x);
+                    Check(result);
+                    return result;
+                }
+            }
+
+            public static double LogAdd(double x, double y)
+            {
+                double temp, diff, z;
+
+                if (x < y)
+                {
+                    temp = x; x = y; y = temp;
+                }
+
+                diff = y - x;
+
+                if (diff < -23)
+                {
+                    return (x < -0.5e10) ? -1e10 : x;
+                }
+                else
+                {
+                    z = Math.Exp(diff);
+                    double result = x + Math.Log(1.0 + z);
+                    Check(result);
+                    return result;
+                }
+            }
+
+            private static void Check(double result)
+            {
+                if (double.IsNaN(result)) { throw new Exception("IsNaN"); }
+                if (double.IsPositiveInfinity(result)) { throw new Exception("IsPositiveInfinity"); }
+                if (double.IsNegativeInfinity(result)) { throw new Exception("IsNegativeInfinity"); }
+            }
         }
     }
 }
