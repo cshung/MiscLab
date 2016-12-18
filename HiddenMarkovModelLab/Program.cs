@@ -31,6 +31,7 @@ namespace HiddenMarkovModelLab
                 hmm.Train(sequence);
                 hmm.Show();
             }
+            Console.WriteLine(string.Join("", hmm.BestStateSequence(sequence)));
         }
 
         // Generating a random sequence based on a hard coded hidden markov model
@@ -135,7 +136,7 @@ namespace HiddenMarkovModelLab
 
             protected override double OutcomeProbability(int state, int observation)
             {
-                return -Math.Log(2 * Math.PI) / 2 - Math.Log(variances[state]) - (observation - means[state]) * (observation - means[state]) / 2 / variances[state];
+                return -Math.Log(2 * Math.PI) / 2 - SafeLog(variances[state]) - (observation - means[state]) * (observation - means[state]) / 2 / variances[state];
             }
 
             protected override void TrainObservations(int[] sequence, double[,] gamma)
@@ -144,8 +145,8 @@ namespace HiddenMarkovModelLab
                 {
                     var time = Enumerable.Range(0, sequence.Length);
                     double d = this.LogSum(time.Select(t => gamma[j, t]));
-                    double nm = this.LogSum(time.Select(t => Math.Log(sequence[t]) + gamma[j, t]));
-                    double nv = this.LogSum(time.Select(t => 2 * Math.Log(Math.Abs(sequence[t] - means[j])) + gamma[j, t]));
+                    double nm = this.LogSum(time.Select(t => this.SafeLog(sequence[t]) + gamma[j, t]));
+                    double nv = this.LogSum(time.Select(t => 2 * this.SafeLog(Math.Abs(sequence[t] - means[j])) + gamma[j, t]));
                     means[j] = Math.Exp(nm - d);
                     variances[j] = Math.Exp(nv - d);
                     // Make sure the variance is not too small 
@@ -362,6 +363,18 @@ namespace HiddenMarkovModelLab
             protected double LogSum(IEnumerable<double> input)
             {
                 return input.Aggregate((x, y) => this.LogAdd(x, y));
+            }
+
+            protected double SafeLog(double x)
+            {
+                if (x == 0)
+                {
+                    return -23;
+                }
+                else
+                {
+                    return Math.Log(x);
+                }
             }
 
             private double LogAdd(double x, double y)
