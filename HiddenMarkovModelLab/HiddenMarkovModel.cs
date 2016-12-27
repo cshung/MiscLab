@@ -1,6 +1,7 @@
 ﻿namespace HiddenMarkovModelLab
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     public abstract class HiddenMarkovModel<T>
@@ -30,33 +31,72 @@
             }
         }
 
-        public virtual void Train(T[] sequence)
+        public virtual void Train(T[][] sequences)
         {
-            SafeNumber[,] alpha = this.ComputeForwardLogLikelihoods(sequence);
-            SafeNumber[,] beta = this.ComputeBackwardLogLikelihoods(sequence);
-            SafeNumber[,] gamma = this.ComputePosteriorLogLikelihoods(alpha, beta, sequence.Length);
-            SafeNumber[,,] xi = this.ComputeTransitionLogLikelihoods(alpha, beta, sequence);
+            // Initialize the accumulators
+            var initialNumerators = new List<SafeNumber>[this.numberOfStates];
+            var transitionNumerators = new List<SafeNumber>[this.numberOfStates, this.numberOfStates];
+            var transitionDenominators = new List<SafeNumber>[this.numberOfStates];
+            SafeNumber log_likelihoods = new SafeNumber(0);
 
             for (int i = 0; i < this.numberOfStates; i++)
             {
-                this.initialLogLikelihoods[i] = gamma[i, 0];
+                initialNumerators[i] = new List<SafeNumber>();
+                transitionDenominators[i] = new List<SafeNumber>();
+                for (int j = 0; j < this.numberOfStates; j++)
+                {
+                    transitionNumerators[i, j] = new List<SafeNumber>();
+                }
+            }
+
+            foreach (var sequence in sequences)
+            {
+                SafeNumber[,] alpha = this.ComputeForwardLogLikelihoods(sequence);
+                SafeNumber[,] beta = this.ComputeBackwardLogLikelihoods(sequence);
+                SafeNumber[,] gamma = this.ComputePosteriorLogLikelihoods(alpha, beta, sequence.Length);
+                SafeNumber[,,] xi = this.ComputeTransitionLogLikelihoods(alpha, beta, sequence);
+
+                for (int i = 0; i < this.numberOfStates; i++)
+                {
+                    initialNumerators[i].Add(gamma[i, 0]);
+                }
+
+                for (int i = 0; i < this.numberOfStates; i++)
+                {
+                    var time = Enumerable.Range(0, sequence.Length - 1);
+                    SafeNumber d = ArithmeticMethods.LogSum(time.Select(t => gamma[i, t]));
+                    transitionDenominators[i].Add(d);
+                    for (int j = 0; j < this.numberOfStates; j++)
+                    {
+                        SafeNumber n = ArithmeticMethods.LogSum(time.Select(t => xi[i, j, t]));
+                        transitionNumerators[i, j].Add(n);
+                    }
+                }
+
+                this.AccumulateObservation(sequence, gamma);
+
+                SafeNumber log_likelihood = ArithmeticMethods.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, sequence.Length - 1]));
+                log_likelihoods = log_likelihoods + log_likelihood;
             }
 
             for (int i = 0; i < this.numberOfStates; i++)
             {
+                this.initialLogLikelihoods[i] = ArithmeticMethods.LogSum(initialNumerators[i]) - new SafeNumber(Math.Log(sequences.Length));
+            }
+
+            for (int i = 0; i < this.numberOfStates; i++)
+            {
+                SafeNumber d = ArithmeticMethods.LogSum(transitionDenominators[i]);
                 for (int j = 0; j < this.numberOfStates; j++)
                 {
-                    var time = Enumerable.Range(0, sequence.Length - 1);
-                    SafeNumber n = ArithmeticMethods.LogSum(time.Select(t => xi[i, j, t]));
-                    SafeNumber d = ArithmeticMethods.LogSum(time.Select(t => gamma[i, t]));
+                    SafeNumber n = ArithmeticMethods.LogSum(transitionNumerators[i, j]);
                     this.transitionLogLikelihoods[i, j] = n - d;
                 }
             }
 
-            this.TrainObservations(sequence, gamma);
+            this.TrainObservations();
 
-            SafeNumber log_likelihood = ArithmeticMethods.LogSum(Enumerable.Range(0, this.numberOfStates).Select(i => alpha[i, sequence.Length - 1]));
-            Console.WriteLine(log_likelihood.Value.ToString("0.0000"));
+            Console.WriteLine(log_likelihoods.Value.ToString("0.0000"));
         }
 
         public int[] BestStateSequence(T[] sequence)
@@ -136,7 +176,9 @@
 
         protected abstract SafeNumber OutcomeLogLikelihood(int state, T observation);
 
-        protected abstract void TrainObservations(T[] sequence, SafeNumber[,] gamma);
+        protected abstract void AccumulateObservation(T[] sequence, SafeNumber[,] gamma);
+
+        protected abstract void TrainObservations();
 
         private SafeNumber[,] ComputeForwardLogLikelihoods(T[] sequence)
         {

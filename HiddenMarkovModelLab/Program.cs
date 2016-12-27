@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace HiddenMarkovModelLab
+﻿namespace HiddenMarkovModelLab
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     internal static class Program
     {
         private static void Main(string[] args)
@@ -17,21 +17,42 @@ namespace HiddenMarkovModelLab
             // This data is relatively straightforward to generate
             //
 
-            Random random = new Random(0);
-            // var sequence = GenerateSequence(random, 2000).ToArray();
-            var sequence = GenerateSequence(random, 2000).Select(t => (double)t).ToArray();
+            var random = new Random(0);
+            var sequences = GenerateSequences<int>(random);
 
             // The hard part is to make sense of the data out of the generated sequence
             // Here is the code to train a hidden markov model
-            // HiddenMarkovModel<int> hmm = new DiscreteHiddenMarkovModel(/* numberOfStates = */2, /* numberOfOutcomes = */ 2);
-            HiddenMarkovModel<double> hmm = new ContinuousHiddenMarkovModel(/* numberOfStates = */2);
+            HiddenMarkovModel<int> hmm = new DiscreteHiddenMarkovModel(/* numberOfStates = */2, /* numberOfOutcomes = */ 2);
+            // HiddenMarkovModel<double> hmm = new ContinuousHiddenMarkovModel(/* numberOfStates = */2);
             hmm.Bootstrap(random);
             for (int i = 0; i < 200; i++)
             {
-                hmm.Train(sequence);
+                hmm.Train(sequences);
             }
+
             hmm.Show();
-            Console.WriteLine(string.Join("", hmm.BestStateSequence(sequence)));
+
+            foreach (var sequence in sequences)
+            {
+                Console.WriteLine("============================");
+                Console.WriteLine(string.Join("", sequence));
+                Console.WriteLine("============================");
+            }
+
+            Console.WriteLine(string.Join("", hmm.BestStateSequence(sequences[0])));
+            Console.WriteLine("============================");
+        }
+
+        private static T[][] GenerateSequences<T>(Random random) where T : IConvertible
+        {
+            var sequencesList = new List<T[]>();
+            for (int i = 0; i < 10; i++)
+            {
+                sequencesList.Add(GenerateSequence(random, 100).Select(t => (T)Convert.ChangeType(t, typeof(T))).ToArray());
+            }
+
+            var sequences = sequencesList.ToArray();
+            return sequences;
         }
 
         // Generating a random sequence based on a hard coded hidden markov model
@@ -56,6 +77,7 @@ namespace HiddenMarkovModelLab
                     // The state tends to stay even longer
                     state = r.NextDouble() > 0.9 ? 0 : 1;
                 }
+
                 yield return observation;
             }
         }
