@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MonteCarlos
 {
     class Program
     {
-        private const int trials = 1000000;
+        private const int trials = 100000;
 
         static void Main(string[] args)
         {
@@ -16,6 +13,105 @@ namespace MonteCarlos
 
             Random random = new Random(0);
 
+            SampleNonUniformGrid(random);
+
+            Console.WriteLine("Bayesian Learning");
+            BayesianLearning(random);
+        }
+
+        private static void BayesianLearning(Random random)
+        {
+            const int numSamples = 1000;
+            // Generating some Gaussian samples
+            double[] samples = new double[numSamples];
+            for (int i = 0; i < numSamples; i += 2)
+            {
+                double u1 = random.NextDouble();
+                double u2 = random.NextDouble();
+                double r = Math.Sqrt(-2 * Math.Log(u1));
+                double theta = 2 * Math.PI * u2;
+                double x = r * Math.Cos(theta);
+                double y = r * Math.Sin(theta);
+
+                // Mean 30 - Variance 400
+                x *= 20;
+                x += 30;
+                y *= 20;
+                y += 30;
+
+                samples[i] = x;
+                samples[i + 1] = y;
+            }
+
+            // Bayesian learning
+
+            // Here is our state space of two real numbers (i.e. the plane)
+            // Variance has to be positive, but log variance can take any value, that make the markov chain part easy.
+            double mean = samples.Min();
+            double logVariance = 0;
+
+            // Here are the integral values to compute, 
+            double meanSum = 0;
+            double varianceSum = 0;
+
+            for (int i = 0; i < trials; i++)
+            {
+                double logLikelihood = GetLogLikelihood(samples, mean, logVariance);
+                double delta_mean = random.NextDouble() - 0.5;
+                double delta_log_variance = random.NextDouble() - 0.5;
+                double newLogLikelihood = GetLogLikelihood(samples, mean + delta_mean, logVariance + delta_log_variance);
+
+                // Implicitly, we are assuming a flat, uninformative prior here.
+
+                // P(theta'|D) = P(D|theta') * P(theta') / P(D)
+                // P(theta|D) = P(D|theta) * P(theta) / P(D)
+                // => P(theta'|D) / P(theta|D) = P(D|theta') / P(D|theta)
+
+                double acceptanceLogLikelihood = newLogLikelihood - logLikelihood;
+
+                if (Math.Log(random.NextDouble()) < acceptanceLogLikelihood)
+                {
+                    mean += delta_mean;
+                    logVariance += delta_log_variance;
+                }
+
+                // Here we are processing a sample in the parameter space according to the posterior probability distribution
+                // Computing expected value like this is no different from computing the expected value of a dice by averaging 
+                // a lot of samples.
+                meanSum += mean;
+                varianceSum += Math.Exp(logVariance);
+            }
+
+            // We could have other statistics about the parameters too, if we wish.
+            Console.WriteLine(meanSum / trials);
+            Console.WriteLine(varianceSum / trials);
+        }
+
+        // The interesting thing about this example is that the probability model we wanted can be arbitrarily complex
+        // As long as we know how to compute the log likelihood, we are good to go to estimate the parameters using MCMC.
+        private static double GetLogLikelihood(double[] samples, double mean, double logVariance)
+        {
+            double logLikelihood = 0;
+            double variance = Math.Exp(logVariance);
+            double sigma = Math.Sqrt(variance);
+            double logSigma = Math.Log(sigma);
+            for (int j = 0; j < samples.Length; j++)
+            {
+                logLikelihood += LogNormDist(samples[j], mean, variance, logSigma, logVariance);
+            }
+
+            return logLikelihood;
+        }
+
+        private static double LogNormDist(double v, double mean, double variance, double logSigma, double logVariance)
+        {
+            double diff = v - mean;
+            return -logSigma - diff * diff / 2 / variance;
+        }
+
+
+        private static void SampleNonUniformGrid(Random random)
+        {
             // The goal of this program is to generate random sample such that the cell with weight 9 is 9 time more probable to be sampled 
             // This small problem would look like stupid because it is really easy to generate such a distribution without a Markov Chain,
             // but we will try Markov chain anyway.
