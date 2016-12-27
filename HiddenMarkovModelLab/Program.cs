@@ -51,8 +51,7 @@
                 sequencesList.Add(GenerateSequence(random, 100).Select(t => (T)Convert.ChangeType(t, typeof(T))).ToArray());
             }
 
-            var sequences = sequencesList.ToArray();
-            return sequences;
+            return sequencesList.ToArray();
         }
 
         // Generating a random sequence based on a hard coded hidden markov model
