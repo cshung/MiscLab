@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Newtonsoft.Json;
 
     public abstract class HiddenMarkovModel<T>
     {
@@ -15,6 +16,10 @@
             this.numberOfStates = numberOfStates;
             this.initialLogLikelihoods = new SafeNumber[numberOfStates];
             this.transitionLogLikelihoods = new SafeNumber[numberOfStates, numberOfStates];
+        }
+
+        protected interface IObservationParameters
+        {
         }
 
         public virtual void Bootstrap(Random r)
@@ -51,6 +56,7 @@
 
             foreach (var sequence in sequences)
             {
+                Console.WriteLine("Processing 1 sequence");
                 SafeNumber[,] alpha = this.ComputeForwardLogLikelihoods(sequence);
                 SafeNumber[,] beta = this.ComputeBackwardLogLikelihoods(sequence);
                 SafeNumber[,] gamma = this.ComputePosteriorLogLikelihoods(alpha, beta, sequence.Length);
@@ -174,6 +180,40 @@
             return this.numberOfStates;
         }
 
+        protected string Save<U>(U observationParameters) where U : IObservationParameters
+        {
+            HmmData<U> data = new HmmData<U>();
+            data.InitialLogLikelihoods = this.initialLogLikelihoods.Select(t => t.Value).ToArray();
+            data.TransitionLogLikelihoods = new double[this.numberOfStates, this.numberOfStates];
+            for (int i = 0; i < this.numberOfStates; i++)
+            {
+                for (int j = 0; j < this.numberOfStates; j++)
+                {
+                    data.TransitionLogLikelihoods[i, j] = this.transitionLogLikelihoods[i, j].Value;
+                }
+            }
+
+            data.ObservationParameters = observationParameters;
+            return JsonConvert.SerializeObject(data);
+        }
+
+        protected U Load<U>(string saved) where U : IObservationParameters
+        {
+            HmmData<U> data = JsonConvert.DeserializeObject<HmmData<U>>(saved);
+            this.initialLogLikelihoods = data.InitialLogLikelihoods.Select(t => new SafeNumber(t)).ToArray();
+            this.numberOfStates = this.initialLogLikelihoods.Length;
+            this.transitionLogLikelihoods = new SafeNumber[this.numberOfStates, this.numberOfStates];
+            for (int i = 0; i < this.numberOfStates; i++)
+            {
+                for (int j = 0; j < this.numberOfStates; j++)
+                {
+                    this.transitionLogLikelihoods[i, j] = new SafeNumber(data.TransitionLogLikelihoods[i, j]);
+                }
+            }
+
+            return data.ObservationParameters;
+        }
+
         protected abstract SafeNumber OutcomeLogLikelihood(int state, T observation);
 
         protected abstract void AccumulateObservation(T[] sequence, SafeNumber[,] gamma);
@@ -260,6 +300,15 @@
             }
 
             return xi;
+        }
+
+        private class HmmData<U> where U : IObservationParameters
+        {
+            public double[] InitialLogLikelihoods { get; set; }
+
+            public U ObservationParameters { get; set; }
+
+            public double[,] TransitionLogLikelihoods { get; set; }
         }
     }
 }

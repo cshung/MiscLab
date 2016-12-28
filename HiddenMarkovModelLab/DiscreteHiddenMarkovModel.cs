@@ -34,6 +34,35 @@
             }
         }
 
+        public string Save()
+        {
+            DiscreteObservationParameters observationParameters = new DiscreteObservationParameters();
+            observationParameters.OutcomeLogLikelihoods = new double[this.GetNumberOfStates(), this.numberOfOutcomes];
+            for (int i = 0; i < this.GetNumberOfStates(); i++)
+            {
+                for (int j = 0; j < this.numberOfOutcomes; j++)
+                {
+                    observationParameters.OutcomeLogLikelihoods[i, j] = this.outcomeLogLikelihoods[i, j].Value;
+                }
+            }
+
+            return base.Save(observationParameters);
+        }
+
+        public void Load(string saved)
+        {
+            DiscreteObservationParameters observationParameters = base.Load<DiscreteObservationParameters>(saved);
+            this.outcomeLogLikelihoods = new SafeNumber[this.GetNumberOfStates(), this.numberOfOutcomes];
+            this.numberOfOutcomes = observationParameters.OutcomeLogLikelihoods.GetLength(1);
+            for (int i = 0; i < this.GetNumberOfStates(); i++)
+            {
+                for (int j = 0; j < this.numberOfOutcomes; j++)
+                {
+                    this.outcomeLogLikelihoods[i, j] = new SafeNumber(observationParameters.OutcomeLogLikelihoods[i, j]);
+                }
+            }
+        }
+
         public override void Show()
         {
             base.Show();
@@ -70,6 +99,20 @@
             }
         }
 
+        protected override void TrainObservations()
+        {
+            for (int j = 0; j < this.GetNumberOfStates(); j++)
+            {
+                for (int c = 0; c < this.numberOfOutcomes; c++)
+                {
+                    this.outcomeLogLikelihoods[j, c] = ArithmeticMethods.LogSum(this.numerators[j, c]) - ArithmeticMethods.LogSum(this.denominators[j]);
+                }
+            }
+
+            this.numerators = null;
+            this.denominators = null;
+        }
+
         private void EnsureAccumulators()
         {
             if (this.numerators == null)
@@ -87,18 +130,9 @@
             }
         }
 
-        protected override void TrainObservations()
+        private class DiscreteObservationParameters : IObservationParameters
         {
-            for (int j = 0; j < this.GetNumberOfStates(); j++)
-            {
-                for (int c = 0; c < this.numberOfOutcomes; c++)
-                {
-                    this.outcomeLogLikelihoods[j, c] = ArithmeticMethods.LogSum(this.numerators[j, c]) - ArithmeticMethods.LogSum(this.denominators[j]);
-                }
-            }
-
-            this.numerators = null;
-            this.denominators = null;
+            public double[,] OutcomeLogLikelihoods { get; internal set; }
         }
     }
 }
