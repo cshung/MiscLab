@@ -7,6 +7,7 @@ class btree
 public:
     btree();
     ~btree();
+    bool insert(int key, int value);
 private:
     btree_impl* m_impl;
 };
