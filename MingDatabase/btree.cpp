@@ -13,7 +13,7 @@ class btree_node;
 struct insert_result
 {
     bool succeed;
-    bool split;
+    bool overflow;
 };
 
 struct split_result
@@ -25,6 +25,7 @@ struct split_result
 struct remove_result
 {
     bool succeed;
+    bool underflow;
 };
 
 class btree_node
@@ -35,6 +36,7 @@ public:
     virtual split_result split() = 0;
     virtual bool select(int key, int* result) = 0;
     virtual remove_result remove(int key) = 0;
+    virtual bool try_push(btree_node* right_sibling) = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -46,6 +48,7 @@ public:
     virtual split_result split();
     virtual bool select(int key, int* result);
     virtual remove_result remove(int key);
+    virtual bool try_push(btree_node* right_sibling);
 private:
     btree_internal_node();
     vector<int> keys;
@@ -60,6 +63,7 @@ public:
     virtual split_result split();
     virtual bool select(int key, int* result);
     virtual remove_result remove(int key);
+    virtual bool try_push(btree_node* right_sibling);
 private:
     vector<int> keys;
     vector<int> values;
@@ -127,7 +131,7 @@ insert_result btree_leaf_node::insert(int key, int value)
                 this->keys.insert(this->keys.begin() + upper_index, key);
                 this->values.insert(this->values.begin() + upper_index, value);
                 result.succeed = true;
-                result.split = (this->keys.size() == (max_size + 1));
+                result.overflow = (this->keys.size() == (max_size + 1));
             }
 
             break;
@@ -183,7 +187,25 @@ remove_result btree_leaf_node::remove(int key)
         }
     }
 
+    result.underflow = this->keys.size() < min_size;
     return result;
+}
+
+bool btree_leaf_node::try_push(btree_node* right_sibling)
+{
+    btree_leaf_node* right_sibling_node = (btree_leaf_node*)right_sibling;
+    if ((this->keys.size() > min_size) && (right_sibling_node->keys.size() < max_size))
+    {
+        int key_to_push = this->keys[this->keys.size() - 1];
+        int value_to_push = this->values[this->values.size() - 1];
+        right_sibling_node->keys.insert(right_sibling_node->keys.begin(), key_to_push);
+        right_sibling_node->values.insert(right_sibling_node->values.begin(), value_to_push);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
@@ -217,7 +239,7 @@ insert_result btree_internal_node::insert(int key, int value)
             if (children_insert_result.succeed)
             {
                 result.succeed = true;
-                if (children_insert_result.split)
+                if (children_insert_result.overflow)
                 {
                     split_result children_split_result = this->children[upper_index]->split();
                     if (upper_index == this->keys.size())
@@ -231,11 +253,11 @@ insert_result btree_internal_node::insert(int key, int value)
                         this->keys.insert(this->keys.begin() + upper_index, children_split_result.key);
                     }
 
-                    result.split = this->children.size() == max_size + 1;
+                    result.overflow = this->children.size() == max_size + 1;
                 }
                 else
                 {
-                    result.split = false;
+                    result.overflow = false;
                 }
             }
             else
@@ -296,11 +318,33 @@ remove_result btree_internal_node::remove(int key)
         bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
         if (lower_is_good && upper_is_good)
         {
-            return this->children[upper_index]->remove(key);
+            remove_result child_remove_result = this->children[upper_index]->remove(key);
+            if (child_remove_result.succeed)
+            {
+                result.succeed = true;
+                if (child_remove_result.underflow)
+                {
+                    // TODO: Consider pulling item from siblings
+                    if (upper_index > 0)
+                    {
+                        if (this->children[upper_index - 1]->try_push(this->children[upper_index]))
+                        {
+                        }
+                    }
+                }
+            }
+
+            break;
         }
     }
 
     return result;
+}
+
+bool btree_internal_node::try_push(btree_node* right_sibling)
+{
+    // TODO: Implementation
+    return false;
 }
 
 bool btree_impl::insert(int key, int value)
@@ -314,7 +358,7 @@ bool btree_impl::insert(int key, int value)
 
     if (result.succeed)
     {
-        if (result.split)
+        if (result.overflow)
         {
             split_result split_result = this->m_root->split();
             this->m_root = new btree_internal_node(split_result.key, this->m_root, split_result.sibling);
@@ -354,7 +398,7 @@ bool btree_impl::remove(int key)
         remove_result result = this->m_root->remove(key);
         if (result.succeed)
         {
-            // TODO: Consider merging cases
+            // It is okay for the root to underflow
             return true;
         }
         else
