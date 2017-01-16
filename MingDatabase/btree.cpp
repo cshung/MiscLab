@@ -38,6 +38,7 @@ public:
     virtual insert_result insert(int key, int value);
     virtual split_result split();
 private:
+    btree_internal_node();
     vector<int> keys;
     vector<btree_node*> children;
 };
@@ -49,8 +50,8 @@ public:
     virtual insert_result insert(int key, int value);
     virtual split_result split();
 private:
-    // TODO: Ideally, this should work on the memory page directly
-    map<int, int> entries;
+    vector<int> keys;
+    vector<int> values;
 };
 
 class btree_impl
@@ -87,38 +88,46 @@ btree_leaf_node::~btree_leaf_node()
 insert_result btree_leaf_node::insert(int key, int value)
 {
     insert_result result;
+    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    {
+        int lower_index = upper_index - 1;
+        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        if (lower_is_good && upper_is_good)
+        {
+            if (lower_index != -1 && key == this->keys[lower_index])
+            {
+                result.succeed = false;
+            }
+            else
+            {
+                this->keys.insert(this->keys.begin() + upper_index, key);
+                this->values.insert(this->values.begin() + upper_index, value);
+                result.succeed = true;
+                result.split = (this->keys.size() == (max_size + 1));
+            }
 
-    auto probe = this->entries.find(key);
-    if (probe == this->entries.end())
-    {
-        result.succeed = true;
-        this->entries.insert(pair<int, int>(key, value));
-        result.split = (entries.size() == max_size + 1);
-        return result;
+            break;
+        }
     }
-    else
-    {
-        result.succeed = false;
-        return result;
-    }
+
+    return result;
 }
 
 split_result btree_leaf_node::split()
 {
     split_result result;
     btree_leaf_node* sibling = new btree_leaf_node();
-    int i = 0;
-    for (auto iter = this->entries.begin(); i < min_size; iter++, i++)
+    for (size_t i = min_size; i < this->keys.size(); i++)
     {
-        sibling->entries.insert(*iter);
+        sibling->keys.push_back(this->keys[i]);
+        sibling->values.push_back(this->values[i]);
     }
-    for (auto iter = sibling->entries.begin(); iter != sibling->entries.end(); iter++)
-    {
-        this->entries.erase(iter->first);
-    }
+    this->keys.resize(min_size);
+    this->values.resize(min_size);
 
     result.sibling = sibling;
-    result.key = this->entries.begin()->first;
+    result.key = sibling->keys[0];
     return result;
 }
 
@@ -129,6 +138,11 @@ btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* 
     this->children.push_back(right);
 }
 
+btree_internal_node::btree_internal_node()
+{
+
+}
+
 btree_internal_node::~btree_internal_node()
 {
 
@@ -137,7 +151,7 @@ btree_internal_node::~btree_internal_node()
 insert_result btree_internal_node::insert(int key, int value)
 {
     insert_result result;
-    for (int upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
     {
         int lower_index = upper_index - 1;
         bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
@@ -151,9 +165,18 @@ insert_result btree_internal_node::insert(int key, int value)
                 if (children_insert_result.split)
                 {
                     split_result children_split_result = this->children[upper_index]->split();
-                    this->children.insert(this->children.begin() + upper_index, children_split_result.sibling);
-                    this->keys.insert(this->keys.begin() + upper_index, children_split_result.key);
-                    result.split = this->keys.size() == max_size;
+                    if (upper_index == this->keys.size())
+                    {
+                        this->children.push_back(children_split_result.sibling);
+                        this->keys.push_back(children_split_result.key);
+                    }
+                    else
+                    {
+                        this->children.insert(this->children.begin() + upper_index + 1, children_split_result.sibling);
+                        this->keys.insert(this->keys.begin() + upper_index, children_split_result.key);
+                    }
+
+                    result.split = this->children.size() == max_size + 1;
                 }
                 else
                 {
@@ -174,9 +197,20 @@ insert_result btree_internal_node::insert(int key, int value)
 
 split_result btree_internal_node::split()
 {
-    // TODO: Implementation
     split_result result;
-    result.key = 0;
+    btree_internal_node* sibling = new btree_internal_node();
+    for (int i = min_size; i < this->children.size(); i++)
+    {
+        sibling->children.push_back(this->children[i]);
+    }
+    for (int i = min_size; i < this->keys.size(); i++)
+    {
+        sibling->keys.push_back(this->keys[i]);
+    }
+    result.sibling = sibling;
+    result.key = this->keys[min_size - 1];
+    this->keys.resize(min_size - 1);
+    this->children.resize(min_size);
     return result;
 }
 
@@ -194,8 +228,7 @@ bool btree_impl::insert(int key, int value)
         if (result.split)
         {
             split_result split_result = this->m_root->split();
-            this->m_root = new btree_internal_node(split_result.key, split_result.sibling, this->m_root);
-
+            this->m_root = new btree_internal_node(split_result.key, this->m_root, split_result.sibling);
             return true;
         }
         else
