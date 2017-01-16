@@ -328,6 +328,9 @@ remove_result btree_internal_node::remove(int key)
                             // The actual borrowing act is a little more complicated
                             // We need to update the internal node that represent the key
                             // How? I am still thinking ...
+
+                            // For leaf, the key must be its left parent key
+                            // For internal nodes, the key should not repeat in the ancestors
                         }
                     }
                 }
