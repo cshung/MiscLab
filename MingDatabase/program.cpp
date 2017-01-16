@@ -6,12 +6,13 @@ using namespace std;
 int main(int argc, char** argv)
 {
     btree index;
-    for (int i = 0; i < 8; i++)
-    {
-        index.insert(i + 1, 8 - i);
-    }
+    index.insert(1, 2);
+    index.insert(2, 2);
+    index.insert(4, 2);
+    index.insert(5, 2);
+    index.insert(3, 2);
 
-    cout << index.remove(1) << endl;
+    index.remove(5);
 
     return 0;
 }

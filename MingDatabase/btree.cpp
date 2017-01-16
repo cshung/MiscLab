@@ -36,7 +36,8 @@ public:
     virtual split_result split() = 0;
     virtual bool select(int key, int* result) = 0;
     virtual remove_result remove(int key) = 0;
-    virtual bool try_push(btree_node* right_sibling) = 0;
+    virtual bool can_borrow() = 0;
+    virtual bool can_accept() = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -48,7 +49,8 @@ public:
     virtual split_result split();
     virtual bool select(int key, int* result);
     virtual remove_result remove(int key);
-    virtual bool try_push(btree_node* right_sibling);
+    virtual bool can_borrow();
+    virtual bool can_accept();
 private:
     btree_internal_node();
     vector<int> keys;
@@ -63,7 +65,8 @@ public:
     virtual split_result split();
     virtual bool select(int key, int* result);
     virtual remove_result remove(int key);
-    virtual bool try_push(btree_node* right_sibling);
+    virtual bool can_borrow();
+    virtual bool can_accept();
 private:
     vector<int> keys;
     vector<int> values;
@@ -191,21 +194,14 @@ remove_result btree_leaf_node::remove(int key)
     return result;
 }
 
-bool btree_leaf_node::try_push(btree_node* right_sibling)
+bool btree_leaf_node::can_borrow()
 {
-    btree_leaf_node* right_sibling_node = (btree_leaf_node*)right_sibling;
-    if ((this->keys.size() > min_size) && (right_sibling_node->keys.size() < max_size))
-    {
-        int key_to_push = this->keys[this->keys.size() - 1];
-        int value_to_push = this->values[this->values.size() - 1];
-        right_sibling_node->keys.insert(right_sibling_node->keys.begin(), key_to_push);
-        right_sibling_node->values.insert(right_sibling_node->values.begin(), value_to_push);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return this->keys.size() > min_size;
+}
+
+bool btree_leaf_node::can_accept()
+{
+    return this->keys.size() < max_size;
 }
 
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
@@ -324,11 +320,14 @@ remove_result btree_internal_node::remove(int key)
                 result.succeed = true;
                 if (child_remove_result.underflow)
                 {
-                    // TODO: Consider pulling item from siblings
+                    bool underflow_solved = false;
                     if (upper_index > 0)
                     {
-                        if (this->children[upper_index - 1]->try_push(this->children[upper_index]))
+                        if (this->children[upper_index - 1]->can_borrow())
                         {
+                            // The actual borrowing act is a little more complicated
+                            // We need to update the internal node that represent the key
+                            // How? I am still thinking ...
                         }
                     }
                 }
@@ -341,10 +340,14 @@ remove_result btree_internal_node::remove(int key)
     return result;
 }
 
-bool btree_internal_node::try_push(btree_node* right_sibling)
+bool btree_internal_node::can_borrow()
 {
-    // TODO: Implementation
-    return false;
+    return this->children.size() > min_size;
+}
+
+bool btree_internal_node::can_accept()
+{
+    return this->children.size() < max_size;
 }
 
 bool btree_impl::insert(int key, int value)
