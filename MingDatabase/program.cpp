@@ -6,14 +6,18 @@ using namespace std;
 int main(int argc, char** argv)
 {
     btree index;
-    cout << index.insert(1, 2) << endl;
-    cout << index.insert(2, 2) << endl;
-    cout << index.insert(3, 2) << endl;
-    cout << index.insert(4, 2) << endl;
-    cout << index.insert(5, 2) << endl;
-    cout << index.insert(6, 2) << endl;
-    cout << index.insert(7, 2) << endl;
-    cout << index.insert(8, 2) << endl;
-    cout << "Hello World" << endl;
+    for (int i = 0; i < 8; i++)
+    {
+        cout << index.insert(i + 1, 8 - i) << endl;
+    }
+
+    cout << "------------" << endl;
+    int result;
+    for (int i = 0; i < 10; i++)
+    {
+        cout << index.select(i, &result) << endl;
+        cout << result << endl;
+    }
+
     return 0;
 }

@@ -8,6 +8,7 @@ public:
     btree();
     ~btree();
     bool insert(int key, int value);
+    bool select(int key, int* result);
 private:
     btree_impl* m_impl;
 };

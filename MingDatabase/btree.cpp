@@ -28,6 +28,7 @@ public:
     virtual ~btree_node();
     virtual insert_result insert(int key, int value) = 0;
     virtual split_result split() = 0;
+    virtual bool select(int key, int* result) = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -37,6 +38,7 @@ public:
     ~btree_internal_node();
     virtual insert_result insert(int key, int value);
     virtual split_result split();
+    virtual bool select(int key, int* result);
 private:
     btree_internal_node();
     vector<int> keys;
@@ -49,6 +51,7 @@ public:
     virtual ~btree_leaf_node();
     virtual insert_result insert(int key, int value);
     virtual split_result split();
+    virtual bool select(int key, int* result);
 private:
     vector<int> keys;
     vector<int> values;
@@ -58,6 +61,7 @@ class btree_impl
 {
 public:
     bool insert(int key, int value);
+    bool select(int key, int* result);
 private:
     btree_node* m_root;
 };
@@ -75,6 +79,11 @@ btree::~btree()
 bool btree::insert(int key, int value)
 {
     return this->m_impl->insert(key, value);
+}
+
+bool btree::select(int key, int* result)
+{
+    return this->m_impl->select(key, result);
 }
 
 btree_node::~btree_node()
@@ -129,6 +138,20 @@ split_result btree_leaf_node::split()
     result.sibling = sibling;
     result.key = sibling->keys[0];
     return result;
+}
+
+bool btree_leaf_node::select(int key, int* result)
+{
+    for (size_t i = 0; i < this->keys.size(); i++)
+    {
+        if (this->keys[i] == key)
+        {
+            *result = this->values[i];
+            return true;
+        }
+    }
+
+    return false;
 }
 
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
@@ -199,11 +222,11 @@ split_result btree_internal_node::split()
 {
     split_result result;
     btree_internal_node* sibling = new btree_internal_node();
-    for (int i = min_size; i < this->children.size(); i++)
+    for (size_t i = min_size; i < this->children.size(); i++)
     {
         sibling->children.push_back(this->children[i]);
     }
-    for (int i = min_size; i < this->keys.size(); i++)
+    for (size_t i = min_size; i < this->keys.size(); i++)
     {
         sibling->keys.push_back(this->keys[i]);
     }
@@ -212,6 +235,22 @@ split_result btree_internal_node::split()
     this->keys.resize(min_size - 1);
     this->children.resize(min_size);
     return result;
+}
+
+bool btree_internal_node::select(int key, int* result)
+{
+    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    {
+        int lower_index = upper_index - 1;
+        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        if (lower_is_good && upper_is_good)
+        {
+            return this->children[upper_index]->select(key, result);
+        }
+    }
+
+    return false;
 }
 
 bool btree_impl::insert(int key, int value)
@@ -239,5 +278,17 @@ bool btree_impl::insert(int key, int value)
     else
     {
         return false;
+    }
+}
+
+bool btree_impl::select(int key, int* result)
+{
+    if (this->m_root == nullptr)
+    {
+        return false;
+    }
+    else
+    {
+        return this->m_root->select(key, result);
     }
 }
