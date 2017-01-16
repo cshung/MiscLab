@@ -22,6 +22,11 @@ struct split_result
     int key;
 };
 
+struct remove_result
+{
+    bool succeed;
+};
+
 class btree_node
 {
 public:
@@ -29,6 +34,7 @@ public:
     virtual insert_result insert(int key, int value) = 0;
     virtual split_result split() = 0;
     virtual bool select(int key, int* result) = 0;
+    virtual remove_result remove(int key) = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -39,6 +45,7 @@ public:
     virtual insert_result insert(int key, int value);
     virtual split_result split();
     virtual bool select(int key, int* result);
+    virtual remove_result remove(int key);
 private:
     btree_internal_node();
     vector<int> keys;
@@ -52,6 +59,7 @@ public:
     virtual insert_result insert(int key, int value);
     virtual split_result split();
     virtual bool select(int key, int* result);
+    virtual remove_result remove(int key);
 private:
     vector<int> keys;
     vector<int> values;
@@ -62,6 +70,7 @@ class btree_impl
 public:
     bool insert(int key, int value);
     bool select(int key, int* result);
+    bool remove(int key);
 private:
     btree_node* m_root;
 };
@@ -84,6 +93,11 @@ bool btree::insert(int key, int value)
 bool btree::select(int key, int* result)
 {
     return this->m_impl->select(key, result);
+}
+
+bool btree::remove(int key)
+{
+    return this->m_impl->remove(key);
 }
 
 btree_node::~btree_node()
@@ -152,6 +166,24 @@ bool btree_leaf_node::select(int key, int* result)
     }
 
     return false;
+}
+
+remove_result btree_leaf_node::remove(int key)
+{
+    remove_result result;
+    result.succeed = false;
+    for (size_t i = 0; i < this->keys.size(); i++)
+    {
+        if (this->keys[i] == key)
+        {
+            result.succeed = true;
+            this->keys.erase(this->keys.begin() + i);
+            this->values.erase(this->values.begin() + i);
+            break;
+        }
+    }
+
+    return result;
 }
 
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
@@ -253,6 +285,24 @@ bool btree_internal_node::select(int key, int* result)
     return false;
 }
 
+remove_result btree_internal_node::remove(int key)
+{
+    remove_result result;
+    result.succeed = false;
+    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    {
+        int lower_index = upper_index - 1;
+        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        if (lower_is_good && upper_is_good)
+        {
+            return this->children[upper_index]->remove(key);
+        }
+    }
+
+    return result;
+}
+
 bool btree_impl::insert(int key, int value)
 {
     if (this->m_root == nullptr)
@@ -290,5 +340,26 @@ bool btree_impl::select(int key, int* result)
     else
     {
         return this->m_root->select(key, result);
+    }
+}
+
+bool btree_impl::remove(int key)
+{
+    if (this->m_root == nullptr)
+    {
+        return false;
+    }
+    else
+    {
+        remove_result result = this->m_root->remove(key);
+        if (result.succeed)
+        {
+            // TODO: Consider merging cases
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
