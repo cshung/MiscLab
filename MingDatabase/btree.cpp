@@ -38,6 +38,7 @@ public:
     virtual remove_result remove(int key) = 0;
     virtual bool can_borrow() = 0;
     virtual bool can_accept() = 0;
+    virtual void push(btree_node* accepter, int* key) = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -51,6 +52,7 @@ public:
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
+    virtual void push(btree_node* accepter, int* key);
 private:
     btree_internal_node();
     vector<int> keys;
@@ -67,6 +69,7 @@ public:
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
+    virtual void push(btree_node* accepter, int* key);
 private:
     vector<int> keys;
     vector<int> values;
@@ -204,6 +207,17 @@ bool btree_leaf_node::can_accept()
     return this->keys.size() < max_size;
 }
 
+void btree_leaf_node::push(btree_node* accepter, int* key)
+{
+    btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
+    int my_size = this->keys.size();
+    *key = this->keys[my_size - 1];
+    accepter_node->keys.insert(accepter_node->keys.begin(), *key);
+    accepter_node->values.insert(accepter_node->values.begin(), this->values[my_size - 1]);
+    this->keys.resize(my_size - 1);
+    this->values.resize(my_size - 1);
+}
+
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
 {
     this->keys.push_back(key);
@@ -325,12 +339,7 @@ remove_result btree_internal_node::remove(int key)
                     {
                         if (this->children[upper_index - 1]->can_borrow())
                         {
-                            // The actual borrowing act is a little more complicated
-                            // We need to update the internal node that represent the key
-                            // How? I am still thinking ...
-
-                            // For leaf, the key must be its left parent key
-                            // For internal nodes, the key should not repeat in the ancestors
+                            this->children[upper_index - 1]->push(this->children[upper_index - 1], &(this->keys[upper_index - 1]));
                         }
                     }
                 }
@@ -351,6 +360,12 @@ bool btree_internal_node::can_borrow()
 bool btree_internal_node::can_accept()
 {
     return this->children.size() < max_size;
+}
+
+void btree_internal_node::push(btree_node* accepter, int* key)
+{
+    btree_internal_node* accepter_node = (btree_internal_node*)accepter;
+    this->
 }
 
 bool btree_impl::insert(int key, int value)
