@@ -416,14 +416,20 @@ remove_result btree_internal_node::remove(int key)
                             underflow_solved = true;
                         }
                     }
-                    if (!underflow_solved)
+                    if (!underflow_solved && upper_index > 0)
                     {
-                        // Now we need to merge!
-						if (upper_index > 0)
-						{
-							
-						}
+                        this->children[upper_index - 1]->merge_right(this->children[upper_index]);
+						this->keys.erase(this->keys.begin() + (upper_index - 1));
+						this->children.erase(this->children.begin() + upper_index);
+						underflow_solved = true;
                     }
+					if (!underflow_solved && upper_index < this->children.size() - 1)
+					{
+						this->children[upper_index]->merge_right(this->children[upper_index + 1]);
+						this->keys.erase(this->keys.begin() + upper_index);
+						this->children.erase(this->children.begin() + (upper_index + 1));
+						underflow_solved = true;
+					}
                 }
 
 				result.underflow = this->children.size() < min_size;
