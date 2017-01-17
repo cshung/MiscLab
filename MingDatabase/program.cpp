@@ -12,7 +12,13 @@ int main(int argc, char** argv)
     index.insert(4, 2);
     index.insert(5, 2);
 
-    index.remove(1);
+    index.print();
+
+    // Here is a bug case - even underflow does not happen, we do need to handle the internal node changes
+    index.remove(3);
+
+    cout << "After remove" << endl;
+    index.print();
 
     return 0;
 }

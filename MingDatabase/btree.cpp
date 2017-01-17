@@ -1,6 +1,6 @@
 #include "btree.h"
 
-#include <map>
+#include <iostream>
 #include <vector>
 using namespace std;
 
@@ -34,12 +34,14 @@ public:
     virtual ~btree_node();
     virtual insert_result insert(int key, int value) = 0;
     virtual split_result split() = 0;
-    virtual bool select(int key, int* result) = 0;
+    virtual bool select(int key, int* result) const = 0;
     virtual remove_result remove(int key) = 0;
     virtual bool can_borrow() = 0;
     virtual bool can_accept() = 0;
     virtual void pull(btree_node* accepter, int* key) = 0;
     virtual void push(btree_node* accepter, int* key) = 0;
+
+    virtual void print(int indent) const = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -49,12 +51,14 @@ public:
     ~btree_internal_node();
     virtual insert_result insert(int key, int value);
     virtual split_result split();
-    virtual bool select(int key, int* result);
+    virtual bool select(int key, int* result) const;
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
+
+    virtual void print(int indent) const;
 private:
     btree_internal_node();
     vector<int> keys;
@@ -67,12 +71,14 @@ public:
     virtual ~btree_leaf_node();
     virtual insert_result insert(int key, int value);
     virtual split_result split();
-    virtual bool select(int key, int* result);
+    virtual bool select(int key, int* result) const;
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
+
+    virtual void print(int indent) const;
 private:
     vector<int> keys;
     vector<int> values;
@@ -84,6 +90,8 @@ public:
     bool insert(int key, int value);
     bool select(int key, int* result);
     bool remove(int key);
+
+    void print() const;
 private:
     btree_node* m_root;
 };
@@ -103,7 +111,7 @@ bool btree::insert(int key, int value)
     return this->m_impl->insert(key, value);
 }
 
-bool btree::select(int key, int* result)
+bool btree::select(int key, int* result) const
 {
     return this->m_impl->select(key, result);
 }
@@ -111,6 +119,11 @@ bool btree::select(int key, int* result)
 bool btree::remove(int key)
 {
     return this->m_impl->remove(key);
+}
+
+void btree::print() const
+{
+    this->m_impl->print();
 }
 
 btree_node::~btree_node()
@@ -167,7 +180,7 @@ split_result btree_leaf_node::split()
     return result;
 }
 
-bool btree_leaf_node::select(int key, int* result)
+bool btree_leaf_node::select(int key, int* result) const
 {
     for (size_t i = 0; i < this->keys.size(); i++)
     {
@@ -229,6 +242,18 @@ void btree_leaf_node::push(btree_node* accepter, int* key)
     accepter_node->values.insert(accepter_node->values.begin(), this->values[my_size - 1]);
     this->keys.resize(my_size - 1);
     this->values.resize(my_size - 1);
+}
+
+void btree_leaf_node::print(int indent) const
+{
+    for (size_t i = 0; i < this->keys.size(); i++)
+    {
+        for (int j = 0; j < indent; j++)
+        {
+            cout << " ";
+        }
+        cout << this->keys[i] << "->" << this->values[i] << endl;
+    }
 }
 
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
@@ -314,7 +339,7 @@ split_result btree_internal_node::split()
     return result;
 }
 
-bool btree_internal_node::select(int key, int* result)
+bool btree_internal_node::select(int key, int* result) const
 {
     for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
     {
@@ -361,7 +386,12 @@ remove_result btree_internal_node::remove(int key)
                         if (this->children[upper_index + 1]->can_borrow())
                         {
                             this->children[upper_index + 1]->pull(this->children[upper_index], &(this->keys[upper_index]));
+                            underflow_solved = true;
                         }
+                    }
+                    if (!underflow_solved)
+                    {
+                        // Now we need to merge!
                     }
                 }
             }
@@ -401,6 +431,20 @@ void btree_internal_node::push(btree_node* accepter, int* key)
     *key = this->keys[this->keys.size() - 1];
     this->keys.resize(this->keys.size() - 1);
     this->children.resize(this->children.size() - 1);
+}
+
+void btree_internal_node::print(int indent) const
+{
+    children[0]->print(indent + 2);
+    for (size_t i = 0; i < this->keys.size(); i++)
+    {
+        for (int j = 0; j < indent; j++)
+        {
+            cout << " ";
+        }
+        cout << keys[i] << endl;
+        children[i + 1]->print(indent + 2);
+    }
 }
 
 bool btree_impl::insert(int key, int value)
@@ -461,5 +505,13 @@ bool btree_impl::remove(int key)
         {
             return false;
         }
+    }
+}
+
+void btree_impl::print() const
+{
+    if (this->m_root != nullptr)
+    {
+        this->m_root->print(0);
     }
 }
