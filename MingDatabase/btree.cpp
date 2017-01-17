@@ -38,6 +38,7 @@ public:
     virtual remove_result remove(int key) = 0;
     virtual bool can_borrow() = 0;
     virtual bool can_accept() = 0;
+    virtual void pull(btree_node* accepter, int* key) = 0;
     virtual void push(btree_node* accepter, int* key) = 0;
 };
 
@@ -52,6 +53,7 @@ public:
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
+    virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
 private:
     btree_internal_node();
@@ -69,6 +71,7 @@ public:
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
+    virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
 private:
     vector<int> keys;
@@ -207,6 +210,16 @@ bool btree_leaf_node::can_accept()
     return this->keys.size() < max_size;
 }
 
+void btree_leaf_node::pull(btree_node* accepter, int* key)
+{
+    btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
+    accepter_node->keys.push_back(this->keys[0]);
+    accepter_node->values.push_back(this->values[0]);
+    this->keys.erase(this->keys.begin());
+    this->values.erase(this->values.begin());
+    *key = this->keys[0];
+}
+
 void btree_leaf_node::push(btree_node* accepter, int* key)
 {
     btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
@@ -339,7 +352,15 @@ remove_result btree_internal_node::remove(int key)
                     {
                         if (this->children[upper_index - 1]->can_borrow())
                         {
-                            this->children[upper_index - 1]->push(this->children[upper_index - 1], &(this->keys[upper_index - 1]));
+                            this->children[upper_index - 1]->push(this->children[upper_index], &(this->keys[upper_index - 1]));
+                            underflow_solved = true;
+                        }
+                    }
+                    if (!underflow_solved && upper_index < this->children.size() - 1)
+                    {
+                        if (this->children[upper_index + 1]->can_borrow())
+                        {
+                            this->children[upper_index + 1]->pull(this->children[upper_index], &(this->keys[upper_index]));
                         }
                     }
                 }
@@ -362,10 +383,24 @@ bool btree_internal_node::can_accept()
     return this->children.size() < max_size;
 }
 
+void btree_internal_node::pull(btree_node* accepter, int* key)
+{
+    btree_internal_node* accepter_node = (btree_internal_node*)accepter;
+    accepter_node->children.push_back(this->children[0]);
+    accepter_node->keys.push_back(*key);
+    *key = this->keys[0];
+    this->keys.erase(this->keys.begin());
+    this->children.erase(this->children.begin());
+}
+
 void btree_internal_node::push(btree_node* accepter, int* key)
 {
     btree_internal_node* accepter_node = (btree_internal_node*)accepter;
-    this->
+    accepter_node->children.insert(accepter_node->children.begin(), this->children[this->children.size() - 1]);
+    accepter_node->keys.insert(accepter_node->keys.begin(), *key);
+    *key = this->keys[this->keys.size() - 1];
+    this->keys.resize(this->keys.size() - 1);
+    this->children.resize(this->children.size() - 1);
 }
 
 bool btree_impl::insert(int key, int value)
