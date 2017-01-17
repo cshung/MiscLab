@@ -41,6 +41,7 @@ public:
     virtual bool can_accept() = 0;
     virtual void pull(btree_node* accepter, int* key) = 0;
     virtual void push(btree_node* accepter, int* key) = 0;
+	virtual void merge_right(btree_node* other) = 0;
 
     virtual void print(int indent) const = 0;
 };
@@ -58,6 +59,7 @@ public:
     virtual bool can_accept();
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
+	virtual void merge_right(btree_node* other);
 
     virtual void print(int indent) const;
 private:
@@ -78,6 +80,7 @@ public:
     virtual bool can_accept();
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
+	virtual void merge_right(btree_node* other);
 
     virtual void print(int indent) const;
 private:
@@ -246,6 +249,19 @@ void btree_leaf_node::push(btree_node* accepter, int* key)
     this->values.resize(my_size - 1);
 }
 
+void btree_leaf_node::merge_right(btree_node* other)
+{
+	btree_leaf_node* other_node = (btree_leaf_node*)other;
+	for (size_t i = 0; i < other_node->keys.size(); i++)
+	{
+		this->keys.push_back(other_node->keys[i]);
+	}
+	for (size_t i = 0; i < other_node->values.size(); i++)
+	{
+		this->values.push_back(other_node->values[i]);
+	}
+}
+
 void btree_leaf_node::print(int indent) const
 {
     for (size_t i = 0; i < this->keys.size(); i++)
@@ -369,12 +385,15 @@ remove_result btree_internal_node::remove(int key)
         if (lower_is_good && upper_is_good)
         {
             remove_result child_remove_result = this->children[upper_index]->remove(key);
-            if (child_remove_result.succeed)
-            {
-				result.replacement_key = child_remove_result.replacement_key;
-				if (this->keys[lower_index] == key)
+			if (child_remove_result.succeed)
+			{
+				if (lower_index != -1)
 				{
-					this->keys[lower_index] = result.replacement_key;
+					result.replacement_key = child_remove_result.replacement_key;
+					if (this->keys[lower_index] == key)
+					{
+						this->keys[lower_index] = result.replacement_key;
+					}
 				}
 
                 result.succeed = true;
@@ -400,6 +419,10 @@ remove_result btree_internal_node::remove(int key)
                     if (!underflow_solved)
                     {
                         // Now we need to merge!
+						if (upper_index > 0)
+						{
+							
+						}
                     }
                 }
 
@@ -441,6 +464,12 @@ void btree_internal_node::push(btree_node* accepter, int* key)
     *key = this->keys[this->keys.size() - 1];
     this->keys.resize(this->keys.size() - 1);
     this->children.resize(this->children.size() - 1);
+}
+
+void btree_internal_node::merge_right(btree_node* other)
+{
+	btree_internal_node* other_node = (btree_internal_node*)other;
+	// TODO: I really need to think very carefully here
 }
 
 void btree_internal_node::print(int indent) const
