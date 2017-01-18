@@ -41,7 +41,7 @@ public:
     virtual bool can_accept() = 0;
     virtual void pull(btree_node* accepter, int* key) = 0;
     virtual void push(btree_node* accepter, int* key) = 0;
-	virtual void merge_right(btree_node* other) = 0;
+	virtual void merge_right(int key, btree_node* other) = 0;
 
     virtual void print(int indent) const = 0;
 };
@@ -59,7 +59,7 @@ public:
     virtual bool can_accept();
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
-	virtual void merge_right(btree_node* other);
+	virtual void merge_right(int key, btree_node* other);
 
     virtual void print(int indent) const;
 private:
@@ -80,7 +80,7 @@ public:
     virtual bool can_accept();
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
-	virtual void merge_right(btree_node* other);
+	virtual void merge_right(int key, btree_node* other);
 
     virtual void print(int indent) const;
 private:
@@ -249,7 +249,7 @@ void btree_leaf_node::push(btree_node* accepter, int* key)
     this->values.resize(my_size - 1);
 }
 
-void btree_leaf_node::merge_right(btree_node* other)
+void btree_leaf_node::merge_right(int key, btree_node* other)
 {
 	btree_leaf_node* other_node = (btree_leaf_node*)other;
 	for (size_t i = 0; i < other_node->keys.size(); i++)
@@ -418,14 +418,14 @@ remove_result btree_internal_node::remove(int key)
                     }
                     if (!underflow_solved && upper_index > 0)
                     {
-                        this->children[upper_index - 1]->merge_right(this->children[upper_index]);
+                        this->children[upper_index - 1]->merge_right(this->keys[upper_index - 1], this->children[upper_index]);
 						this->keys.erase(this->keys.begin() + (upper_index - 1));
 						this->children.erase(this->children.begin() + upper_index);
 						underflow_solved = true;
                     }
 					if (!underflow_solved && upper_index < this->children.size() - 1)
 					{
-						this->children[upper_index]->merge_right(this->children[upper_index + 1]);
+						this->children[upper_index]->merge_right(this->keys[upper_index], this->children[upper_index + 1]);
 						this->keys.erase(this->keys.begin() + upper_index);
 						this->children.erase(this->children.begin() + (upper_index + 1));
 						underflow_solved = true;
@@ -472,10 +472,18 @@ void btree_internal_node::push(btree_node* accepter, int* key)
     this->children.resize(this->children.size() - 1);
 }
 
-void btree_internal_node::merge_right(btree_node* other)
+void btree_internal_node::merge_right(int key, btree_node* other)
 {
 	btree_internal_node* other_node = (btree_internal_node*)other;
-	// TODO: I really need to think very carefully here
+    this->keys.push_back(key);
+    for (size_t i = 0; i < other_node->keys.size(); i++)
+    {
+        this->keys.push_back(other_node->keys[i]);
+    }
+    for (size_t i = 0; i < other_node->children.size(); i++)
+    {
+        this->children.push_back(other_node->children[i]);
+    }
 }
 
 void btree_internal_node::print(int indent) const
