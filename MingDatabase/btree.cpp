@@ -42,6 +42,7 @@ public:
     virtual void pull(btree_node* accepter, int* key) = 0;
     virtual void push(btree_node* accepter, int* key) = 0;
     virtual void merge_right(int key, btree_node* other) = 0;
+    virtual btree_node* get_replacement_root() = 0;
 
     virtual void print(int indent) const = 0;
 };
@@ -60,6 +61,7 @@ public:
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
     virtual void merge_right(int key, btree_node* other);
+    virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
 private:
@@ -81,6 +83,7 @@ public:
     virtual void pull(btree_node* accepter, int* key);
     virtual void push(btree_node* accepter, int* key);
     virtual void merge_right(int key, btree_node* other);
+    virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
 private:
@@ -259,6 +262,19 @@ void btree_leaf_node::merge_right(int key, btree_node* other)
     for (size_t i = 0; i < other_node->values.size(); i++)
     {
         this->values.push_back(other_node->values[i]);
+    }
+}
+
+btree_node* btree_leaf_node::get_replacement_root()
+{
+    if (this->keys.size() == 0)
+    {
+        delete this;
+        return nullptr;
+    }
+    else
+    {
+        return this;
     }
 }
 
@@ -486,6 +502,20 @@ void btree_internal_node::merge_right(int key, btree_node* other)
     }
 }
 
+btree_node* btree_internal_node::get_replacement_root()
+{
+    if (this->children.size() == 1)
+    {
+        btree_node* result = this->children[0];
+        delete this;
+        return result;
+    }
+    else
+    {
+        return this;
+    }
+}
+
 void btree_internal_node::print(int indent) const
 {
     children[0]->print(indent + 2);
@@ -551,7 +581,10 @@ bool btree_impl::remove(int key)
         remove_result result = this->m_root->remove(key);
         if (result.succeed)
         {
-            // It is okay for the root to underflow
+            if (result.underflow)
+            {
+                this->m_root = this->m_root->get_replacement_root();
+            }
             return true;
         }
         else
