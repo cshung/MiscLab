@@ -387,9 +387,9 @@ remove_result btree_internal_node::remove(int key)
             remove_result child_remove_result = this->children[upper_index]->remove(key);
 			if (child_remove_result.succeed)
 			{
-				if (lower_index != -1)
+                result.replacement_key = child_remove_result.replacement_key;
+                if (lower_index != -1)
 				{
-					result.replacement_key = child_remove_result.replacement_key;
 					if (this->keys[lower_index] == key)
 					{
 						this->keys[lower_index] = result.replacement_key;
