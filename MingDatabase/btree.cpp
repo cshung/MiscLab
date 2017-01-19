@@ -32,6 +32,7 @@ struct remove_result
 class btree_node
 {
 public:
+    btree_node();
     virtual ~btree_node();
     virtual insert_result insert(int key, int value) = 0;
     virtual split_result split() = 0;
@@ -94,8 +95,9 @@ private:
 class btree_impl
 {
 public:
+    ~btree_impl();
     bool insert(int key, int value);
-    bool select(int key, int* result);
+    bool select(int key, int* result) const;
     bool remove(int key);
 
     void print() const;
@@ -131,6 +133,10 @@ bool btree::remove(int key)
 void btree::print() const
 {
     this->m_impl->print();
+}
+
+btree_node::btree_node()
+{
 }
 
 btree_node::~btree_node()
@@ -263,6 +269,9 @@ void btree_leaf_node::merge_right(int key, btree_node* other)
     {
         this->values.push_back(other_node->values[i]);
     }
+
+    other_node->keys.clear();
+    other_node->values.clear();
 }
 
 btree_node* btree_leaf_node::get_replacement_root()
@@ -304,7 +313,10 @@ btree_internal_node::btree_internal_node()
 
 btree_internal_node::~btree_internal_node()
 {
-
+    for (size_t i = 0; i < this->children.size(); i++)
+    {
+        delete this->children[i];
+    }
 }
 
 insert_result btree_internal_node::insert(int key, int value)
@@ -456,6 +468,7 @@ remove_result btree_internal_node::remove(int key)
                     if (!underflow_solved && upper_index > 0)
                     {
                         this->children[upper_index - 1]->merge_right(this->keys[upper_index - 1], this->children[upper_index]);
+                        delete this->children[upper_index];
                         this->keys.erase(this->keys.begin() + (upper_index - 1));
                         this->children.erase(this->children.begin() + upper_index);
                         underflow_solved = true;
@@ -463,6 +476,7 @@ remove_result btree_internal_node::remove(int key)
                     if (!underflow_solved && upper_index < this->children.size() - 1)
                     {
                         this->children[upper_index]->merge_right(this->keys[upper_index], this->children[upper_index + 1]);
+                        delete this->children[upper_index + 1];
                         this->keys.erase(this->keys.begin() + upper_index);
                         this->children.erase(this->children.begin() + (upper_index + 1));
                         underflow_solved = true;
@@ -521,6 +535,9 @@ void btree_internal_node::merge_right(int key, btree_node* other)
     {
         this->children.push_back(other_node->children[i]);
     }
+
+    other_node->keys.clear();
+    other_node->children.clear();
 }
 
 btree_node* btree_internal_node::get_replacement_root()
@@ -551,6 +568,14 @@ void btree_internal_node::print(int indent) const
     }
 }
 
+btree_impl::~btree_impl()
+{
+    if (this->m_root != nullptr)
+    {
+        delete this->m_root;
+    }
+}
+
 bool btree_impl::insert(int key, int value)
 {
     if (this->m_root == nullptr)
@@ -566,12 +591,9 @@ bool btree_impl::insert(int key, int value)
         {
             split_result split_result = this->m_root->split();
             this->m_root = new btree_internal_node(split_result.key, this->m_root, split_result.sibling);
-            return true;
         }
-        else
-        {
-            return true;
-        }
+
+        return true;
     }
     else
     {
@@ -579,7 +601,7 @@ bool btree_impl::insert(int key, int value)
     }
 }
 
-bool btree_impl::select(int key, int* result)
+bool btree_impl::select(int key, int* result) const
 {
     if (this->m_root == nullptr)
     {
