@@ -323,17 +323,38 @@ insert_result btree_internal_node::insert(int key, int value)
                 result.succeed = true;
                 if (children_insert_result.overflow)
                 {
-                    split_result children_split_result = this->children[upper_index]->split();
-                    if (upper_index == this->keys.size())
-                    {
-                        this->children.push_back(children_split_result.sibling);
-                        this->keys.push_back(children_split_result.key);
-                    }
-                    else
-                    {
-                        this->children.insert(this->children.begin() + upper_index + 1, children_split_result.sibling);
-                        this->keys.insert(this->keys.begin() + upper_index, children_split_result.key);
-                    }
+					bool overflow_solved = false;
+					if (upper_index > 0)
+					{
+						if (this->children[upper_index - 1]->can_accept())
+						{
+							this->children[upper_index]->pull(this->children[upper_index - 1], &(this->keys[upper_index - 1]));
+							
+							overflow_solved = true;
+						}
+					}
+					if (!overflow_solved && upper_index < this->children.size() - 1)
+					{
+						if (this->children[upper_index + 1]->can_accept())
+						{
+							this->children[upper_index]->push(this->children[upper_index + 1], &(this->keys[upper_index]));
+							overflow_solved = true;
+						}
+					}
+					if (!overflow_solved)
+					{
+						split_result children_split_result = this->children[upper_index]->split();
+						if (upper_index == this->keys.size())
+						{
+							this->children.push_back(children_split_result.sibling);
+							this->keys.push_back(children_split_result.key);
+						}
+						else
+						{
+							this->children.insert(this->children.begin() + upper_index + 1, children_split_result.sibling);
+							this->keys.insert(this->keys.begin() + upper_index, children_split_result.key);
+						}
+					}
 
                     result.overflow = this->children.size() == max_size + 1;
                 }
