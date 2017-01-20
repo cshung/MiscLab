@@ -74,6 +74,7 @@ private:
 class btree_leaf_node : public btree_node
 {
 public:
+    btree_leaf_node();
     virtual ~btree_leaf_node();
     virtual insert_result insert(int key, int value);
     virtual split_result split();
@@ -90,6 +91,7 @@ public:
 private:
     vector<int> keys;
     vector<int> values;
+    btree_leaf_node* right_sibling;
 };
 
 class btree_impl
@@ -143,8 +145,14 @@ btree_node::~btree_node()
 {
 }
 
+btree_leaf_node::btree_leaf_node()
+{
+    this->right_sibling = nullptr;
+}
+
 btree_leaf_node::~btree_leaf_node()
 {
+    this->right_sibling = nullptr;
 }
 
 insert_result btree_leaf_node::insert(int key, int value)
@@ -180,6 +188,7 @@ split_result btree_leaf_node::split()
 {
     split_result result;
     btree_leaf_node* sibling = new btree_leaf_node();
+    sibling->right_sibling = this->right_sibling;
     for (size_t i = min_size; i < this->keys.size(); i++)
     {
         sibling->keys.push_back(this->keys[i]);
@@ -190,6 +199,8 @@ split_result btree_leaf_node::split()
 
     result.sibling = sibling;
     result.key = sibling->keys[0];
+
+    this->right_sibling = sibling;
     return result;
 }
 
