@@ -47,7 +47,7 @@ public:
     virtual btree_node* get_replacement_root() = 0;
 
     virtual void print(int indent) const = 0;
-    virtual void verify(int min, int max) const = 0;
+    virtual void verify(btree_node* root, int min, int max) const = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -67,7 +67,7 @@ public:
     virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
-    virtual void verify(int min, int max) const;
+    virtual void verify(btree_node* root, int min, int max) const;
 private:
     btree_internal_node();
     vector<int> keys;
@@ -91,7 +91,7 @@ public:
     virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
-    virtual void verify(int min, int max) const;
+    virtual void verify(btree_node* root, int min, int max) const;
 private:
     vector<int> keys;
     vector<int> values;
@@ -320,11 +320,18 @@ void btree_leaf_node::print(int indent) const
     }
 }
 
-void btree_leaf_node::verify(int min, int max) const
+void btree_leaf_node::verify(btree_node* root, int min, int max) const
 {
     for (size_t i = 0; i < this->keys.size(); i++)
     {
         if (this->keys[i] < min || this->keys[i] >= max)
+        {
+            assert(false);
+        }
+    }
+    if (this->keys.size() > max_size || this->keys.size() < min_size)
+    {
+        if (this != root)
         {
             assert(false);
         }
@@ -601,7 +608,7 @@ void btree_internal_node::print(int indent) const
     }
 }
 
-void btree_internal_node::verify(int min, int max) const
+void btree_internal_node::verify(btree_node* root, int min, int max) const
 {
     for (size_t i = 0; i < this->keys.size(); i++)
     {
@@ -610,12 +617,20 @@ void btree_internal_node::verify(int min, int max) const
             assert(false);
         }
     }
-    this->children[0]->verify(min, this->keys[0]);
+    this->children[0]->verify(root, min, this->keys[0]);
     for (size_t i = 1; i < this->keys.size() - 1; i++)
     {
-        this->children[i]->verify(this->keys[i - 1], this->keys[i]);
+        this->children[i]->verify(root, this->keys[i - 1], this->keys[i]);
     }
-    this->children[this->keys.size()]->verify(this->keys[this->keys.size() - 1], max);
+    this->children[this->keys.size()]->verify(root, this->keys[this->keys.size() - 1], max);
+
+    if (this->children.size() > max_size || this->children.size() < min_size)
+    {
+        if (this != root)
+        {
+            assert(false);
+        }
+    }
 }
 
 btree_impl::~btree_impl()
@@ -701,6 +716,6 @@ void btree_impl::verify() const
     {
         int min = 1 << 31;
         int max = ~min;
-        this->m_root->verify(min, max);
+        this->m_root->verify(this->m_root, min, max);
     }
 }
