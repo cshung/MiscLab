@@ -556,6 +556,7 @@ btree_node* btree_internal_node::get_replacement_root()
     if (this->children.size() == 1)
     {
         btree_node* result = this->children[0];
+        this->children.clear();
         delete this;
         return result;
     }
