@@ -81,6 +81,8 @@ int main(int argc, char** argv)
             break;
         }
         }
+
+        tree.verify();
         //tree.print();
         //cout << "------------------------" << endl;
     }

@@ -12,6 +12,7 @@ public:
     bool remove(int key);
 
     void print() const;
+    void verify() const;
 private:
     btree_impl* m_impl;
 };

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cassert>
 using namespace std;
 
 // TODO: For ease to debug, start with a simple 2-3 tree
@@ -46,6 +47,7 @@ public:
     virtual btree_node* get_replacement_root() = 0;
 
     virtual void print(int indent) const = 0;
+    virtual void verify(int min, int max) const = 0;
 };
 
 class btree_internal_node : public btree_node
@@ -65,6 +67,7 @@ public:
     virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
+    virtual void verify(int min, int max) const;
 private:
     btree_internal_node();
     vector<int> keys;
@@ -88,6 +91,7 @@ public:
     virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
+    virtual void verify(int min, int max) const;
 private:
     vector<int> keys;
     vector<int> values;
@@ -103,6 +107,7 @@ public:
     bool remove(int key);
 
     void print() const;
+    void verify() const;
 private:
     btree_node* m_root;
 };
@@ -135,6 +140,11 @@ bool btree::remove(int key)
 void btree::print() const
 {
     this->m_impl->print();
+}
+
+void btree::verify() const
+{
+    this->m_impl->verify();
 }
 
 btree_node::btree_node()
@@ -307,6 +317,17 @@ void btree_leaf_node::print(int indent) const
             cout << " ";
         }
         cout << this->keys[i] << "->" << this->values[i] << endl;
+    }
+}
+
+void btree_leaf_node::verify(int min, int max) const
+{
+    for (size_t i = 0; i < this->keys.size(); i++)
+    {
+        if (this->keys[i] < min || this->keys[i] >= max)
+        {
+            assert(false);
+        }
     }
 }
 
@@ -580,6 +601,23 @@ void btree_internal_node::print(int indent) const
     }
 }
 
+void btree_internal_node::verify(int min, int max) const
+{
+    for (size_t i = 0; i < this->keys.size(); i++)
+    {
+        if (this->keys[i] < min || this->keys[i] >= max)
+        {
+            assert(false);
+        }
+    }
+    this->children[0]->verify(min, this->keys[0]);
+    for (size_t i = 1; i < this->keys.size() - 1; i++)
+    {
+        this->children[i]->verify(this->keys[i - 1], this->keys[i]);
+    }
+    this->children[this->keys.size()]->verify(this->keys[this->keys.size() - 1], max);
+}
+
 btree_impl::~btree_impl()
 {
     if (this->m_root != nullptr)
@@ -654,5 +692,15 @@ void btree_impl::print() const
     if (this->m_root != nullptr)
     {
         this->m_root->print(0);
+    }
+}
+
+void btree_impl::verify() const
+{
+    if (this->m_root != nullptr)
+    {
+        int min = 1 << 31;
+        int max = ~min;
+        this->m_root->verify(min, max);
     }
 }
