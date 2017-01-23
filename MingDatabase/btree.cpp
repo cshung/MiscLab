@@ -70,7 +70,7 @@ public:
     virtual void verify(btree_node* root, int min, int max) const;
 private:
     btree_internal_node();
-    vector<int> keys;
+    vector<int> internal_keys;
     vector<btree_node*> children;
 };
 
@@ -93,7 +93,7 @@ public:
     virtual void print(int indent) const;
     virtual void verify(btree_node* root, int min, int max) const;
 private:
-    vector<int> keys;
+    vector<int> external_keys;
     vector<int> values;
     btree_leaf_node* right_sibling;
 };
@@ -168,23 +168,23 @@ btree_leaf_node::~btree_leaf_node()
 insert_result btree_leaf_node::insert(int key, int value)
 {
     insert_result result;
-    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    for (size_t upper_index = 0; upper_index <= this->external_keys.size(); upper_index++)
     {
         int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        bool lower_is_good = (lower_index == -1) || (this->external_keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->external_keys.size()) || (key < this->external_keys[upper_index]);
         if (lower_is_good && upper_is_good)
         {
-            if (lower_index != -1 && key == this->keys[lower_index])
+            if (lower_index != -1 && key == this->external_keys[lower_index])
             {
                 result.succeed = false;
             }
             else
             {
-                this->keys.insert(this->keys.begin() + upper_index, key);
+                this->external_keys.insert(this->external_keys.begin() + upper_index, key);
                 this->values.insert(this->values.begin() + upper_index, value);
                 result.succeed = true;
-                result.overflow = (this->keys.size() == (max_size + 1));
+                result.overflow = (this->external_keys.size() == (max_size + 1));
             }
 
             break;
@@ -199,16 +199,16 @@ split_result btree_leaf_node::split()
     split_result result;
     btree_leaf_node* sibling = new btree_leaf_node();
     sibling->right_sibling = this->right_sibling;
-    for (size_t i = min_size; i < this->keys.size(); i++)
+    for (size_t i = min_size; i < this->external_keys.size(); i++)
     {
-        sibling->keys.push_back(this->keys[i]);
+        sibling->external_keys.push_back(this->external_keys[i]);
         sibling->values.push_back(this->values[i]);
     }
-    this->keys.resize(min_size);
+    this->external_keys.resize(min_size);
     this->values.resize(min_size);
 
     result.sibling = sibling;
-    result.key = sibling->keys[0];
+    result.key = sibling->external_keys[0];
 
     this->right_sibling = sibling;
     return result;
@@ -216,9 +216,9 @@ split_result btree_leaf_node::split()
 
 bool btree_leaf_node::select(int key, int* result) const
 {
-    for (size_t i = 0; i < this->keys.size(); i++)
+    for (size_t i = 0; i < this->external_keys.size(); i++)
     {
-        if (this->keys[i] == key)
+        if (this->external_keys[i] == key)
         {
             *result = this->values[i];
             return true;
@@ -232,72 +232,72 @@ remove_result btree_leaf_node::remove(int key)
 {
     remove_result result;
     result.succeed = false;
-    for (size_t i = 0; i < this->keys.size(); i++)
+    for (size_t i = 0; i < this->external_keys.size(); i++)
     {
-        if (this->keys[i] == key)
+        if (this->external_keys[i] == key)
         {
             result.succeed = true;
-            this->keys.erase(this->keys.begin() + i);
+            this->external_keys.erase(this->external_keys.begin() + i);
             this->values.erase(this->values.begin() + i);
             break;
         }
     }
 
-    result.replacement_key = this->keys[0];
-    result.underflow = this->keys.size() < min_size;
+    result.replacement_key = this->external_keys[0];
+    result.underflow = this->external_keys.size() < min_size;
     return result;
 }
 
 bool btree_leaf_node::can_borrow()
 {
-    return this->keys.size() > min_size;
+    return this->external_keys.size() > min_size;
 }
 
 bool btree_leaf_node::can_accept()
 {
-    return this->keys.size() < max_size;
+    return this->external_keys.size() < max_size;
 }
 
 void btree_leaf_node::pull(btree_node* accepter, int* key)
 {
     btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
-    accepter_node->keys.push_back(this->keys[0]);
+    accepter_node->external_keys.push_back(this->external_keys[0]);
     accepter_node->values.push_back(this->values[0]);
-    this->keys.erase(this->keys.begin());
+    this->external_keys.erase(this->external_keys.begin());
     this->values.erase(this->values.begin());
-    *key = this->keys[0];
+    *key = this->external_keys[0];
 }
 
 void btree_leaf_node::push(btree_node* accepter, int* key)
 {
     btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
-    int my_size = this->keys.size();
-    *key = this->keys[my_size - 1];
-    accepter_node->keys.insert(accepter_node->keys.begin(), *key);
+    int my_size = this->external_keys.size();
+    *key = this->external_keys[my_size - 1];
+    accepter_node->external_keys.insert(accepter_node->external_keys.begin(), *key);
     accepter_node->values.insert(accepter_node->values.begin(), this->values[my_size - 1]);
-    this->keys.resize(my_size - 1);
+    this->external_keys.resize(my_size - 1);
     this->values.resize(my_size - 1);
 }
 
 void btree_leaf_node::merge_right(int key, btree_node* other)
 {
     btree_leaf_node* other_node = (btree_leaf_node*)other;
-    for (size_t i = 0; i < other_node->keys.size(); i++)
+    for (size_t i = 0; i < other_node->external_keys.size(); i++)
     {
-        this->keys.push_back(other_node->keys[i]);
+        this->external_keys.push_back(other_node->external_keys[i]);
     }
     for (size_t i = 0; i < other_node->values.size(); i++)
     {
         this->values.push_back(other_node->values[i]);
     }
 
-    other_node->keys.clear();
+    other_node->external_keys.clear();
     other_node->values.clear();
 }
 
 btree_node* btree_leaf_node::get_replacement_root()
 {
-    if (this->keys.size() == 0)
+    if (this->external_keys.size() == 0)
     {
         delete this;
         return nullptr;
@@ -310,26 +310,26 @@ btree_node* btree_leaf_node::get_replacement_root()
 
 void btree_leaf_node::print(int indent) const
 {
-    for (size_t i = 0; i < this->keys.size(); i++)
+    for (size_t i = 0; i < this->external_keys.size(); i++)
     {
         for (int j = 0; j < indent; j++)
         {
             cout << " ";
         }
-        cout << this->keys[i] << "->" << this->values[i] << endl;
+        cout << this->external_keys[i] << "->" << this->values[i] << endl;
     }
 }
 
 void btree_leaf_node::verify(btree_node* root, int min, int max) const
 {
-    for (size_t i = 0; i < this->keys.size(); i++)
+    for (size_t i = 0; i < this->external_keys.size(); i++)
     {
-        if (this->keys[i] < min || this->keys[i] >= max)
+        if (this->external_keys[i] < min || this->external_keys[i] >= max)
         {
             assert(false);
         }
     }
-    if (this->keys.size() > max_size || this->keys.size() < min_size)
+    if (this->external_keys.size() > max_size || this->external_keys.size() < min_size)
     {
         if (this != root)
         {
@@ -340,7 +340,7 @@ void btree_leaf_node::verify(btree_node* root, int min, int max) const
 
 btree_internal_node::btree_internal_node(int key, btree_node* left, btree_node* right)
 {
-    this->keys.push_back(key);
+    this->internal_keys.push_back(key);
     this->children.push_back(left);
     this->children.push_back(right);
 }
@@ -361,11 +361,11 @@ btree_internal_node::~btree_internal_node()
 insert_result btree_internal_node::insert(int key, int value)
 {
     insert_result result;
-    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    for (size_t upper_index = 0; upper_index <= this->internal_keys.size(); upper_index++)
     {
         int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        bool lower_is_good = (lower_index == -1) || (this->internal_keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->internal_keys.size()) || (key < this->internal_keys[upper_index]);
         if (lower_is_good && upper_is_good)
         {
             insert_result children_insert_result = this->children[upper_index]->insert(key, value);
@@ -379,7 +379,7 @@ insert_result btree_internal_node::insert(int key, int value)
                     {
                         if (this->children[upper_index - 1]->can_accept())
                         {
-                            this->children[upper_index]->pull(this->children[upper_index - 1], &(this->keys[upper_index - 1]));
+                            this->children[upper_index]->pull(this->children[upper_index - 1], &(this->internal_keys[upper_index - 1]));
 
                             overflow_solved = true;
                         }
@@ -388,22 +388,22 @@ insert_result btree_internal_node::insert(int key, int value)
                     {
                         if (this->children[upper_index + 1]->can_accept())
                         {
-                            this->children[upper_index]->push(this->children[upper_index + 1], &(this->keys[upper_index]));
+                            this->children[upper_index]->push(this->children[upper_index + 1], &(this->internal_keys[upper_index]));
                             overflow_solved = true;
                         }
                     }
                     if (!overflow_solved)
                     {
                         split_result children_split_result = this->children[upper_index]->split();
-                        if (upper_index == this->keys.size())
+                        if (upper_index == this->internal_keys.size())
                         {
                             this->children.push_back(children_split_result.sibling);
-                            this->keys.push_back(children_split_result.key);
+                            this->internal_keys.push_back(children_split_result.key);
                         }
                         else
                         {
                             this->children.insert(this->children.begin() + upper_index + 1, children_split_result.sibling);
-                            this->keys.insert(this->keys.begin() + upper_index, children_split_result.key);
+                            this->internal_keys.insert(this->internal_keys.begin() + upper_index, children_split_result.key);
                         }
                     }
 
@@ -434,24 +434,24 @@ split_result btree_internal_node::split()
     {
         sibling->children.push_back(this->children[i]);
     }
-    for (size_t i = min_size; i < this->keys.size(); i++)
+    for (size_t i = min_size; i < this->internal_keys.size(); i++)
     {
-        sibling->keys.push_back(this->keys[i]);
+        sibling->internal_keys.push_back(this->internal_keys[i]);
     }
     result.sibling = sibling;
-    result.key = this->keys[min_size - 1];
-    this->keys.resize(min_size - 1);
+    result.key = this->internal_keys[min_size - 1];
+    this->internal_keys.resize(min_size - 1);
     this->children.resize(min_size);
     return result;
 }
 
 bool btree_internal_node::select(int key, int* result) const
 {
-    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    for (size_t upper_index = 0; upper_index <= this->internal_keys.size(); upper_index++)
     {
         int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        bool lower_is_good = (lower_index == -1) || (this->internal_keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->internal_keys.size()) || (key < this->internal_keys[upper_index]);
         if (lower_is_good && upper_is_good)
         {
             return this->children[upper_index]->select(key, result);
@@ -465,11 +465,11 @@ remove_result btree_internal_node::remove(int key)
 {
     remove_result result;
     result.succeed = false;
-    for (size_t upper_index = 0; upper_index <= this->keys.size(); upper_index++)
+    for (size_t upper_index = 0; upper_index <= this->internal_keys.size(); upper_index++)
     {
         int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->keys.size()) || (key < this->keys[upper_index]);
+        bool lower_is_good = (lower_index == -1) || (this->internal_keys[lower_index] <= key);
+        bool upper_is_good = (upper_index == this->internal_keys.size()) || (key < this->internal_keys[upper_index]);
         if (lower_is_good && upper_is_good)
         {
             remove_result child_remove_result = this->children[upper_index]->remove(key);
@@ -478,9 +478,9 @@ remove_result btree_internal_node::remove(int key)
                 result.replacement_key = child_remove_result.replacement_key;
                 if (lower_index != -1)
                 {
-                    if (this->keys[lower_index] == key)
+                    if (this->internal_keys[lower_index] == key)
                     {
-                        this->keys[lower_index] = result.replacement_key;
+                        this->internal_keys[lower_index] = result.replacement_key;
                     }
                 }
 
@@ -492,7 +492,7 @@ remove_result btree_internal_node::remove(int key)
                     {
                         if (this->children[upper_index - 1]->can_borrow())
                         {
-                            this->children[upper_index - 1]->push(this->children[upper_index], &(this->keys[upper_index - 1]));
+                            this->children[upper_index - 1]->push(this->children[upper_index], &(this->internal_keys[upper_index - 1]));
                             underflow_solved = true;
                         }
                     }
@@ -500,23 +500,23 @@ remove_result btree_internal_node::remove(int key)
                     {
                         if (this->children[upper_index + 1]->can_borrow())
                         {
-                            this->children[upper_index + 1]->pull(this->children[upper_index], &(this->keys[upper_index]));
+                            this->children[upper_index + 1]->pull(this->children[upper_index], &(this->internal_keys[upper_index]));
                             underflow_solved = true;
                         }
                     }
                     if (!underflow_solved && upper_index > 0)
                     {
-                        this->children[upper_index - 1]->merge_right(this->keys[upper_index - 1], this->children[upper_index]);
+                        this->children[upper_index - 1]->merge_right(this->internal_keys[upper_index - 1], this->children[upper_index]);
                         delete this->children[upper_index];
-                        this->keys.erase(this->keys.begin() + (upper_index - 1));
+                        this->internal_keys.erase(this->internal_keys.begin() + (upper_index - 1));
                         this->children.erase(this->children.begin() + upper_index);
                         underflow_solved = true;
                     }
                     if (!underflow_solved && upper_index < this->children.size() - 1)
                     {
-                        this->children[upper_index]->merge_right(this->keys[upper_index], this->children[upper_index + 1]);
+                        this->children[upper_index]->merge_right(this->internal_keys[upper_index], this->children[upper_index + 1]);
                         delete this->children[upper_index + 1];
-                        this->keys.erase(this->keys.begin() + upper_index);
+                        this->internal_keys.erase(this->internal_keys.begin() + upper_index);
                         this->children.erase(this->children.begin() + (upper_index + 1));
                         underflow_solved = true;
                     }
@@ -546,9 +546,9 @@ void btree_internal_node::pull(btree_node* accepter, int* key)
 {
     btree_internal_node* accepter_node = (btree_internal_node*)accepter;
     accepter_node->children.push_back(this->children[0]);
-    accepter_node->keys.push_back(*key);
-    *key = this->keys[0];
-    this->keys.erase(this->keys.begin());
+    accepter_node->internal_keys.push_back(*key);
+    *key = this->internal_keys[0];
+    this->internal_keys.erase(this->internal_keys.begin());
     this->children.erase(this->children.begin());
 }
 
@@ -556,26 +556,26 @@ void btree_internal_node::push(btree_node* accepter, int* key)
 {
     btree_internal_node* accepter_node = (btree_internal_node*)accepter;
     accepter_node->children.insert(accepter_node->children.begin(), this->children[this->children.size() - 1]);
-    accepter_node->keys.insert(accepter_node->keys.begin(), *key);
-    *key = this->keys[this->keys.size() - 1];
-    this->keys.resize(this->keys.size() - 1);
+    accepter_node->internal_keys.insert(accepter_node->internal_keys.begin(), *key);
+    *key = this->internal_keys[this->internal_keys.size() - 1];
+    this->internal_keys.resize(this->internal_keys.size() - 1);
     this->children.resize(this->children.size() - 1);
 }
 
 void btree_internal_node::merge_right(int key, btree_node* other)
 {
     btree_internal_node* other_node = (btree_internal_node*)other;
-    this->keys.push_back(key);
-    for (size_t i = 0; i < other_node->keys.size(); i++)
+    this->internal_keys.push_back(key);
+    for (size_t i = 0; i < other_node->internal_keys.size(); i++)
     {
-        this->keys.push_back(other_node->keys[i]);
+        this->internal_keys.push_back(other_node->internal_keys[i]);
     }
     for (size_t i = 0; i < other_node->children.size(); i++)
     {
         this->children.push_back(other_node->children[i]);
     }
 
-    other_node->keys.clear();
+    other_node->internal_keys.clear();
     other_node->children.clear();
 }
 
@@ -597,32 +597,32 @@ btree_node* btree_internal_node::get_replacement_root()
 void btree_internal_node::print(int indent) const
 {
     children[0]->print(indent + 2);
-    for (size_t i = 0; i < this->keys.size(); i++)
+    for (size_t i = 0; i < this->internal_keys.size(); i++)
     {
         for (int j = 0; j < indent; j++)
         {
             cout << " ";
         }
-        cout << keys[i] << endl;
+        cout << internal_keys[i] << endl;
         children[i + 1]->print(indent + 2);
     }
 }
 
 void btree_internal_node::verify(btree_node* root, int min, int max) const
 {
-    for (size_t i = 0; i < this->keys.size(); i++)
+    for (size_t i = 0; i < this->internal_keys.size(); i++)
     {
-        if (this->keys[i] < min || this->keys[i] >= max)
+        if (this->internal_keys[i] < min || this->internal_keys[i] >= max)
         {
             assert(false);
         }
     }
-    this->children[0]->verify(root, min, this->keys[0]);
-    for (size_t i = 1; i < this->keys.size() - 1; i++)
+    this->children[0]->verify(root, min, this->internal_keys[0]);
+    for (size_t i = 1; i < this->internal_keys.size() - 1; i++)
     {
-        this->children[i]->verify(root, this->keys[i - 1], this->keys[i]);
+        this->children[i]->verify(root, this->internal_keys[i - 1], this->internal_keys[i]);
     }
-    this->children[this->keys.size()]->verify(root, this->keys[this->keys.size() - 1], max);
+    this->children[this->internal_keys.size()]->verify(root, this->internal_keys[this->internal_keys.size() - 1], max);
 
     if (this->children.size() > max_size || this->children.size() < min_size)
     {
