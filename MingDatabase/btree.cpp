@@ -41,9 +41,9 @@ public:
     virtual remove_result remove(int key) = 0;
     virtual bool can_borrow() = 0;
     virtual bool can_accept() = 0;
-    virtual void pull(btree_node* accepter, int* key) = 0;
-    virtual void push(btree_node* accepter, int* key) = 0;
-    virtual void merge_right(int key, btree_node* other) = 0;
+    virtual void push_first_to_left(btree_node* left, int* key) = 0;
+    virtual void push_last_to_right(btree_node* right, int* key) = 0;
+    virtual void merge_right(int key, btree_node* right) = 0;
     virtual btree_node* get_replacement_root() = 0;
 
     virtual void print(int indent) const = 0;
@@ -61,9 +61,9 @@ public:
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
-    virtual void pull(btree_node* accepter, int* key);
-    virtual void push(btree_node* accepter, int* key);
-    virtual void merge_right(int key, btree_node* other);
+    virtual void push_first_to_left(btree_node* left, int* key);
+    virtual void push_last_to_right(btree_node* right, int* key);
+    virtual void merge_right(int key, btree_node* right);
     virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
@@ -85,9 +85,9 @@ public:
     virtual remove_result remove(int key);
     virtual bool can_borrow();
     virtual bool can_accept();
-    virtual void pull(btree_node* accepter, int* key);
-    virtual void push(btree_node* accepter, int* key);
-    virtual void merge_right(int key, btree_node* other);
+    virtual void push_first_to_left(btree_node* left, int* key);
+    virtual void push_last_to_right(btree_node* right, int* key);
+    virtual void merge_right(int key, btree_node* right);
     virtual btree_node* get_replacement_root();
 
     virtual void print(int indent) const;
@@ -258,41 +258,41 @@ bool btree_leaf_node::can_accept()
     return this->external_keys.size() < max_size;
 }
 
-void btree_leaf_node::pull(btree_node* accepter, int* key)
+void btree_leaf_node::push_first_to_left(btree_node* left, int* key)
 {
-    btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
-    accepter_node->external_keys.push_back(this->external_keys[0]);
-    accepter_node->values.push_back(this->values[0]);
+    btree_leaf_node* left_node = (btree_leaf_node*)left;
+    left_node->external_keys.push_back(this->external_keys[0]);
+    left_node->values.push_back(this->values[0]);
     this->external_keys.erase(this->external_keys.begin());
     this->values.erase(this->values.begin());
     *key = this->external_keys[0];
 }
 
-void btree_leaf_node::push(btree_node* accepter, int* key)
+void btree_leaf_node::push_last_to_right(btree_node* right, int* key)
 {
-    btree_leaf_node* accepter_node = (btree_leaf_node*)accepter;
+    btree_leaf_node* right_node = (btree_leaf_node*)right;
     int my_size = this->external_keys.size();
     *key = this->external_keys[my_size - 1];
-    accepter_node->external_keys.insert(accepter_node->external_keys.begin(), *key);
-    accepter_node->values.insert(accepter_node->values.begin(), this->values[my_size - 1]);
+    right_node->external_keys.insert(right_node->external_keys.begin(), *key);
+    right_node->values.insert(right_node->values.begin(), this->values[my_size - 1]);
     this->external_keys.resize(my_size - 1);
     this->values.resize(my_size - 1);
 }
 
-void btree_leaf_node::merge_right(int key, btree_node* other)
+void btree_leaf_node::merge_right(int key, btree_node* right)
 {
-    btree_leaf_node* other_node = (btree_leaf_node*)other;
-    for (size_t i = 0; i < other_node->external_keys.size(); i++)
+    btree_leaf_node* right_node = (btree_leaf_node*)right;
+    for (size_t i = 0; i < right_node->external_keys.size(); i++)
     {
-        this->external_keys.push_back(other_node->external_keys[i]);
+        this->external_keys.push_back(right_node->external_keys[i]);
     }
-    for (size_t i = 0; i < other_node->values.size(); i++)
+    for (size_t i = 0; i < right_node->values.size(); i++)
     {
-        this->values.push_back(other_node->values[i]);
+        this->values.push_back(right_node->values[i]);
     }
 
-    other_node->external_keys.clear();
-    other_node->values.clear();
+    right_node->external_keys.clear();
+    right_node->values.clear();
 }
 
 btree_node* btree_leaf_node::get_replacement_root()
@@ -379,8 +379,7 @@ insert_result btree_internal_node::insert(int key, int value)
                     {
                         if (this->children[upper_index - 1]->can_accept())
                         {
-                            this->children[upper_index]->pull(this->children[upper_index - 1], &(this->internal_keys[upper_index - 1]));
-
+                            this->children[upper_index]->push_first_to_left(this->children[upper_index - 1], &(this->internal_keys[upper_index - 1]));
                             overflow_solved = true;
                         }
                     }
@@ -388,7 +387,7 @@ insert_result btree_internal_node::insert(int key, int value)
                     {
                         if (this->children[upper_index + 1]->can_accept())
                         {
-                            this->children[upper_index]->push(this->children[upper_index + 1], &(this->internal_keys[upper_index]));
+                            this->children[upper_index]->push_last_to_right(this->children[upper_index + 1], &(this->internal_keys[upper_index]));
                             overflow_solved = true;
                         }
                     }
@@ -492,7 +491,7 @@ remove_result btree_internal_node::remove(int key)
                     {
                         if (this->children[upper_index - 1]->can_borrow())
                         {
-                            this->children[upper_index - 1]->push(this->children[upper_index], &(this->internal_keys[upper_index - 1]));
+                            this->children[upper_index - 1]->push_last_to_right(this->children[upper_index], &(this->internal_keys[upper_index - 1]));
                             underflow_solved = true;
                         }
                     }
@@ -500,7 +499,7 @@ remove_result btree_internal_node::remove(int key)
                     {
                         if (this->children[upper_index + 1]->can_borrow())
                         {
-                            this->children[upper_index + 1]->pull(this->children[upper_index], &(this->internal_keys[upper_index]));
+                            this->children[upper_index + 1]->push_first_to_left(this->children[upper_index], &(this->internal_keys[upper_index]));
                             underflow_solved = true;
                         }
                     }
@@ -542,41 +541,41 @@ bool btree_internal_node::can_accept()
     return this->children.size() < max_size;
 }
 
-void btree_internal_node::pull(btree_node* accepter, int* key)
+void btree_internal_node::push_first_to_left(btree_node* left, int* key)
 {
-    btree_internal_node* accepter_node = (btree_internal_node*)accepter;
-    accepter_node->children.push_back(this->children[0]);
-    accepter_node->internal_keys.push_back(*key);
+    btree_internal_node* left_node = (btree_internal_node*)left;
+    left_node->children.push_back(this->children[0]);
+    left_node->internal_keys.push_back(*key);
     *key = this->internal_keys[0];
     this->internal_keys.erase(this->internal_keys.begin());
     this->children.erase(this->children.begin());
 }
 
-void btree_internal_node::push(btree_node* accepter, int* key)
+void btree_internal_node::push_last_to_right(btree_node* right, int* key)
 {
-    btree_internal_node* accepter_node = (btree_internal_node*)accepter;
-    accepter_node->children.insert(accepter_node->children.begin(), this->children[this->children.size() - 1]);
-    accepter_node->internal_keys.insert(accepter_node->internal_keys.begin(), *key);
+    btree_internal_node* right_node = (btree_internal_node*)right;
+    right_node->children.insert(right_node->children.begin(), this->children[this->children.size() - 1]);
+    right_node->internal_keys.insert(right_node->internal_keys.begin(), *key);
     *key = this->internal_keys[this->internal_keys.size() - 1];
     this->internal_keys.resize(this->internal_keys.size() - 1);
     this->children.resize(this->children.size() - 1);
 }
 
-void btree_internal_node::merge_right(int key, btree_node* other)
+void btree_internal_node::merge_right(int key, btree_node* right)
 {
-    btree_internal_node* other_node = (btree_internal_node*)other;
+    btree_internal_node* right_node = (btree_internal_node*)right;
     this->internal_keys.push_back(key);
-    for (size_t i = 0; i < other_node->internal_keys.size(); i++)
+    for (size_t i = 0; i < right_node->internal_keys.size(); i++)
     {
-        this->internal_keys.push_back(other_node->internal_keys[i]);
+        this->internal_keys.push_back(right_node->internal_keys[i]);
     }
-    for (size_t i = 0; i < other_node->children.size(); i++)
+    for (size_t i = 0; i < right_node->children.size(); i++)
     {
-        this->children.push_back(other_node->children[i]);
+        this->children.push_back(right_node->children[i]);
     }
 
-    other_node->internal_keys.clear();
-    other_node->children.clear();
+    right_node->internal_keys.clear();
+    right_node->children.clear();
 }
 
 btree_node* btree_internal_node::get_replacement_root()
