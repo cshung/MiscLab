@@ -66,6 +66,8 @@ public:
     virtual void merge_right(int key, btree_node* right);
     virtual btree_node* get_replacement_root();
 
+    void search(int key, int* lower_index, int* upper_index) const;
+
     virtual void print(int indent) const;
     virtual void verify(btree_node* root, int min, int max) const;
 private:
@@ -89,6 +91,8 @@ public:
     virtual void push_last_to_right(btree_node* right, int* key);
     virtual void merge_right(int key, btree_node* right);
     virtual btree_node* get_replacement_root();
+
+    void search(int key, int* lower_index, int* upper_index) const;
 
     virtual void print(int indent) const;
     virtual void verify(btree_node* root, int min, int max) const;
@@ -165,30 +169,51 @@ btree_leaf_node::~btree_leaf_node()
     this->right_sibling = nullptr;
 }
 
+void btree_leaf_node::search(int key, int* lower_index, int* upper_index) const
+{
+    for ((*upper_index) = 0; (*upper_index) <= this->external_keys.size(); (*upper_index)++)
+    {
+        (*lower_index) = (*upper_index) - 1;
+        bool lower_is_good = ((*lower_index) == -1) || (this->external_keys[(*lower_index)] <= key);
+        bool upper_is_good = ((*upper_index) == this->external_keys.size()) || (key < this->external_keys[(*upper_index)]);
+        if (lower_is_good && upper_is_good)
+        {
+            return;
+        }
+    }
+}
+
+void btree_internal_node::search(int key, int* lower_index, int* upper_index) const
+{
+    for ((*upper_index) = 0; (*upper_index) <= this->internal_keys.size(); (*upper_index)++)
+    {
+        (*lower_index) = (*upper_index) - 1;
+        bool lower_is_good = ((*lower_index) == -1) || (this->internal_keys[(*lower_index)] <= key);
+        bool upper_is_good = ((*upper_index) == this->internal_keys.size()) || (key < this->internal_keys[(*upper_index)]);
+        if (lower_is_good && upper_is_good)
+        {
+            return;
+        }
+    }
+}
+
 insert_result btree_leaf_node::insert(int key, int value)
 {
     insert_result result;
-    for (size_t upper_index = 0; upper_index <= this->external_keys.size(); upper_index++)
-    {
-        int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->external_keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->external_keys.size()) || (key < this->external_keys[upper_index]);
-        if (lower_is_good && upper_is_good)
-        {
-            if (lower_index != -1 && key == this->external_keys[lower_index])
-            {
-                result.succeed = false;
-            }
-            else
-            {
-                this->external_keys.insert(this->external_keys.begin() + upper_index, key);
-                this->values.insert(this->values.begin() + upper_index, value);
-                result.succeed = true;
-                result.overflow = (this->external_keys.size() == (max_size + 1));
-            }
+    int lower_index;
+    int upper_index;
+    this->search(key, &lower_index, &upper_index);
 
-            break;
-        }
+    if (lower_index != -1 && key == this->external_keys[lower_index])
+    {
+        result.succeed = false;
+    }
+    else
+    {
+        this->external_keys.insert(this->external_keys.begin() + upper_index, key);
+        this->values.insert(this->values.begin() + upper_index, value);
+        result.succeed = true;
+        result.overflow = (this->external_keys.size() == (max_size + 1));
     }
 
     return result;
@@ -361,65 +386,59 @@ btree_internal_node::~btree_internal_node()
 insert_result btree_internal_node::insert(int key, int value)
 {
     insert_result result;
-    for (size_t upper_index = 0; upper_index <= this->internal_keys.size(); upper_index++)
-    {
-        int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->internal_keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->internal_keys.size()) || (key < this->internal_keys[upper_index]);
-        if (lower_is_good && upper_is_good)
-        {
-            insert_result children_insert_result = this->children[upper_index]->insert(key, value);
-            if (children_insert_result.succeed)
-            {
-                result.succeed = true;
-                if (children_insert_result.overflow)
-                {
-                    bool overflow_solved = false;
-                    if (upper_index > 0)
-                    {
-                        if (this->children[upper_index - 1]->can_accept())
-                        {
-                            this->children[upper_index]->push_first_to_left(this->children[upper_index - 1], &(this->internal_keys[upper_index - 1]));
-                            overflow_solved = true;
-                        }
-                    }
-                    if (!overflow_solved && upper_index < this->children.size() - 1)
-                    {
-                        if (this->children[upper_index + 1]->can_accept())
-                        {
-                            this->children[upper_index]->push_last_to_right(this->children[upper_index + 1], &(this->internal_keys[upper_index]));
-                            overflow_solved = true;
-                        }
-                    }
-                    if (!overflow_solved)
-                    {
-                        split_result children_split_result = this->children[upper_index]->split();
-                        if (upper_index == this->internal_keys.size())
-                        {
-                            this->children.push_back(children_split_result.sibling);
-                            this->internal_keys.push_back(children_split_result.key);
-                        }
-                        else
-                        {
-                            this->children.insert(this->children.begin() + upper_index + 1, children_split_result.sibling);
-                            this->internal_keys.insert(this->internal_keys.begin() + upper_index, children_split_result.key);
-                        }
-                    }
+    
+    int upper_index;
+    int lower_index;
+    this->search(key, &lower_index, &upper_index);
 
-                    result.overflow = this->children.size() == max_size + 1;
+    insert_result children_insert_result = this->children[upper_index]->insert(key, value);
+    if (children_insert_result.succeed)
+    {
+        result.succeed = true;
+        if (children_insert_result.overflow)
+        {
+            bool overflow_solved = false;
+            if (upper_index > 0)
+            {
+                if (this->children[upper_index - 1]->can_accept())
+                {
+                    this->children[upper_index]->push_first_to_left(this->children[upper_index - 1], &(this->internal_keys[upper_index - 1]));
+                    overflow_solved = true;
+                }
+            }
+            if (!overflow_solved && upper_index < this->children.size() - 1)
+            {
+                if (this->children[upper_index + 1]->can_accept())
+                {
+                    this->children[upper_index]->push_last_to_right(this->children[upper_index + 1], &(this->internal_keys[upper_index]));
+                    overflow_solved = true;
+                }
+            }
+            if (!overflow_solved)
+            {
+                split_result children_split_result = this->children[upper_index]->split();
+                if (upper_index == this->internal_keys.size())
+                {
+                    this->children.push_back(children_split_result.sibling);
+                    this->internal_keys.push_back(children_split_result.key);
                 }
                 else
                 {
-                    result.overflow = false;
+                    this->children.insert(this->children.begin() + upper_index + 1, children_split_result.sibling);
+                    this->internal_keys.insert(this->internal_keys.begin() + upper_index, children_split_result.key);
                 }
             }
-            else
-            {
-                result.succeed = false;
-            }
 
-            break;
+            result.overflow = this->children.size() == max_size + 1;
         }
+        else
+        {
+            result.overflow = false;
+        }
+    }
+    else
+    {
+        result.succeed = false;
     }
 
     return result;
@@ -446,86 +465,73 @@ split_result btree_internal_node::split()
 
 bool btree_internal_node::select(int key, int* result) const
 {
-    for (size_t upper_index = 0; upper_index <= this->internal_keys.size(); upper_index++)
-    {
-        int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->internal_keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->internal_keys.size()) || (key < this->internal_keys[upper_index]);
-        if (lower_is_good && upper_is_good)
-        {
-            return this->children[upper_index]->select(key, result);
-        }
-    }
+    int upper_index;
+    int lower_index;
+    this->search(key, &lower_index, &upper_index);
 
-    return false;
+    return this->children[upper_index]->select(key, result);
 }
 
 remove_result btree_internal_node::remove(int key)
 {
     remove_result result;
     result.succeed = false;
-    for (size_t upper_index = 0; upper_index <= this->internal_keys.size(); upper_index++)
+    
+    int upper_index;
+    int lower_index;
+    this->search(key, &lower_index, &upper_index);
+
+    remove_result child_remove_result = this->children[upper_index]->remove(key);
+    if (child_remove_result.succeed)
     {
-        int lower_index = upper_index - 1;
-        bool lower_is_good = (lower_index == -1) || (this->internal_keys[lower_index] <= key);
-        bool upper_is_good = (upper_index == this->internal_keys.size()) || (key < this->internal_keys[upper_index]);
-        if (lower_is_good && upper_is_good)
+        result.replacement_key = child_remove_result.replacement_key;
+        if (lower_index != -1)
         {
-            remove_result child_remove_result = this->children[upper_index]->remove(key);
-            if (child_remove_result.succeed)
+            if (this->internal_keys[lower_index] == key)
             {
-                result.replacement_key = child_remove_result.replacement_key;
-                if (lower_index != -1)
-                {
-                    if (this->internal_keys[lower_index] == key)
-                    {
-                        this->internal_keys[lower_index] = result.replacement_key;
-                    }
-                }
-
-                result.succeed = true;
-                if (child_remove_result.underflow)
-                {
-                    bool underflow_solved = false;
-                    if (upper_index > 0)
-                    {
-                        if (this->children[upper_index - 1]->can_borrow())
-                        {
-                            this->children[upper_index - 1]->push_last_to_right(this->children[upper_index], &(this->internal_keys[upper_index - 1]));
-                            underflow_solved = true;
-                        }
-                    }
-                    if (!underflow_solved && upper_index < this->children.size() - 1)
-                    {
-                        if (this->children[upper_index + 1]->can_borrow())
-                        {
-                            this->children[upper_index + 1]->push_first_to_left(this->children[upper_index], &(this->internal_keys[upper_index]));
-                            underflow_solved = true;
-                        }
-                    }
-                    if (!underflow_solved && upper_index > 0)
-                    {
-                        this->children[upper_index - 1]->merge_right(this->internal_keys[upper_index - 1], this->children[upper_index]);
-                        delete this->children[upper_index];
-                        this->internal_keys.erase(this->internal_keys.begin() + (upper_index - 1));
-                        this->children.erase(this->children.begin() + upper_index);
-                        underflow_solved = true;
-                    }
-                    if (!underflow_solved && upper_index < this->children.size() - 1)
-                    {
-                        this->children[upper_index]->merge_right(this->internal_keys[upper_index], this->children[upper_index + 1]);
-                        delete this->children[upper_index + 1];
-                        this->internal_keys.erase(this->internal_keys.begin() + upper_index);
-                        this->children.erase(this->children.begin() + (upper_index + 1));
-                        underflow_solved = true;
-                    }
-                }
-
-                result.underflow = this->children.size() < min_size;
+                this->internal_keys[lower_index] = result.replacement_key;
             }
-
-            break;
         }
+
+        result.succeed = true;
+        if (child_remove_result.underflow)
+        {
+            bool underflow_solved = false;
+            if (upper_index > 0)
+            {
+                if (this->children[upper_index - 1]->can_borrow())
+                {
+                    this->children[upper_index - 1]->push_last_to_right(this->children[upper_index], &(this->internal_keys[upper_index - 1]));
+                    underflow_solved = true;
+                }
+            }
+            if (!underflow_solved && upper_index < this->children.size() - 1)
+            {
+                if (this->children[upper_index + 1]->can_borrow())
+                {
+                    this->children[upper_index + 1]->push_first_to_left(this->children[upper_index], &(this->internal_keys[upper_index]));
+                    underflow_solved = true;
+                }
+            }
+            if (!underflow_solved && upper_index > 0)
+            {
+                this->children[upper_index - 1]->merge_right(this->internal_keys[upper_index - 1], this->children[upper_index]);
+                delete this->children[upper_index];
+                this->internal_keys.erase(this->internal_keys.begin() + (upper_index - 1));
+                this->children.erase(this->children.begin() + upper_index);
+                underflow_solved = true;
+            }
+            if (!underflow_solved && upper_index < this->children.size() - 1)
+            {
+                this->children[upper_index]->merge_right(this->internal_keys[upper_index], this->children[upper_index + 1]);
+                delete this->children[upper_index + 1];
+                this->internal_keys.erase(this->internal_keys.begin() + upper_index);
+                this->children.erase(this->children.begin() + (upper_index + 1));
+                underflow_solved = true;
+            }
+        }
+
+        result.underflow = this->children.size() < min_size;
     }
 
     return result;
