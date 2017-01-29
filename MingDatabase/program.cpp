@@ -3,12 +3,24 @@
 #include <cstdlib>
 #include <cassert>
 #include "btree.h"
+#include "page.h"
 
 using namespace std;
 
 // #define LOG
 
 int main(int argc, char** argv)
+{
+    page page;
+    cout << page.get_page_number() << endl;
+    buffer key;
+    key.data = (uint8_t*)"hello";
+    key.size = 5;
+    page.append_key(key);
+    return 0;
+}
+
+int test_btree()
 {
     map<int, int> reference;
     btree tree;
