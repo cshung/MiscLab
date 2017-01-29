@@ -29,12 +29,11 @@ private:
 class page_iterator_impl
 {
 public:
-    page_iterator_impl(void* begin, int num_items);
-    ~page_iterator_impl();
+    page_iterator_impl(uint8_t* begin, int num_items);
     bool has_next();
     buffer next();
 private:
-    void* m_begin;
+    uint8_t* m_begin;
     int m_num_items;
 };
 
@@ -94,7 +93,7 @@ void page_impl::append_key(buffer key)
 
 page_iterator page_impl::get_keys()
 {
-    page_iterator result(nullptr);
+    page_iterator result(new page_iterator_impl(this->bytes + sizeof(page_header), this->get_page_header()->num_keys));
     return result;
 }
 
@@ -108,6 +107,11 @@ page_iterator::page_iterator(page_iterator_impl* impl)
     this->m_impl = impl;
 }
 
+page_iterator::~page_iterator()
+{
+    delete this->m_impl;
+}
+
 bool page_iterator::has_next()
 {
     return this->m_impl->has_next();
@@ -116,4 +120,26 @@ bool page_iterator::has_next()
 buffer page_iterator::next()
 {
     return this->m_impl->next();
+}
+
+page_iterator_impl::page_iterator_impl(uint8_t* begin, int num_items)
+{
+    this->m_begin = begin;
+    this->m_num_items = num_items;
+}
+
+bool page_iterator_impl::has_next()
+{
+    return this->m_num_items > 0;
+}
+
+buffer page_iterator_impl::next()
+{
+    buffer result;
+    result.size = *((uint32_t*)this->m_begin);
+    this->m_begin += sizeof(uint32_t);
+    result.data = this->m_begin;
+    this->m_begin += result.size;
+    this->m_num_items--;
+    return result;
 }

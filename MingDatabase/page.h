@@ -12,6 +12,7 @@ class page_iterator
 {
 public:
     page_iterator(page_iterator_impl* impl);
+    ~page_iterator();
     bool has_next();
     buffer next();
 private:
