@@ -5,3 +5,4 @@
 #include "hash_trie_test.h"
 #include "min_max_queue_test.h"
 #include "cartesian_tree_test.h"
+#include "btree_test.h"

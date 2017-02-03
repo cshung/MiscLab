@@ -386,7 +386,7 @@ btree_internal_node::~btree_internal_node()
 insert_result btree_internal_node::insert(int key, int value)
 {
     insert_result result;
-    
+
     int upper_index;
     int lower_index;
     this->search(key, &lower_index, &upper_index);
@@ -476,7 +476,7 @@ remove_result btree_internal_node::remove(int key)
 {
     remove_result result;
     result.succeed = false;
-    
+
     int upper_index;
     int lower_index;
     this->search(key, &lower_index, &upper_index);
