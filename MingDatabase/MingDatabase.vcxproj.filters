@@ -18,16 +18,21 @@
     <ClCompile Include="program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="page.cpp">
+    <ClCompile Include="page_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="buffer.h">
+    <ClInclude Include="page_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="page.h">
+    <ClInclude Include="constant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="page_file.forwarders.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
