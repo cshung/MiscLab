@@ -9,10 +9,13 @@ class page_file_impl
 public:
     page_file_impl(const char* file_name);
     ~page_file_impl();
+    result_t open();
     result_t read_page(int page_number, void* buffer);
-    void write_page(int page_number, void* buffer);
-    int append_page(); 
+    result_t write_page(int page_number, void* buffer);
+    result_t append_page(int* new_page_number);
+    result_t close();
 private:
+    const char* m_file_name;
     FILE* m_file;
     int m_num_pages;
 };
@@ -21,18 +24,42 @@ private:
 
 page_file_impl::page_file_impl(const char* file_name)
 {
-    this->m_file = fopen(file_name, "rb+");
-    if (this->m_file == nullptr)
-    {
-        this->m_file = fopen(file_name, "wb+");
-    }
-    fseek(this->m_file, 0, SEEK_END);
-    this->m_num_pages = ftell(this->m_file);
+    this->m_file_name = file_name;
 }
 
 page_file_impl::~page_file_impl()
 {
+}
+
+result_t page_file_impl::open()
+{
+    this->m_file = fopen(this->m_file_name, "rb+");
+    if (this->m_file == nullptr)
+    {
+        this->m_file = fopen(this->m_file_name, "wb+");
+        if (errno != 0)
+        {
+            return result_t::file_io_error;
+        }
+    }
+    fseek(this->m_file, 0, SEEK_END);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
+    this->m_num_pages = ftell(this->m_file);
+    return result_t::success;
+}
+
+result_t page_file_impl::close()
+{
     fclose(this->m_file);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
+    this->m_file = nullptr;
+    return result_t::success;
 }
 
 result_t page_file_impl::read_page(int page_number, void* buffer)
@@ -43,19 +70,56 @@ result_t page_file_impl::read_page(int page_number, void* buffer)
     }
 
     fseek(this->m_file, page_number * PAGE_SIZE, SEEK_SET);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
     fread(buffer, PAGE_SIZE, 1, this->m_file);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
+    return result_t::success;
 }
 
-void page_file_impl::write_page(int page_number, void* buffer)
+result_t page_file_impl::write_page(int page_number, void* buffer)
 {
+    if (page_number >= this->m_num_pages)
+    {
+        return result_t::file_io_error;
+    }
+
     fseek(this->m_file, page_number * PAGE_SIZE, SEEK_SET);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
     fwrite(buffer, PAGE_SIZE, 1, this->m_file);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
+    return result_t::success;
 }
 
-int page_file_impl::append_page()
+result_t page_file_impl::append_page(int* new_page_size)
 {
+    if (new_page_size == nullptr)
+    {
+        return result_t::invalid_argument;
+    }
+
     uint8_t blank_page[PAGE_SIZE];
     fseek(this->m_file, 0, SEEK_END);
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
     fwrite(blank_page, PAGE_SIZE, 1, this->m_file);
-    return this->m_num_pages++;
+    if (errno != 0)
+    {
+        return result_t::file_io_error;
+    }
+    *new_page_size = this->m_num_pages++;
+    return result_t::success;
 }

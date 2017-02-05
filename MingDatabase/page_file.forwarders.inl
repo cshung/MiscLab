@@ -8,19 +8,28 @@ page_file::~page_file()
     delete this->m_impl;
 }
 
+result_t page_file::open()
+{
+    return this->m_impl->open();
+}
+
 result_t page_file::read_page(int page_number, void* buffer)
 {
     return this->m_impl->read_page(page_number, buffer);
 }
 
-void page_file::write_page(int page_number, void* buffer)
+result_t page_file::write_page(int page_number, void* buffer)
 {
-    this->m_impl->write_page(page_number, buffer);
+    return this->m_impl->write_page(page_number, buffer);
 }
 
 
-int page_file::append_page()
+result_t page_file::append_page(int* new_page_number)
 {
-    return this->m_impl->append_page();
+    return this->m_impl->append_page(new_page_number);
 }
 
+result_t page_file::close()
+{
+    return this->m_impl->close();
+}
