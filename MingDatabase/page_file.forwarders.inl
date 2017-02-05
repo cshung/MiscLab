@@ -8,9 +8,9 @@ page_file::~page_file()
     delete this->m_impl;
 }
 
-void page_file::read_page(int page_number, void* buffer)
+result_t page_file::read_page(int page_number, void* buffer)
 {
-    this->m_impl->read_page(page_number, buffer);
+    return this->m_impl->read_page(page_number, buffer);
 }
 
 void page_file::write_page(int page_number, void* buffer)

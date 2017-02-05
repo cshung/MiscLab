@@ -9,11 +9,12 @@ class page_file_impl
 public:
     page_file_impl(const char* file_name);
     ~page_file_impl();
-    void read_page(int page_number, void* buffer);
+    result_t read_page(int page_number, void* buffer);
     void write_page(int page_number, void* buffer);
     int append_page(); 
 private:
     FILE* m_file;
+    int m_num_pages;
 };
 
 #include "page_file.forwarders.inl"
@@ -25,6 +26,8 @@ page_file_impl::page_file_impl(const char* file_name)
     {
         this->m_file = fopen(file_name, "wb+");
     }
+    fseek(this->m_file, 0, SEEK_END);
+    this->m_num_pages = ftell(this->m_file);
 }
 
 page_file_impl::~page_file_impl()
@@ -32,8 +35,13 @@ page_file_impl::~page_file_impl()
     fclose(this->m_file);
 }
 
-void page_file_impl::read_page(int page_number, void* buffer)
+result_t page_file_impl::read_page(int page_number, void* buffer)
 {
+    if (page_number >= this->m_num_pages)
+    {
+        return result_t::file_io_error;
+    }
+
     fseek(this->m_file, page_number * PAGE_SIZE, SEEK_SET);
     fread(buffer, PAGE_SIZE, 1, this->m_file);
 }
@@ -49,6 +57,5 @@ int page_file_impl::append_page()
     uint8_t blank_page[PAGE_SIZE];
     fseek(this->m_file, 0, SEEK_END);
     fwrite(blank_page, PAGE_SIZE, 1, this->m_file);
-    long int size = ftell(this->m_file);
-    return ((int)(size / PAGE_SIZE)) - 1;
+    return this->m_num_pages++;
 }

@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="constant.h" />
     <ClInclude Include="page_file.h" />
+    <ClInclude Include="result.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="page_file.forwarders.inl" />

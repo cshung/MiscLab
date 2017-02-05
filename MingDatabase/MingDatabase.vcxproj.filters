@@ -29,6 +29,9 @@
     <ClInclude Include="constant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="result.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="page_file.forwarders.inl">

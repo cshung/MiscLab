@@ -14,7 +14,8 @@ int main(int argc, char** argv)
     bool red = true;
     if (red)
     {
-        file.read_page(0, buffer);
+        result_t result = file.read_page(0, buffer);
+        cout << result;
         cout << (char*)buffer << endl;
     }
     else
