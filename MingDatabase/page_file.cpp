@@ -7,36 +7,34 @@
 class page_file_impl
 {
 public:
-    page_file_impl(const char* file_name);
+    page_file_impl();
     ~page_file_impl();
-    result_t open();
+    result_t open(const char* file_name);
     result_t read_page(int page_number, void* buffer);
     result_t write_page(int page_number, void* buffer);
     result_t append_page(int* new_page_number);
     result_t close();
 private:
-    const char* m_file_name;
     FILE* m_file;
     int m_num_pages;
 };
 
 #include "page_file.forwarders.inl"
 
-page_file_impl::page_file_impl(const char* file_name)
+page_file_impl::page_file_impl()
 {
-    this->m_file_name = file_name;
 }
 
 page_file_impl::~page_file_impl()
 {
 }
 
-result_t page_file_impl::open()
+result_t page_file_impl::open(const char* file_name)
 {
-    this->m_file = fopen(this->m_file_name, "rb+");
+    this->m_file = fopen(file_name, "rb+");
     if (this->m_file == nullptr)
     {
-        this->m_file = fopen(this->m_file_name, "wb+");
+        this->m_file = fopen(file_name, "wb+");
         if (errno != 0)
         {
             return result_t::file_io_error;

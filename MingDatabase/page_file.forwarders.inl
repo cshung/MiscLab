@@ -1,6 +1,6 @@
-page_file::page_file(const char* file_name)
+page_file::page_file()
 {
-    this->m_impl = new page_file_impl(file_name);
+    this->m_impl = new page_file_impl();
 }
 
 page_file::~page_file()
@@ -8,9 +8,9 @@ page_file::~page_file()
     delete this->m_impl;
 }
 
-result_t page_file::open()
+result_t page_file::open(const char* file_name)
 {
-    return this->m_impl->open();
+    return this->m_impl->open(file_name);
 }
 
 result_t page_file::read_page(int page_number, void* buffer)

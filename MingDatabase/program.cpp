@@ -1,6 +1,7 @@
 #include <iostream>
 #include "constant.h"
 #include "page_file.h"
+#include "page_allocator.h"
 #include <cstdint>
 
 using namespace std;
@@ -9,13 +10,14 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    page_file file("hello.db");
-    file.open();
+    page_file file;
+    file.open("hello.db");
     uint8_t buffer[PAGE_SIZE];
     bool red = true;
     if (red)
     {
-        result_t result = file.read_page(0, buffer);
+        page_allocator allocator(&file);
+        result_t result = allocator.read_page(0, buffer);
         cout << result;
         cout << (char*)buffer << endl;
     }

@@ -142,15 +142,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="page_allocator.cpp" />
     <ClCompile Include="page_file.cpp" />
     <ClCompile Include="program.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constant.h" />
+    <ClInclude Include="page_allocator.h" />
     <ClInclude Include="page_file.h" />
     <ClInclude Include="result.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="page_allocator.forwarders.inl" />
     <None Include="page_file.forwarders.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
