@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <VideoView
+        android:id="@+id/backView"
+        android:layout_width="200px"
+        android:layout_height="200px"
+        android:layout_marginTop="0px"
+        android:layout_marginLeft="0px" />
+    <VideoView
+        android:id="@+id/foreView"
+        android:layout_width="200px"
+        android:layout_height="200px"
+        android:layout_marginTop="0px"
+        android:layout_marginLeft="50px" />
+</RelativeLayout>
