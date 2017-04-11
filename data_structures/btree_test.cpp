@@ -1,14 +1,11 @@
-#include <iostream>
-#include <map>
-#include <cstdlib>
-#include <cassert>
+#include "btree_test.h"
 #include "btree.h"
-
+#include <map>
+#include <cassert>
+#include <iostream>
 using namespace std;
 
-// #define LOG
-
-int main(int argc, char** argv)
+void btree_test()
 {
     map<int, int> reference;
     btree tree;
@@ -85,13 +82,11 @@ int main(int argc, char** argv)
         }
         }
 
-        
+
 #ifdef LOG
         tree.print();
         cout << "------------------------" << endl;
 #endif
         tree.verify();
     }
-
-    return 0;
 }
