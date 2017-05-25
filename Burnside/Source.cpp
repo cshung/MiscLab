@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 			int fixed_count = 1;
 			for (size_t j = 0; j < group_elements[i].size(); j++)
 			{
-				int k = j;
+				size_t k = j;
 				int element_in_cycle = 0;
 				cout << "(";
 				while (!used[k])
