@@ -54,6 +54,10 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
 
     // Step 0: Use the suffix link to speed up the search
     SuffixTree::SuffixTreeEdge* treeCursor = builder->m_nextStart;
+
+    // BUGBUG: This is wrong, we should modify the reference in the tree, not in the builder
+    SuffixTree::SuffixTreeEdge** treeCursorReference = &builder->m_nextStart;
+
     unsigned int treeEdgeCursor = treeCursor->length(this->m_root, builder);
     unsigned int keyCursor = builder->m_nextDepth;
     unsigned int searchKeyLength = keyEnd - keyBegin - 1;
@@ -80,8 +84,8 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
             }
             else
             {
-                SuffixTreeEdge* currentEdge = probe->second;
-                treeCursor = currentEdge;
+                treeCursor = probe->second;
+                treeCursorReference = &probe->second;
                 treeEdgeCursor = 0;
             }
         }
@@ -141,6 +145,25 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
             // The idea of this code is that we change the tree cursor to represent something shorter
             // But if tree cursor is currently pointed by a suffix link, that would be the wrong thing to do.
 
+            SuffixTree::SuffixTreeEdge* newNode = new SuffixTree::SuffixTreeEdge();
+            SuffixTree::SuffixTreeEdge* newLeaf = new SuffixTree::SuffixTreeEdge();
+
+            newNode->m_begin = treeCursor->m_begin;
+            newNode->m_end = treeCursor->m_begin + treeEdgeCursor;
+
+            newLeaf->m_begin = keyEnd - 1;
+            newLeaf->m_end = keyEnd;
+
+            treeCursor->m_begin = treeCursor->m_begin + treeEdgeCursor;
+
+            newNode->m_children.insert(make_pair(builder->m_input[treeCursor->m_begin], treeCursor));
+            newNode->m_children.insert(pair<char, SuffixTree::SuffixTreeEdge*>(characterToExtend, newLeaf));
+
+            *treeCursorReference = newNode;
+            newInternalNode = newNode;
+
+            /*
+
             SuffixTree::SuffixTreeEdge* oldEdge = new SuffixTree::SuffixTreeEdge();
             SuffixTree::SuffixTreeEdge* newEdge = new SuffixTree::SuffixTreeEdge();
 
@@ -165,6 +188,7 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
             treeCursor->m_children.clear();
             treeCursor->m_children.insert(pair<char, SuffixTree::SuffixTreeEdge*>(builder->m_input[oldEdge->m_begin], oldEdge));
             treeCursor->m_children.insert(pair<char, SuffixTree::SuffixTreeEdge*>(characterToExtend, newEdge));
+            */
         }
     }
 
