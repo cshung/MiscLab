@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -11,62 +11,31 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CompressedTrie.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SuffixTree1\SuffixTree1.cpp" />
-    <ClCompile Include="SuffixTree1\SuffixTree1Builder.cpp" />
-    <ClCompile Include="SuffixTree2\SuffixTree2.cpp" />
-    <ClCompile Include="SuffixTree2\SuffixTree2Builder.cpp" />
-    <ClCompile Include="SuffixTree3\SuffixTree3.cpp" />
-    <ClCompile Include="SuffixTree3\SuffixTree3Builder.cpp" />
-    <ClCompile Include="SuffixTree4\SuffixTree4.cpp" />
-    <ClCompile Include="SuffixTree4\SuffixTree4Builder.cpp" />
-    <ClCompile Include="SuffixTree5\SuffixTree5.cpp" />
-    <ClCompile Include="SuffixTree5\SuffixTree5Builder.cpp" />
-    <ClCompile Include="SuffixTree6\SuffixTree6.cpp" />
-    <ClCompile Include="SuffixTree6\SuffixTree6Builder.cpp" />
-    <ClCompile Include="SuffixTree7\SuffixTree7.cpp" />
-    <ClCompile Include="SuffixTree7\SuffixTree7Builder.cpp" />
     <ClCompile Include="SuffixTree\SuffixTree.cpp" />
     <ClCompile Include="SuffixTree\SuffixTreeBuilder.cpp" />
-    <ClCompile Include="Trie.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CompressedTrie.h" />
-    <ClInclude Include="SuffixTree1\SuffixTree1.h" />
-    <ClInclude Include="SuffixTree1\SuffixTree1Builder.h" />
-    <ClInclude Include="SuffixTree2\SuffixTree2.h" />
-    <ClInclude Include="SuffixTree2\SuffixTree2Builder.h" />
-    <ClInclude Include="SuffixTree3\SuffixTree3.h" />
-    <ClInclude Include="SuffixTree3\SuffixTree3Builder.h" />
-    <ClInclude Include="SuffixTree4\SuffixTree4.h" />
-    <ClInclude Include="SuffixTree4\SuffixTree4Builder.h" />
-    <ClInclude Include="SuffixTree5\SuffixTree5.h" />
-    <ClInclude Include="SuffixTree5\SuffixTree5Builder.h" />
-    <ClInclude Include="SuffixTree6\SuffixTree6.h" />
-    <ClInclude Include="SuffixTree6\SuffixTree6Builder.h" />
-    <ClInclude Include="SuffixTree7\SuffixTree7.h" />
-    <ClInclude Include="SuffixTree7\SuffixTree7Builder.h" />
     <ClInclude Include="SuffixTree\SuffixTree.h" />
     <ClInclude Include="SuffixTree\SuffixTreeBuilder.h" />
-    <ClInclude Include="Trie.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8DBFEE81-DF53-455D-8E59-4B7163B7C988}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SuffixTree</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

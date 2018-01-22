@@ -14,7 +14,7 @@ class SuffixTree
 public:
     SuffixTree();
     ~SuffixTree();
-    bool  Add(int keyBegin, int keyEnd, SuffixTreeBuilder* suffixTreeBuilder);
+    bool Add(int keyBegin, int keyEnd, SuffixTreeBuilder* suffixTreeBuilder);
     string Show(string& input, SuffixTreeBuilder* suffixTreeBuilder) const;
 private:
     class SuffixTreeEdge
@@ -34,7 +34,5 @@ private:
     SuffixTreeEdge* m_root;
 
     friend class SuffixTreeBuilder;
-
-    static const bool verify;
 };
 

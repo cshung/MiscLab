@@ -16,8 +16,4 @@ private:
     unsigned int m_nextDepth;
     unsigned int m_currentEnd;
     friend class SuffixTree;
-#ifdef _DEBUG
-    int m_extensionCount;
-    int m_lastInternalNodeBirthday;
-#endif
 };

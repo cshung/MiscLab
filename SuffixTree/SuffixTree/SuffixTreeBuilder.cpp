@@ -4,10 +4,6 @@
 using namespace std;
 
 SuffixTreeBuilder::SuffixTreeBuilder(string& input) : m_input(input), m_lastInternalNode(nullptr), m_nextStart(nullptr), m_currentEnd(0)
-#ifdef _DEBUG
-, m_extensionCount(0)
-, m_lastInternalNodeBirthday(-1)
-#endif
 {
 
 }
