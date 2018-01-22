@@ -136,14 +136,23 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         {
             // We have reach the middle of an edge, and the edge does not extend with our character
             // Therefore we will apply the split rule
+
+            // BUGBUG!
+            // The idea of this code is that we change the tree cursor to represent something shorter
+            // But if tree cursor is currently pointed by a suffix link, that would be the wrong thing to do.
+
             SuffixTree::SuffixTreeEdge* oldEdge = new SuffixTree::SuffixTreeEdge();
             SuffixTree::SuffixTreeEdge* newEdge = new SuffixTree::SuffixTreeEdge();
+
             int originalLength = treeCursor->length(this->m_root, builder);
 
             oldEdge->m_begin = treeCursor->m_begin + treeEdgeCursor;
             oldEdge->m_end = treeCursor->end(this->m_root, builder);
+            oldEdge->m_suffixLink = treeCursor->m_suffixLink;
 
             treeCursor->m_end = treeCursor->m_begin + treeEdgeCursor;
+            treeCursor->m_suffixLink = nullptr;
+            newInternalNode = treeCursor;
 
             newEdge->m_begin = keyEnd - 1;
             newEdge->m_end = keyEnd;
@@ -153,8 +162,6 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
                 oldEdge->m_children.insert(*ci);
             }
 
-            newInternalNode = treeCursor;
-
             treeCursor->m_children.clear();
             treeCursor->m_children.insert(pair<char, SuffixTree::SuffixTreeEdge*>(builder->m_input[oldEdge->m_begin], oldEdge));
             treeCursor->m_children.insert(pair<char, SuffixTree::SuffixTreeEdge*>(characterToExtend, newEdge));
@@ -163,16 +170,14 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
 
     if (builder->m_lastInternalNode != nullptr)
     {
-        if (builder->m_lastInternalNode->m_suffixLink != nullptr)
-        {
-            builder->m_lastInternalNode->m_suffixLink = treeCursor;
-        }
+        assert(builder->m_lastInternalNode->m_suffixLink == nullptr);
+        builder->m_lastInternalNode->m_suffixLink = treeCursor;
         builder->m_lastInternalNode = nullptr;
     }
 
     if (newInternalNode != nullptr)
     {
-        builder->m_lastInternalNode = treeCursor;
+        builder->m_lastInternalNode = newInternalNode;
     }
 
     return noOpApplied;
