@@ -15,7 +15,6 @@ public:
     SuffixTree();
     ~SuffixTree();
     bool Add(int keyBegin, int keyEnd, SuffixTreeBuilder* suffixTreeBuilder);
-    string Show(string& input, SuffixTreeBuilder* suffixTreeBuilder) const;
 private:
     class SuffixTreeEdge
     {
@@ -28,6 +27,7 @@ private:
     public:
         unsigned int length(SuffixTree::SuffixTreeEdge* root, SuffixTreeBuilder* suffixTreeBuilder);
         SuffixTreeEdge* m_suffixLink;
+        SuffixTreeEdge* m_parentLink;
         map<char, SuffixTreeEdge*> m_children;
     };
 
