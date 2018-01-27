@@ -157,6 +157,8 @@
     <ClCompile Include="min_max_queue_test.cpp" />
     <ClCompile Include="program.cpp" />
     <ClCompile Include="splay_tree.cpp" />
+    <ClCompile Include="suffix_tree.cpp" />
+    <ClCompile Include="suffix_tree_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="btree.h" />
@@ -173,6 +175,8 @@
     <ClInclude Include="min_max_queue.h" />
     <ClInclude Include="min_max_queue_test.h" />
     <ClInclude Include="splay_tree.h" />
+    <ClInclude Include="suffix_tree.h" />
+    <ClInclude Include="suffix_tree_test.h" />
     <ClInclude Include="test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -60,6 +60,12 @@
     <ClCompile Include="btree_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="suffix_tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="suffix_tree_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="min_max_heap.h">
@@ -105,6 +111,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="btree_test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="suffix_tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="suffix_tree_test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
