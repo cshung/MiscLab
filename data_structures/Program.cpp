@@ -7,5 +7,6 @@ int main(int argc, char** argv)
 	// hash_trie_test();
     // min_max_queue_test();
     // cartesian_tree_test();
-    btree_test();
+    // btree_test();
+    suffix_tree_test();
 }
