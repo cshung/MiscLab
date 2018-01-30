@@ -26,10 +26,18 @@ private:
     char first(node* node);
     int length(node* node);
     string m_s;
+
     node* m_root;
     node* m_node_cursor;
     int m_edge_cursor;
+
+    node* m_next_node_cursor;
+    int m_next_text_cursor;
+
+
     int m_end;
+
+    node* m_last_internal_node;
 };
 
 node::node() : m_begin(0), m_end(0), m_parent(nullptr), m_first_child(nullptr), m_sibling(nullptr), m_suffix_link(nullptr)
@@ -60,7 +68,6 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
         this->m_end = end;
         for (; start < end; start++)
         {
-            // TODO, use suffix link to speed things up
             if (this->add(start, end))
             {
                 break;
@@ -98,6 +105,13 @@ void suffix_tree_impl::search(int start, int end)
         int node_length = length(this->m_node_cursor);
         if (this->m_edge_cursor == node_length)
         {
+            if (this->m_node_cursor->m_suffix_link != nullptr)
+            {
+                // I messed up with the key_cursor port, let's do that next time, this is too much for tonight, I gotta stop!
+                this->m_next_node_cursor = this->m_node_cursor->m_suffix_link;
+                this->m_next_text_cursor = key_cursor - 1;
+            }
+
             char next_char = this->m_s[key_cursor];
             node* child_cursor = this->m_node_cursor->m_first_child;
             while (true)
@@ -129,9 +143,15 @@ void suffix_tree_impl::search(int start, int end)
 bool suffix_tree_impl::add(int start, int end)
 {
     bool no_op_applied = false;
+
+    this->m_node_cursor = this->m_next_node_cursor;
+    
+    start = this->m_next_text_cursor;
     this->search(start, end - 1);
+
     char next_text_char = this->m_s[end - 1];
     node* search_end = nullptr;
+    node* new_internal_node = nullptr;
     if (this->m_edge_cursor == length(this->m_node_cursor))
     {
         if (this->m_node_cursor != this->m_root && this->m_node_cursor->m_first_child == nullptr)
@@ -159,11 +179,11 @@ bool suffix_tree_impl::add(int start, int end)
             }
             else
             {
-                node* new_node = new node();
-                new_node->m_begin = end - 1;
-                new_node->m_parent = m_node_cursor;
-                new_node->m_sibling = m_node_cursor->m_first_child;
-                this->m_node_cursor->m_first_child = new_node;
+                node* new_leaf = new node();
+                new_leaf->m_begin = end - 1;
+                new_leaf->m_parent = m_node_cursor;
+                new_leaf->m_sibling = m_node_cursor->m_first_child;
+                this->m_node_cursor->m_first_child = new_leaf;
             }
         }
         search_end = this->m_node_cursor;
@@ -177,8 +197,42 @@ bool suffix_tree_impl::add(int start, int end)
         }
         else
         {
-            // Let's play the complicated tree stunt next time
+            node* new_node = new node();
+            node* new_leaf = new node();
+            new_leaf->m_begin = end - 1;
+            new_node->m_begin = this->m_node_cursor->m_begin;
+            new_node->m_end = this->m_node_cursor->m_begin + this->m_edge_cursor;
+
+            new_node->m_parent = this->m_node_cursor->m_parent;
+            new_leaf->m_parent = new_node;
+            this->m_node_cursor->m_parent = new_node;
+
+            new_node->m_sibling = new_node->m_parent->m_first_child;
+            new_node->m_parent->m_first_child = new_node;
+            node* search = new_node;
+            while (search != nullptr)
+            {
+                if (search->m_sibling == this->m_node_cursor)
+                {
+                    search->m_sibling = search->m_sibling->m_sibling;
+                    break;
+                }
+            }
+            new_internal_node = search_end = new_node;
         }
+    }
+
+    if (this->m_last_internal_node != nullptr)
+    {
+        assert(this->m_last_internal_node->m_suffix_link == nullptr);
+        assert(search_end != nullptr);
+        this->m_last_internal_node->m_suffix_link = search_end;
+        this->m_last_internal_node = nullptr;
+    }
+
+    if (new_internal_node != nullptr)
+    {
+        this->m_last_internal_node = new_internal_node;
     }
 
     return no_op_applied;
