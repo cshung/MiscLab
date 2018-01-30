@@ -99,20 +99,19 @@ char suffix_tree_impl::first(node* node)
 
 void suffix_tree_impl::search(int start, int end)
 {
-    int key_cursor = start;
-    while (key_cursor < end)
+    int text_cursor = start;
+    while (text_cursor < end)
     {
         int node_length = length(this->m_node_cursor);
         if (this->m_edge_cursor == node_length)
         {
             if (this->m_node_cursor->m_suffix_link != nullptr)
             {
-                // I messed up with the key_cursor port, let's do that next time, this is too much for tonight, I gotta stop!
                 this->m_next_node_cursor = this->m_node_cursor->m_suffix_link;
-                this->m_next_text_cursor = key_cursor - 1;
+                this->m_next_text_cursor = text_cursor - 1;
             }
 
-            char next_char = this->m_s[key_cursor];
+            char next_char = this->m_s[text_cursor];
             node* child_cursor = this->m_node_cursor->m_first_child;
             while (true)
             {
@@ -131,11 +130,11 @@ void suffix_tree_impl::search(int start, int end)
         }
         else
         {
-            int key_move = end - key_cursor;
+            int text_move = end - text_cursor;
             int edge_move = node_length - this->m_edge_cursor;
-            int move = key_move > edge_move ? edge_move : key_move;
+            int move = text_move > edge_move ? edge_move : text_move;
             this->m_edge_cursor += move;
-            key_cursor += move;
+            text_cursor += move;
         }
     }
 }
@@ -145,7 +144,6 @@ bool suffix_tree_impl::add(int start, int end)
     bool no_op_applied = false;
 
     this->m_node_cursor = this->m_next_node_cursor;
-    
     start = this->m_next_text_cursor;
     this->search(start, end - 1);
 
