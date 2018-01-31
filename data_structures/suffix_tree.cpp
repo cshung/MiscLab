@@ -23,7 +23,7 @@ public:
     ~suffix_tree_impl();
 private:
     char first_char(node* node);
-    int length(node* node, int m_end);
+    int length(node* node, int implicit_end);
     string m_s;
     node* m_root;
 };
@@ -47,54 +47,54 @@ node::~node()
 
 suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
 {
-    node* m_node_cursor;
-    int m_edge_cursor;
-    node* m_next_node_cursor;
-    int m_next_text_cursor;
-    int m_end;
-    node* m_last_internal_node;
+    node* node_cursor;
+    int edge_cursor;
+    node* next_node_cursor;
+    int next_text_cursor;
+    int implicit_end;
+    node* last_internal_node;
 
     this->m_root = new node();
-    m_node_cursor = nullptr;
-    m_next_node_cursor = nullptr;
-    m_last_internal_node = nullptr;
+    node_cursor = nullptr;
+    next_node_cursor = nullptr;
+    last_internal_node = nullptr;
     int start = 0;
     for (int end = 1; end <= s.length(); end++)
     {
-        m_next_node_cursor = this->m_root;
-        m_next_text_cursor = start;
-        m_end = end;
+        next_node_cursor = this->m_root;
+        next_text_cursor = start;
+        implicit_end = end;
         for (; start < end; start++)
         {
             bool no_op_applied = false;
 
-            m_node_cursor = m_next_node_cursor;
-            start = m_next_text_cursor;
-            m_edge_cursor = 0;
+            node_cursor = next_node_cursor;
+            start = next_text_cursor;
+            edge_cursor = 0;
 
             int text_cursor = start;
-            m_next_node_cursor = this->m_root;
-            m_next_text_cursor = start + 1;
+            next_node_cursor = this->m_root;
+            next_text_cursor = start + 1;
             while (text_cursor < end - 1)
             {
-                int node_length = length(m_node_cursor, m_end);
-                if (m_edge_cursor == node_length)
+                int node_length = length(node_cursor, implicit_end);
+                if (edge_cursor == node_length)
                 {
-                    if (m_node_cursor->m_suffix_link != nullptr)
+                    if (node_cursor->m_suffix_link != nullptr)
                     {
-                        m_next_node_cursor = m_node_cursor->m_suffix_link;
-                        m_next_text_cursor = text_cursor - 1;
+                        next_node_cursor = node_cursor->m_suffix_link;
+                        next_text_cursor = text_cursor - 1;
                     }
 
                     char next_char = this->m_s[text_cursor];
-                    node* child_cursor = m_node_cursor->m_first_child;
+                    node* child_cursor = node_cursor->m_first_child;
                     while (true)
                     {
                         assert(child_cursor != nullptr);
                         if (this->first_char(child_cursor) == next_char)
                         {
-                            m_node_cursor = child_cursor;
-                            m_edge_cursor = 0;
+                            node_cursor = child_cursor;
+                            edge_cursor = 0;
                             break;
                         }
                         else
@@ -106,9 +106,9 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                 else
                 {
                     int text_move = end - 1 - text_cursor;
-                    int edge_move = node_length - m_edge_cursor;
+                    int edge_move = node_length - edge_cursor;
                     int move = text_move > edge_move ? edge_move : text_move;
-                    m_edge_cursor += move;
+                    edge_cursor += move;
                     text_cursor += move;
                 }
             }
@@ -116,14 +116,14 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
             char next_text_char = this->m_s[end - 1];
             node* search_end = nullptr;
             node* new_internal_node = nullptr;
-            if (m_edge_cursor == length(m_node_cursor, m_end))
+            if (edge_cursor == length(node_cursor, implicit_end))
             {
-                if (m_node_cursor != this->m_root && m_node_cursor->m_first_child == nullptr)
+                if (node_cursor != this->m_root && node_cursor->m_first_child == nullptr)
                 {
                 }
                 else
                 {
-                    node* search = m_node_cursor->m_first_child;
+                    node* search = node_cursor->m_first_child;
                     bool found = false;
                     while (search != nullptr)
                     {
@@ -145,16 +145,16 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                     {
                         node* new_leaf = new node();
                         new_leaf->m_begin = end - 1;
-                        new_leaf->m_parent = m_node_cursor;
-                        new_leaf->m_sibling = m_node_cursor->m_first_child;
-                        m_node_cursor->m_first_child = new_leaf;
+                        new_leaf->m_parent = node_cursor;
+                        new_leaf->m_sibling = node_cursor->m_first_child;
+                        node_cursor->m_first_child = new_leaf;
                     }
                 }
-                search_end = m_node_cursor;
+                search_end = node_cursor;
             }
             else
             {
-                char next_tree_char = this->m_s[m_node_cursor->m_begin + m_edge_cursor];
+                char next_tree_char = this->m_s[node_cursor->m_begin + edge_cursor];
                 if (next_text_char == next_tree_char)
                 {
                     no_op_applied = true;
@@ -164,13 +164,13 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                     node* new_node = new node();
                     node* new_leaf = new node();
                     new_leaf->m_begin = end - 1;
-                    new_node->m_begin = m_node_cursor->m_begin;
-                    new_node->m_end = m_node_cursor->m_begin + m_edge_cursor;
-                    m_node_cursor->m_begin = m_node_cursor->m_begin + m_edge_cursor;
+                    new_node->m_begin = node_cursor->m_begin;
+                    new_node->m_end = node_cursor->m_begin + edge_cursor;
+                    node_cursor->m_begin = node_cursor->m_begin + edge_cursor;
 
-                    new_node->m_parent = m_node_cursor->m_parent;
+                    new_node->m_parent = node_cursor->m_parent;
                     new_leaf->m_parent = new_node;
-                    m_node_cursor->m_parent = new_node;
+                    node_cursor->m_parent = new_node;
 
                     new_node->m_sibling = new_node->m_parent->m_first_child;
                     new_node->m_parent->m_first_child = new_node;
@@ -178,7 +178,7 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                     node* search = new_node;
                     while (search != nullptr)
                     {
-                        if (search->m_sibling == m_node_cursor)
+                        if (search->m_sibling == node_cursor)
                         {
                             search->m_sibling = search->m_sibling->m_sibling;
                             break;
@@ -187,24 +187,24 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                     }
 
                     new_node->m_first_child = new_leaf;
-                    new_leaf->m_sibling = m_node_cursor;
-                    m_node_cursor->m_sibling = nullptr;
+                    new_leaf->m_sibling = node_cursor;
+                    node_cursor->m_sibling = nullptr;
 
                     new_internal_node = search_end = new_node;
                 }
             }
 
-            if (m_last_internal_node != nullptr)
+            if (last_internal_node != nullptr)
             {
-                assert(m_last_internal_node->m_suffix_link == nullptr);
+                assert(last_internal_node->m_suffix_link == nullptr);
                 assert(search_end != nullptr);
-                m_last_internal_node->m_suffix_link = search_end;
-                m_last_internal_node = nullptr;
+                last_internal_node->m_suffix_link = search_end;
+                last_internal_node = nullptr;
             }
 
             if (new_internal_node != nullptr)
             {
-                m_last_internal_node = new_internal_node;
+                last_internal_node = new_internal_node;
             }
 
             if (no_op_applied)
@@ -215,7 +215,7 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
     }
 }
 
-int suffix_tree_impl::length(node* node, int m_end)
+int suffix_tree_impl::length(node* node, int implicit_end)
 {
     if (node == this->m_root)
     {
@@ -223,7 +223,7 @@ int suffix_tree_impl::length(node* node, int m_end)
     }
     else if (node->m_first_child == nullptr)
     {
-        return m_end - node->m_begin;
+        return implicit_end - node->m_begin;
     }
     else
     {
