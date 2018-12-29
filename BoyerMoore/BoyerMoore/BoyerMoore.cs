@@ -20,6 +20,8 @@ namespace BoyerMoore
             Dictionary<char, int[]> badCharacterShifts = BuildBadCharacterShifts(pattern);
 
             int i = 0;
+            int goodSuffixCheck = -1;
+            int goodSuffixSkip = 0;
             while (i + pattern.Length <= text.Length)
             {
                 // Consider the pattern is placed so that its first character it under the ith character of the text
@@ -27,14 +29,31 @@ namespace BoyerMoore
                 int patternIndex = pattern.Length - 1;
                 int textIndex = i + patternIndex;
 
-                // TODO: Avoid comparing known matches
                 while (patternIndex >= 0 && text[textIndex] == pattern[patternIndex])
                 {
                     textIndex--;
                     patternIndex--;
+
+                    // Here is an optimization for the good suffix case
+                    // If the shift is caused by a good suffix, we first count down the 
+                    // number of characters shifted, as we knew nothing about the text for 
+                    // those shifts
+                    if (goodSuffixCheck > 0)
+                    {
+                        goodSuffixCheck--;
+                    }
+
+                    // Once we reach the point where we hit the known match
+                    if (goodSuffixCheck == 0)
+                    {
+                        // Then we just skip all the known matches 
+                        goodSuffixCheck = -1;
+                        textIndex -= goodSuffixSkip;
+                        patternIndex -= goodSuffixSkip;
+                    }
                 }
 
-                // If the loop ended with patternIndex == 0
+                // If the loop ended with patternIndex == -1
                 if (patternIndex == -1)
                 {
                     // The whole pattern matched
@@ -48,13 +67,18 @@ namespace BoyerMoore
                 int badCharacterShift = 0;
                 if (patternIndex != -1)
                 {
+                    // In case we have a mismatching character
                     char badCharacter = text[textIndex];
                     if (badCharacterShifts.ContainsKey(badCharacter))
                     {
+                        // In case the bad character does exist in the pattern
+                        // We find the right most occurence of it and align them
                         badCharacterShift = badCharacterShifts[badCharacter][patternIndex];
                     }
                     else
                     {
+                        // Otherwise, the bad character is not seen, we can shift the pattern 
+                        // so that it is after the bad character
                         badCharacterShift = patternIndex + 1;
                     }
                 }
@@ -106,7 +130,36 @@ namespace BoyerMoore
                     //
                     goodSuffixShift = goodSuffixShifts[matched];
                 }
-                i += Math.Max(badCharacterShift, goodSuffixShift);
+
+                if (badCharacterShift > goodSuffixShift)
+                {
+                    // In case we have a bad character shift, we know nothing about what will match
+                    // after the shift (except, of course, the only character we are aligning to)
+                    // so we switch the goodSuffixCheck off
+                    goodSuffixCheck = -1;
+                    goodSuffixSkip = 0;
+                    i += badCharacterShift;
+                }
+                else
+                {
+                    // In case we have a good suffix shift, we know the shifted characters are unknown
+                    // so they must be checked
+                    goodSuffixCheck = goodSuffixShift;
+
+                    // After going through the shifted characters, we know we reach a point where the string 
+                    // aligns
+                    if (matched == pattern.Length)
+                    {
+                        // In case the whole pattern is matched, we know the full prefix matches
+                        goodSuffixSkip = matched - goodSuffixShift;
+                    }
+                    else
+                    {
+                        // Otherwise, we know the number of matched character in the suffix
+                        goodSuffixSkip = matched;
+                    }
+                    i += goodSuffixShift;
+                }
             }
         }
 
