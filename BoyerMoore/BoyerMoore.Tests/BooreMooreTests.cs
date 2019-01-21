@@ -21,5 +21,21 @@ namespace BoyerMoore.Tests
         {
             Assert.Equal(new int[] { 0, 2 }, BoyerMoore.IndexOf("pqpqpq", "pqpq"));
         }
+
+        [Fact]
+        public void Fail1()
+        {
+            //                                                012345
+            //                                                     BC..ABC
+            Assert.Equal(new int[] { 5 }, BoyerMoore.IndexOf("BC.xABC..ABC", "BC..ABC"));
+        }
+
+        [Fact]
+        public void Fail2()
+        {
+            //                                                012345
+            //                                                     ..ABC
+            Assert.Equal(new int[] { 5 }, BoyerMoore.IndexOf("x.ABC..ABC", "..ABC"));
+        }
     }
 }
