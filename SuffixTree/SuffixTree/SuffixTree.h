@@ -23,13 +23,14 @@ private:
         SuffixTreeEdge();
         ~SuffixTreeEdge();
         unsigned int end(SuffixTree::SuffixTreeEdge* root, SuffixTreeBuilder* suffixTreeBuilder);
+        int m_id;
         unsigned int m_begin;
         unsigned int m_end;
-    public:
         unsigned int length(SuffixTree::SuffixTreeEdge* root, SuffixTreeBuilder* suffixTreeBuilder);
         SuffixTreeEdge* m_suffixLink;
         SuffixTreeEdge* m_parentLink;
         map<char, SuffixTreeEdge*> m_children;
+        static int s_id;
     };
 
     SuffixTreeEdge* m_root;

@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <algorithm>
 #include <cassert>
 
@@ -18,7 +19,9 @@ SuffixTree::~SuffixTree()
     delete this->m_root;
 }
 
-SuffixTree::SuffixTreeEdge::SuffixTreeEdge() : m_begin(0), m_end(0), m_suffixLink(nullptr), m_parentLink(nullptr)
+int SuffixTree::SuffixTreeEdge::s_id = 0;
+
+SuffixTree::SuffixTreeEdge::SuffixTreeEdge() : m_id(++s_id), m_begin(0), m_end(0), m_suffixLink(nullptr), m_parentLink(nullptr)
 {
 
 }
@@ -66,6 +69,8 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
     // Step 1: Search for the string except the last character
     while (keyCursor < searchKeyLength)
     {
+        cout << "10. " << treeEdgeCursor << endl;
+        cout << "13. " << treeCursor->m_id << endl;
         char currentCharacter = builder->m_input[keyBegin + keyCursor];
         unsigned int treeCursorLength = treeCursor->length(this->m_root, builder);
         if (treeEdgeCursor == treeCursorLength)
@@ -74,7 +79,9 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
             {
                 builder->m_nextStart = treeCursor->m_suffixLink;
                 builder->m_nextDepth = keyCursor - 1;
+                cout << "9. " << (keyBegin + builder->m_nextDepth + 1) << endl;
             }
+            cout << "14. " << (keyBegin + keyCursor) << currentCharacter << endl;
             map<char, SuffixTree::SuffixTreeEdge*>::iterator probe = treeCursor->m_children.find(currentCharacter);
             if (probe == treeCursor->m_children.end())
             {
@@ -89,10 +96,12 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         else
         {
             unsigned int move = min(searchKeyLength - keyCursor, treeCursorLength);
+            cout << "12. " << move << "," << (searchKeyLength - keyCursor) << "," << treeCursorLength << endl;
             keyCursor += move;
             treeEdgeCursor += move;
         }
     }
+    cout << "11. " << treeEdgeCursor << endl;
 
     // Step 2: Insert the character in the tree
     char characterToExtend = builder->m_input[keyEnd - 1];
@@ -107,9 +116,17 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         }
         else
         {
+            cout << "8. " << treeCursor->m_id << endl;
+            // cout << "7. Search: ";
+            for (auto pair : treeCursor->m_children)
+            {
+                // cout << pair.first;
+            }
+            // cout << endl;
             map<char, SuffixTree::SuffixTreeEdge*>::iterator probe = treeCursor->m_children.find(characterToExtend);
             if (probe == treeCursor->m_children.end())
             {
+                cout << "6. Split " << characterToExtend << endl;
                 // We have reached a non-leaf node - and the tree does not extend with our character
                 // Therefore we will apply the split rule
                 SuffixTree::SuffixTreeEdge* newEdge = new SuffixTree::SuffixTreeEdge();
@@ -121,6 +138,7 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
             {
                 // We have reached a non-leaf node - and the tree extends with our character
                 // Therefore we will apply the no-op rule
+                cout << "4. NoOp " << characterToExtend << endl;
                 noOpApplied = true;
             }
         }
@@ -135,6 +153,7 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
         {
             // We have reach the middle of an edge, and the edge extends with our character
             // Therefore we will apply the no-op rule
+            cout << "5. NoOp" << endl;
             noOpApplied = true;
         }
         else

@@ -7,20 +7,10 @@ using namespace std;
 
 int main()
 {
-    unsigned int length = 100000;
-    char* source = new char[length + 1];
-    for (unsigned int i = 0; i < length; i++)
-    {
-        source[i] = rand() % 26 + 'A';
-    }
-    source[length] = 0;
-    string s = source;
-    clock_t s_time = clock();
+    string s = "GATTACA0TAGACCA1ATACA2";
     SuffixTreeBuilder builder(s);
     SuffixTree suffixTree;
     builder.BuildSuffixTree(&suffixTree);
-    clock_t e_time = clock();
-    cout << e_time - s_time << endl;
     // cout << suffixTree.Show(s, &builder) << endl;
     return 0;
 }

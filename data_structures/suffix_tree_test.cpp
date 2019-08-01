@@ -3,6 +3,6 @@
 
 int suffix_tree_test()
 {
-    suffix_tree s("HelloXWorld");
+    suffix_tree s("GATTACA0TAGACCA1ATACA2");
     return 0;
 }

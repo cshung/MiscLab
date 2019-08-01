@@ -8,13 +8,18 @@ class node
 public:
     node();
     ~node();
+    int m_id;
     int m_begin;
     int m_end;
     node* m_parent;
     node* m_first_child;
     node* m_sibling;
     node* m_suffix_link;
+private:
+    static int s_id;
 };
+
+int node::s_id = 0;
 
 class suffix_tree_impl
 {
@@ -28,7 +33,7 @@ private:
     node* m_root;
 };
 
-node::node() : m_begin(0), m_end(0), m_parent(nullptr), m_first_child(nullptr), m_sibling(nullptr), m_suffix_link(nullptr)
+node::node() : m_id(++s_id), m_begin(0), m_end(0), m_parent(nullptr), m_first_child(nullptr), m_sibling(nullptr), m_suffix_link(nullptr)
 {
 
 }
@@ -61,33 +66,38 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
     int start = 0;
     for (int end = 1; end <= s.length(); end++)
     {
+        cout << "1. " << end << endl;
         next_node_cursor = this->m_root;
         next_text_cursor = start;
         implicit_end = end;
         for (; start < end; start++)
         {
+            cout << "2. " << start << "," << end << endl;            
             bool no_op_applied = false;
 
             node_cursor = next_node_cursor;
-            start = next_text_cursor;
-            edge_cursor = 0;
-
-            int text_cursor = start;
+            edge_cursor = length(node_cursor, implicit_end);
+            int text_cursor = next_text_cursor;
+            
             next_node_cursor = this->m_root;
-            next_text_cursor = start + 1;
+            next_text_cursor = text_cursor + 1;
             while (text_cursor < end - 1)
             {
+                cout << "10. " << edge_cursor << endl;
+                cout << "13. " << node_cursor->m_id << endl;
                 int node_length = length(node_cursor, implicit_end);
                 if (edge_cursor == node_length)
                 {
                     if (node_cursor->m_suffix_link != nullptr)
                     {
                         next_node_cursor = node_cursor->m_suffix_link;
-                        next_text_cursor = text_cursor - 1;
+                        next_text_cursor = text_cursor;
+                        cout << "9. " << next_text_cursor << endl;
                     }
 
                     char next_char = this->m_s[text_cursor];
                     node* child_cursor = node_cursor->m_first_child;
+                    cout << "14. " << text_cursor << next_char << endl;
                     while (true)
                     {
                         assert(child_cursor != nullptr);
@@ -108,10 +118,12 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                     int text_move = end - 1 - text_cursor;
                     int edge_move = node_length - edge_cursor;
                     int move = text_move > edge_move ? edge_move : text_move;
+                    cout << "12. " << move << "," << text_move << "," << edge_move << endl;
                     edge_cursor += move;
                     text_cursor += move;
                 }
             }
+            cout << "11. " << edge_cursor << endl;
 
             char next_text_char = this->m_s[end - 1];
             node* search_end = nullptr;
@@ -125,24 +137,30 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                 {
                     node* search = node_cursor->m_first_child;
                     bool found = false;
+                    cout << "8. " << node_cursor->m_id << endl;
+                    // cout << "7. Search: ";
                     while (search != nullptr)
                     {
+                        // cout << first_char(search);
                         if (first_char(search) == next_text_char)
                         {
                             found = true;
-                            break;
+                            // break;
                         }
-                        else
+                        // else
                         {
                             search = search->m_sibling;
                         }
                     }
+                    // cout << endl;
                     if (found)
                     {
+                        cout << "4. NoOp " << next_text_char << endl;
                         no_op_applied = true;
                     }
                     else
                     {
+                        cout << "6. Split " << next_text_char << endl;
                         node* new_leaf = new node();
                         new_leaf->m_begin = end - 1;
                         new_leaf->m_parent = node_cursor;
@@ -157,6 +175,7 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
                 char next_tree_char = this->m_s[node_cursor->m_begin + edge_cursor];
                 if (next_text_char == next_tree_char)
                 {
+                    cout << "5. NoOp" << endl;
                     no_op_applied = true;
                 }
                 else
@@ -209,6 +228,7 @@ suffix_tree_impl::suffix_tree_impl(string s) : m_s(s)
 
             if (no_op_applied)
             {
+                cout << "3. Break" << endl;
                 break;
             }
         }

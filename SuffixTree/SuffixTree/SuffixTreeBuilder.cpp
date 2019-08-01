@@ -14,13 +14,16 @@ void SuffixTreeBuilder::BuildSuffixTree(SuffixTree* suffixTree)
     unsigned int start = 0;
     for (unsigned int end = 1; end <= s.length(); end++)
     {
+        cout << "1. " << end << endl;
         this->m_nextStart = suffixTree->m_root;
         this->m_nextDepth = 0;
         this->m_currentEnd = end;
         for (; start < end; start++)
         {
+            cout << "2. " << start << "," << end << endl;            
             if (suffixTree->Add(start, end, this))
             {
+                cout << "3. Break" << endl;
                 break;
             }
         }
