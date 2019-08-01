@@ -1,4 +1,4 @@
-#include "SuffixTree\SuffixTreeBuilder.h"
+#include "SuffixTree/SuffixTreeBuilder.h"
 #include <iostream>
 #include <string>
 #include <cassert>
