@@ -10,7 +10,7 @@ min_max_heap::~min_max_heap()
 {
     if (this->m_storage != nullptr)
     {
-        delete this->m_storage;
+        delete[] this->m_storage;
     }
 }
 
