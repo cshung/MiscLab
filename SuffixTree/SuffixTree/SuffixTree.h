@@ -15,6 +15,7 @@ public:
     SuffixTree();
     ~SuffixTree();
     bool Add(int keyBegin, int keyEnd, SuffixTreeBuilder* suffixTreeBuilder);
+    string Show(string& s, SuffixTreeBuilder* suffixTreeBuilder) const;
 private:
     class SuffixTreeEdge
     {

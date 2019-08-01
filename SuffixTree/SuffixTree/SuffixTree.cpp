@@ -184,3 +184,52 @@ bool SuffixTree::Add(int keyBegin, int keyEnd, SuffixTreeBuilder* builder)
 
     return noOpApplied;
 }
+
+string SuffixTree::Show(string& input, SuffixTreeBuilder* builder) const
+{
+    map<SuffixTree::SuffixTreeEdge*, int> nodeIds;
+    list<pair<SuffixTree::SuffixTreeEdge*, SuffixTree::SuffixTreeEdge*> > suffixLinks;
+    list<pair<int, pair<string, int> > > edges;
+    queue<pair<int, SuffixTree::SuffixTreeEdge*> > bfsQueue;
+    int nodeId = 0;
+    bfsQueue.push(pair<int, SuffixTree::SuffixTreeEdge*>(0, this->m_root));
+    nodeIds.insert(pair<SuffixTree::SuffixTreeEdge*, int>(this->m_root, 0));
+    while (bfsQueue.size() > 0)
+    {
+        pair<int, SuffixTree::SuffixTreeEdge*> current = bfsQueue.front();
+        bfsQueue.pop();
+        int treeCursorId = current.first;
+        SuffixTree::SuffixTreeEdge* treeCursor = current.second;
+
+        if (treeCursor->m_suffixLink != nullptr)
+        {
+            suffixLinks.push_back(pair<SuffixTree::SuffixTreeEdge*, SuffixTree::SuffixTreeEdge*>(treeCursor, treeCursor->m_suffixLink));
+        }
+
+        map<char, SuffixTree::SuffixTreeEdge*>& treeCursorChildren = treeCursor->m_children;
+        for (map<char, SuffixTree::SuffixTreeEdge*>::iterator ci = treeCursorChildren.begin(); ci != treeCursorChildren.end(); ci++)
+        {
+            int nextNodeId = ++nodeId;
+            SuffixTree::SuffixTreeEdge* nextEdge = ci->second;
+            bfsQueue.push(pair<int, SuffixTree::SuffixTreeEdge*>(nextNodeId, nextEdge));
+            nodeIds.insert(pair<SuffixTree::SuffixTreeEdge*, int>(nextEdge, nextNodeId));
+            edges.push_back(pair<int, pair<string, int> >(treeCursorId, pair<string, int>(input.substr(nextEdge->m_begin, nextEdge->end(this->m_root, builder) - nextEdge->m_begin), nextNodeId)));
+        }
+    }
+    ostringstream stringBuilder;
+    stringBuilder << "digraph {" << endl;
+    for (int i = 0; i <= nodeId; i++)
+    {
+        stringBuilder << i << "[label = \"\"];" << endl;
+    }
+    for (list<pair<int, pair<string, int> > >::iterator ei = edges.begin(); ei != edges.end(); ei++)
+    {
+        stringBuilder << ei->first << "->" << ei->second.second << "[label = \" " << ei->second.first << " \"]" << endl;
+    }
+    for (list<pair<SuffixTree::SuffixTreeEdge*, SuffixTree::SuffixTreeEdge*> >::iterator si = suffixLinks.begin(); si != suffixLinks.end(); si++)
+    {
+        stringBuilder << nodeIds[si->first] << "->" << nodeIds[si->second] << "[style = dashed]" <<endl;
+    }
+    stringBuilder << "}" << endl;
+    return stringBuilder.str();
+}
