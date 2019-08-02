@@ -27,6 +27,7 @@ class suffix_tree_impl
 public:
     suffix_tree_impl();
     void append(char c);
+    void show();
     ~suffix_tree_impl();
 private:
     char first_char(node* node);
@@ -34,6 +35,7 @@ private:
     void phase(int end, node*& last_internal_node, int& start);
     bool extension(int end, node*& last_internal_node, node*& next_node_cursor, int& next_text_cursor);
     void search(int end, node*& next_node_cursor, int& next_text_cursor, node*& node_cursor, int& edge_cursor);
+    void show(node* node, int indent);
     vector<char> m_s;
     node* m_root;
 
@@ -263,6 +265,33 @@ void suffix_tree_impl::search(int end, node*& next_node_cursor, int& next_text_c
     cout << "11. " << edge_cursor << endl;
 }
 
+void suffix_tree_impl::show()
+{
+    this->show(this->m_root, 0);
+}
+
+void suffix_tree_impl::show(node* n, int indent)
+{
+    for (int i = 0; i< indent; i++)
+    {
+        cout << " ";
+    }
+    cout << "'";
+    for (int i = 0; i < this->length(n, this->m_s.size()); i++)
+    {
+        cout << this->m_s[n->m_begin + i];
+    }
+    cout << "'";
+    cout << endl;
+    
+    node* child = n->m_first_child;
+    while (child != nullptr)
+    {
+        this->show(child, indent + 1);
+        child = child->m_sibling;
+    }
+}
+
 int suffix_tree_impl::length(node* node, int end)
 {
     if (node == this->m_root)
@@ -296,6 +325,11 @@ suffix_tree::suffix_tree() : m_impl(new suffix_tree_impl())
 void suffix_tree::append(char c)
 {
     this->m_impl->append(c);
+}
+
+void suffix_tree::show()
+{
+    this->m_impl->show();
 }
 
 suffix_tree::~suffix_tree()
