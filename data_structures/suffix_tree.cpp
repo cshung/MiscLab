@@ -36,9 +36,9 @@ public:
 private:
     char first_char(suffix_tree_node* node);
     int length(suffix_tree_node* node);
-    void phase(int end, suffix_tree_node*& last_internal_node, int& start);
-    bool extension(int end, suffix_tree_node*& last_internal_node, suffix_tree_node*& next_node_cursor, int& next_text_cursor);
-    void search(int end, suffix_tree_node*& next_node_cursor, int& next_text_cursor, suffix_tree_node*& node_cursor, int& edge_cursor);
+    void phase();
+    bool extension(suffix_tree_node*& next_node_cursor, int& next_text_cursor);
+    void search(suffix_tree_node*& next_node_cursor, int& next_text_cursor, suffix_tree_node*& node_cursor, int& edge_cursor);
     void show(suffix_tree_node* node, int indent);
     vector<char> m_s;
     suffix_tree_node* m_root;
@@ -73,43 +73,35 @@ suffix_tree_impl::suffix_tree_impl()
 
 void suffix_tree_impl::append(char c)
 {
-    this->m_s.push_back(c);
-    
-    suffix_tree_node* last_internal_node = this->m_last_internal_node;
-    int start = this->m_start;
-    int end = this->m_s.size();
-    
-    this->phase(end, last_internal_node, start);
-
-    this->m_last_internal_node = last_internal_node;
-    this->m_start = start;
+    this->m_s.push_back(c);    
+    this->phase();
 }
 
-void suffix_tree_impl::phase(int end, suffix_tree_node*& last_internal_node, int& start)
+void suffix_tree_impl::phase()
 {
     suffix_tree_node* next_node_cursor = this->m_root;
-    int next_text_cursor = start;
+    int next_text_cursor = this->m_start;
 
-    cout << "1. " << end << endl;
-    for (; start < end; start++)
+    cout << "1. " << this->m_s.size() << endl;
+    for (; this->m_start < this->m_s.size(); this->m_start++)
     {
-        cout << "2. " << start << "," << end << endl;        
-        if (this->extension(end, last_internal_node, next_node_cursor, next_text_cursor))
+        cout << "2. " << this->m_start << "," << this->m_s.size() << endl;        
+        if (this->extension(next_node_cursor, next_text_cursor))
         {
             break;
         }
     }
 }
 
-bool suffix_tree_impl::extension(int end, suffix_tree_node*& last_internal_node, suffix_tree_node*& next_node_cursor, int& next_text_cursor)
+bool suffix_tree_impl::extension(suffix_tree_node*& next_node_cursor, int& next_text_cursor)
 {
     suffix_tree_node* node_cursor = next_node_cursor;
     int edge_cursor = length(node_cursor);
     bool no_op_applied = false;
 
-    this->search(end, next_node_cursor, next_text_cursor, node_cursor, edge_cursor);
+    this->search(next_node_cursor, next_text_cursor, node_cursor, edge_cursor);
 
-    char next_text_char = this->m_s[end - 1];
+    char next_text_char = this->m_s[this->m_s.size() - 1];
     suffix_tree_node* search_end = nullptr;
     suffix_tree_node* new_internal_node = nullptr;
     if (edge_cursor == length(node_cursor))
@@ -146,7 +138,7 @@ bool suffix_tree_impl::extension(int end, suffix_tree_node*& last_internal_node,
             {
                 cout << "6. Split " << next_text_char << endl;
                 suffix_tree_node* new_leaf = new suffix_tree_node();
-                new_leaf->m_begin = end - 1;
+                new_leaf->m_begin = this->m_s.size() - 1;
                 new_leaf->m_parent = node_cursor;
                 new_leaf->m_sibling = node_cursor->m_first_child;
                 node_cursor->m_first_child = new_leaf;
@@ -166,7 +158,7 @@ bool suffix_tree_impl::extension(int end, suffix_tree_node*& last_internal_node,
         {
             suffix_tree_node* new_node = new suffix_tree_node();
             suffix_tree_node* new_leaf = new suffix_tree_node();
-            new_leaf->m_begin = end - 1;
+            new_leaf->m_begin = this->m_s.size() - 1;
             new_node->m_begin = node_cursor->m_begin;
             new_node->m_end = node_cursor->m_begin + edge_cursor;
             node_cursor->m_begin = node_cursor->m_begin + edge_cursor;
@@ -197,17 +189,17 @@ bool suffix_tree_impl::extension(int end, suffix_tree_node*& last_internal_node,
         }
     }
 
-    if (last_internal_node != nullptr)
+    if (this->m_last_internal_node != nullptr)
     {
-        assert(last_internal_node->m_suffix_link == nullptr);
+        assert(this->m_last_internal_node->m_suffix_link == nullptr);
         assert(search_end != nullptr);
-        last_internal_node->m_suffix_link = search_end;
-        last_internal_node = nullptr;
+        this->m_last_internal_node->m_suffix_link = search_end;
+        this->m_last_internal_node = nullptr;
     }
 
     if (new_internal_node != nullptr)
     {
-        last_internal_node = new_internal_node;
+        this->m_last_internal_node = new_internal_node;
     }
 
     if (no_op_applied)
@@ -219,12 +211,12 @@ bool suffix_tree_impl::extension(int end, suffix_tree_node*& last_internal_node,
     return false;
 }
 
-void suffix_tree_impl::search(int end, suffix_tree_node*& next_node_cursor, int& next_text_cursor, suffix_tree_node*& node_cursor, int& edge_cursor)
+void suffix_tree_impl::search(suffix_tree_node*& next_node_cursor, int& next_text_cursor, suffix_tree_node*& node_cursor, int& edge_cursor)
 {
     int text_cursor = next_text_cursor;
     next_node_cursor = this->m_root;
     next_text_cursor = text_cursor + 1;
-    while (text_cursor < end - 1)
+    while (text_cursor < this->m_s.size() - 1)
     {
         cout << "10. " << edge_cursor << endl;
         cout << "13. " << node_cursor->m_id << endl;
@@ -258,7 +250,7 @@ void suffix_tree_impl::search(int end, suffix_tree_node*& next_node_cursor, int&
         }
         else
         {
-            int text_move = end - 1 - text_cursor;
+            int text_move = this->m_s.size() - 1 - text_cursor;
             int edge_move = node_length - edge_cursor;
             int move = text_move > edge_move ? edge_move : text_move;
             cout << "12. " << move << "," << text_move << "," << edge_move << endl;
@@ -320,14 +312,13 @@ void suffix_tree_impl::show(suffix_tree_node* n, int indent)
 
 int suffix_tree_impl::length(suffix_tree_node* node)
 {
-    int end = this->m_s.size();
     if (node == this->m_root)
     {
         return 0;
     }
     else if (node->m_first_child == nullptr)
     {
-        return end - node->m_begin;
+        return this->m_s.size() - node->m_begin;
     }
     else
     {
