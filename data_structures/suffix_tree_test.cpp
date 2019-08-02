@@ -3,6 +3,11 @@
 
 int suffix_tree_test()
 {
-    suffix_tree s("GATTACA0TAGACCA1ATACA2");
+    unsigned int length = 100000;
+    suffix_tree s;
+    for (unsigned int i = 0; i < length; i++)
+    {
+        s.append(rand() % 26 + 'A');
+    }
     return 0;
 }

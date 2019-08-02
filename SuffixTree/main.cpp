@@ -7,7 +7,14 @@ using namespace std;
 
 int main()
 {
-    string s = "GATTACA0TAGACCA1ATACA2";
+    unsigned int length = 100000;
+    char* source = new char[length + 1];
+    for (unsigned int i = 0; i < length; i++)
+    {
+        source[i] = rand() % 26 + 'A';
+    }
+    source[length] = 0;
+    string s(source);
     SuffixTreeBuilder builder(s);
     SuffixTree suffixTree;
     builder.BuildSuffixTree(&suffixTree);
