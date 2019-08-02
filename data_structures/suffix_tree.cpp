@@ -4,23 +4,23 @@
 #include <vector>
 using namespace std;
 
-class node
+class suffix_tree_node
 {
 public:
-    node();
-    ~node();
+    suffix_tree_node();
+    ~suffix_tree_node();
     int m_id;
     int m_begin;
     int m_end;
-    node* m_parent;
-    node* m_first_child;
-    node* m_sibling;
-    node* m_suffix_link;
+    suffix_tree_node* m_parent;
+    suffix_tree_node* m_first_child;
+    suffix_tree_node* m_sibling;
+    suffix_tree_node* m_suffix_link;
 private:
     static int s_id;
 };
 
-int node::s_id = 0;
+int suffix_tree_node::s_id = 0;
 
 class suffix_tree_impl
 {
@@ -28,27 +28,31 @@ public:
     suffix_tree_impl();
     void append(char c);
     void show();
+    suffix_tree_node* get_root();
+    suffix_tree_node* get_child(suffix_tree_node* n);
+    suffix_tree_node* get_sibling(suffix_tree_node* n);
+    void get_edge(suffix_tree_node* n, int* pBegin, int* pEnd);
     ~suffix_tree_impl();
 private:
-    char first_char(node* node);
-    int length(node* node, int end);
-    void phase(int end, node*& last_internal_node, int& start);
-    bool extension(int end, node*& last_internal_node, node*& next_node_cursor, int& next_text_cursor);
-    void search(int end, node*& next_node_cursor, int& next_text_cursor, node*& node_cursor, int& edge_cursor);
-    void show(node* node, int indent);
+    char first_char(suffix_tree_node* node);
+    int length(suffix_tree_node* node);
+    void phase(int end, suffix_tree_node*& last_internal_node, int& start);
+    bool extension(int end, suffix_tree_node*& last_internal_node, suffix_tree_node*& next_node_cursor, int& next_text_cursor);
+    void search(int end, suffix_tree_node*& next_node_cursor, int& next_text_cursor, suffix_tree_node*& node_cursor, int& edge_cursor);
+    void show(suffix_tree_node* node, int indent);
     vector<char> m_s;
-    node* m_root;
+    suffix_tree_node* m_root;
 
-    node* m_last_internal_node;
+    suffix_tree_node* m_last_internal_node;
     int m_start;
 };
 
-node::node() : m_id(++s_id), m_begin(0), m_end(0), m_parent(nullptr), m_first_child(nullptr), m_sibling(nullptr), m_suffix_link(nullptr)
+suffix_tree_node::suffix_tree_node() : m_id(++s_id), m_begin(0), m_end(0), m_parent(nullptr), m_first_child(nullptr), m_sibling(nullptr), m_suffix_link(nullptr)
 {
 
 }
 
-node::~node()
+suffix_tree_node::~suffix_tree_node()
 {
     if (this->m_first_child != nullptr)
     {
@@ -62,7 +66,7 @@ node::~node()
 
 suffix_tree_impl::suffix_tree_impl()
 {
-    this->m_root = new node();
+    this->m_root = new suffix_tree_node();
     this->m_last_internal_node = nullptr;
     this->m_start = 0;
 }
@@ -71,7 +75,7 @@ void suffix_tree_impl::append(char c)
 {
     this->m_s.push_back(c);
     
-    node* last_internal_node = this->m_last_internal_node;
+    suffix_tree_node* last_internal_node = this->m_last_internal_node;
     int start = this->m_start;
     int end = this->m_s.size();
     
@@ -81,9 +85,9 @@ void suffix_tree_impl::append(char c)
     this->m_start = start;
 }
 
-void suffix_tree_impl::phase(int end, node*& last_internal_node, int& start)
+void suffix_tree_impl::phase(int end, suffix_tree_node*& last_internal_node, int& start)
 {
-    node* next_node_cursor = this->m_root;
+    suffix_tree_node* next_node_cursor = this->m_root;
     int next_text_cursor = start;
 
     cout << "1. " << end << endl;
@@ -97,25 +101,25 @@ void suffix_tree_impl::phase(int end, node*& last_internal_node, int& start)
     }
 }
 
-bool suffix_tree_impl::extension(int end, node*& last_internal_node, node*& next_node_cursor, int& next_text_cursor)
+bool suffix_tree_impl::extension(int end, suffix_tree_node*& last_internal_node, suffix_tree_node*& next_node_cursor, int& next_text_cursor)
 {
-    node* node_cursor = next_node_cursor;
-    int edge_cursor = length(node_cursor, end);
+    suffix_tree_node* node_cursor = next_node_cursor;
+    int edge_cursor = length(node_cursor);
     bool no_op_applied = false;
 
     this->search(end, next_node_cursor, next_text_cursor, node_cursor, edge_cursor);
 
     char next_text_char = this->m_s[end - 1];
-    node* search_end = nullptr;
-    node* new_internal_node = nullptr;
-    if (edge_cursor == length(node_cursor, end))
+    suffix_tree_node* search_end = nullptr;
+    suffix_tree_node* new_internal_node = nullptr;
+    if (edge_cursor == length(node_cursor))
     {
         if (node_cursor != this->m_root && node_cursor->m_first_child == nullptr)
         {
         }
         else
         {
-            node* search = node_cursor->m_first_child;
+            suffix_tree_node* search = node_cursor->m_first_child;
             bool found = false;
             cout << "8. " << node_cursor->m_id << endl;
             // cout << "7. Search: ";
@@ -141,7 +145,7 @@ bool suffix_tree_impl::extension(int end, node*& last_internal_node, node*& next
             else
             {
                 cout << "6. Split " << next_text_char << endl;
-                node* new_leaf = new node();
+                suffix_tree_node* new_leaf = new suffix_tree_node();
                 new_leaf->m_begin = end - 1;
                 new_leaf->m_parent = node_cursor;
                 new_leaf->m_sibling = node_cursor->m_first_child;
@@ -160,8 +164,8 @@ bool suffix_tree_impl::extension(int end, node*& last_internal_node, node*& next
         }
         else
         {
-            node* new_node = new node();
-            node* new_leaf = new node();
+            suffix_tree_node* new_node = new suffix_tree_node();
+            suffix_tree_node* new_leaf = new suffix_tree_node();
             new_leaf->m_begin = end - 1;
             new_node->m_begin = node_cursor->m_begin;
             new_node->m_end = node_cursor->m_begin + edge_cursor;
@@ -174,7 +178,7 @@ bool suffix_tree_impl::extension(int end, node*& last_internal_node, node*& next
             new_node->m_sibling = new_node->m_parent->m_first_child;
             new_node->m_parent->m_first_child = new_node;
 
-            node* search = new_node;
+            suffix_tree_node* search = new_node;
             while (search != nullptr)
             {
                 if (search->m_sibling == node_cursor)
@@ -215,7 +219,7 @@ bool suffix_tree_impl::extension(int end, node*& last_internal_node, node*& next
     return false;
 }
 
-void suffix_tree_impl::search(int end, node*& next_node_cursor, int& next_text_cursor, node*& node_cursor, int& edge_cursor)
+void suffix_tree_impl::search(int end, suffix_tree_node*& next_node_cursor, int& next_text_cursor, suffix_tree_node*& node_cursor, int& edge_cursor)
 {
     int text_cursor = next_text_cursor;
     next_node_cursor = this->m_root;
@@ -224,7 +228,7 @@ void suffix_tree_impl::search(int end, node*& next_node_cursor, int& next_text_c
     {
         cout << "10. " << edge_cursor << endl;
         cout << "13. " << node_cursor->m_id << endl;
-        int node_length = length(node_cursor, end);
+        int node_length = length(node_cursor);
         if (edge_cursor == node_length)
         {
             if (node_cursor->m_suffix_link != nullptr)
@@ -235,7 +239,7 @@ void suffix_tree_impl::search(int end, node*& next_node_cursor, int& next_text_c
             }
 
             char next_char = this->m_s[text_cursor];
-            node* child_cursor = node_cursor->m_first_child;
+            suffix_tree_node* child_cursor = node_cursor->m_first_child;
             cout << "14. " << text_cursor << next_char << endl;
             while (true)
             {
@@ -270,21 +274,43 @@ void suffix_tree_impl::show()
     this->show(this->m_root, 0);
 }
 
-void suffix_tree_impl::show(node* n, int indent)
+suffix_tree_node* suffix_tree_impl::get_root()
+{
+    return this->m_root;
+}
+
+suffix_tree_node* suffix_tree_impl::get_child(suffix_tree_node* n)
+{
+    return n->m_first_child;
+}
+
+suffix_tree_node* suffix_tree_impl::get_sibling(suffix_tree_node* n)
+{
+    return n->m_sibling;
+}
+
+void suffix_tree_impl::get_edge(suffix_tree_node* n, int* pBegin, int* pEnd)
+{
+    int length = this->length(n);
+    *pBegin = n->m_begin;
+    *pEnd = n->m_begin + length;
+}
+
+void suffix_tree_impl::show(suffix_tree_node* n, int indent)
 {
     for (int i = 0; i< indent; i++)
     {
         cout << " ";
     }
     cout << "'";
-    for (int i = 0; i < this->length(n, this->m_s.size()); i++)
+    for (int i = 0; i < this->length(n); i++)
     {
         cout << this->m_s[n->m_begin + i];
     }
     cout << "'";
     cout << endl;
     
-    node* child = n->m_first_child;
+    suffix_tree_node* child = n->m_first_child;
     while (child != nullptr)
     {
         this->show(child, indent + 1);
@@ -292,8 +318,9 @@ void suffix_tree_impl::show(node* n, int indent)
     }
 }
 
-int suffix_tree_impl::length(node* node, int end)
+int suffix_tree_impl::length(suffix_tree_node* node)
 {
+    int end = this->m_s.size();
     if (node == this->m_root)
     {
         return 0;
@@ -308,7 +335,7 @@ int suffix_tree_impl::length(node* node, int end)
     }
 }
 
-char suffix_tree_impl::first_char(node* node)
+char suffix_tree_impl::first_char(suffix_tree_node* node)
 {
     return this->m_s[node->m_begin];
 }
@@ -335,4 +362,24 @@ void suffix_tree::show()
 suffix_tree::~suffix_tree()
 {
     delete this->m_impl;
+}
+
+suffix_tree_node* suffix_tree::get_root()
+{
+    return this->m_impl->get_root();
+}
+
+suffix_tree_node* suffix_tree::get_child(suffix_tree_node* n)
+{
+    return this->m_impl->get_child(n);
+}
+
+suffix_tree_node* suffix_tree::get_sibling(suffix_tree_node* n)
+{
+    return this->m_impl->get_sibling(n);
+}
+
+void suffix_tree::get_edge(suffix_tree_node* n, int* pBegin, int* pEnd)
+{
+    this->m_impl->get_edge(n, pBegin, pEnd);
 }
