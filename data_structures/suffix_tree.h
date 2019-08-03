@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 class suffix_tree_impl;
 
 class suffix_tree_node;
