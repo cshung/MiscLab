@@ -7,3 +7,4 @@
 #include "cartesian_tree_test.h"
 #include "btree_test.h"
 #include "suffix_tree_test.h"
+#include "hungarian_test.h"
