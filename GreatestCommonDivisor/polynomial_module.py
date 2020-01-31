@@ -317,30 +317,30 @@ class polynomial(object):
                 return self.__parse_positive_polynomial();
 
         def __parse_positive_polynomial(self):
-                (succeed, term_coefficient, term_power) = self.__parse_term()
-                first_term = (term_coefficient, term_power)
-                if succeed:
-                    if (self.__token[0] == polynomial.tokens.PLUS):
-                        self.__scan()
-                        (succeed, remaining_terms) = self.__parse_positive_polynomial()
-                        if succeed:
-                            remaining_terms.append(first_term)
-                            return (True, remaining_terms)
-                    elif (self.__token[0] == polynomial.tokens.MINUS):
-                        self.__scan()
-                        (succeed, remaining_terms) = self.__parse_positive_polynomial()
-                        if succeed:
-                            remaining_leading_term = remaining_terms[len(remaining_terms) - 1]
-                            remaining_leading_term_coefficient = remaining_leading_term[0]
-                            remaining_leading_term_coefficient = rational.multiply(rational.from_integer(-1), remaining_leading_term_coefficient)
-                            remaining_leading_term = (remaining_leading_term_coefficient, remaining_leading_term[1])
-                            remaining_terms[len(remaining_terms) - 1] = remaining_leading_term
-                            remaining_terms.append(first_term)
-                            return (True, remaining_terms)
-                    elif (self.__token[0] == polynomial.tokens.EOF):
-                        return (True, [first_term])
-                else:
-                    return (False, None)
+            (succeed, term_coefficient, term_power) = self.__parse_term()
+            first_term = (term_coefficient, term_power)
+            if succeed:
+                if (self.__token[0] == polynomial.tokens.PLUS):
+                    self.__scan()
+                    (succeed, remaining_terms) = self.__parse_positive_polynomial()
+                    if succeed:
+                        remaining_terms.append(first_term)
+                        return (True, remaining_terms)
+                elif (self.__token[0] == polynomial.tokens.MINUS):
+                    self.__scan()
+                    (succeed, remaining_terms) = self.__parse_positive_polynomial()
+                    if succeed:
+                        remaining_leading_term = remaining_terms[len(remaining_terms) - 1]
+                        remaining_leading_term_coefficient = remaining_leading_term[0]
+                        remaining_leading_term_coefficient = rational.multiply(rational.from_integer(-1), remaining_leading_term_coefficient)
+                        remaining_leading_term = (remaining_leading_term_coefficient, remaining_leading_term[1])
+                        remaining_terms[len(remaining_terms) - 1] = remaining_leading_term
+                        remaining_terms.append(first_term)
+                        return (True, remaining_terms)
+                elif (self.__token[0] == polynomial.tokens.EOF):
+                    return (True, [first_term])
+            else:
+                return (False, None)
 
         def __parse_term(self):
             if (self.__token[0] == polynomial.tokens.X):
