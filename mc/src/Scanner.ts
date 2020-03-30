@@ -11,11 +11,18 @@ export class Scanner {
         this.m = false;
     }
     public Scan(): Token {
-        if (this.m) {
+        if (this.p == this.s.length) {
+            return new Token(TokenType.EOF, 0, 0);
+        } else if (this.m) {
+            // TODO: Implementation
+            return new Token(TokenType.EOF, 0, 0);
         } else {
             if (this.s[this.p] == '{') {
                 this.p = this.p + 1;
                 return new Token(TokenType.OPEN_BRACE, this.p - 1, this.p);
+            } else if (this.s[this.p] == '}') {
+                this.p = this.p + 1;
+                return new Token(TokenType.CLOSE_BRACE, this.p - 1, this.p);
             } else {
                 let i = this.p;
                 while (true) {
@@ -36,6 +43,5 @@ export class Scanner {
                 }
             }
         }
-        return new Token(TokenType.EOF, 0, 0);
     }
 }
