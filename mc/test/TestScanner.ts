@@ -1,43 +1,56 @@
-import { TokenType } from '../src/TokenType'
 import { Scanner } from '../src/Scanner'
+import { Token } from 'Token';
+import { TokenType } from '../src/TokenType'
 import assert from 'assert'
 
 describe('Scanner', function () {
-    it('Empty String', function () {
+
+    function TestScanner(document: string, tokenTypes: Array<TokenType>, tokenValues: Array<string>) {
         let scanner: Scanner;
-        let source: string;
-        source = "";
-        scanner = new Scanner(source);
-        let token = scanner.Scan();
-        assert(token.type == TokenType.EOF);
+        let token: Token;
+        let i: number;
+        scanner = new Scanner(document);
+        i = 0;
+        while (true) {
+            token = scanner.Scan();
+            if (token.type == TokenType.EOF) {
+                break;
+            } else {
+                assert(token.type == tokenTypes[i]);
+                if (tokenValues[i] != null) {
+                    assert(document.substring(token.from, token.to) == tokenValues[i]);
+                }
+                i = i + 1;
+            }
+        }
+        assert(i == tokenTypes.length);
+    }
+
+    it('Empty String', function () {
+        TestScanner("", [], []);
     });
     it('Simple Text', function () {
-        let scanner: Scanner;
-        let source: string;
-        source = "Hello World";
-        scanner = new Scanner(source);
-        let token = scanner.Scan();
-        assert(token.type == TokenType.TEXT);
-        assert(source.substring(token.from, token.to) == "Hello World");
-        token = scanner.Scan();
-        assert(token.type == TokenType.EOF);        
+        TestScanner("Hello World", [TokenType.TEXT], ["Hello World"]);
     });
     it('Open Brace', function () {
-        let scanner: Scanner;
-        let source: string;
-        source = "{";
-        scanner = new Scanner(source);
-        let token = scanner.Scan();
-        assert(token.type == TokenType.OPEN_BRACE);
-        assert(source.substring(token.from, token.to) == "{");
+        TestScanner("{", [TokenType.OPEN_BRACE], ["{"]);
+    });
+    it('Colon', function () {
+        TestScanner(":", [TokenType.COLON], [":"]);
     });
     it('Close Brace', function () {
-        let scanner: Scanner;
-        let source: string;
-        source = "}";
-        scanner = new Scanner(source);
-        let token = scanner.Scan();
-        assert(token.type == TokenType.CLOSE_BRACE);
-        assert(source.substring(token.from, token.to) == "}");
+        TestScanner("}", [TokenType.CLOSE_BRACE], ["}"]);
+    });
+    it('Escaped Open Brace', function () {
+        TestScanner("{{", [TokenType.TEXT], ["{{"]);
+    });
+    it('Escaped Close Brace', function () {
+        TestScanner("}}", [TokenType.TEXT], ["}}"]);
+    });
+    it('Identifier', function () {
+        TestScanner("{a12", [TokenType.OPEN_BRACE, TokenType.ID], ["{", "a12"]);
+    });
+    it('Expression', function () {
+        TestScanner("{a12:hello + world}", [TokenType.OPEN_BRACE, TokenType.ID, TokenType.COLON, TokenType.TEXT, TokenType.CLOSE_BRACE], ["{", "a12",":","hello + world", "}"]);
     });
 });

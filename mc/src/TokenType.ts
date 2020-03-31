@@ -3,6 +3,7 @@ export enum TokenType {
     ID,
     EXPRESSION,
     OPEN_BRACE,
+    COLON,
     CLOSE_BRACE,
     EOF
 }

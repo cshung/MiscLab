@@ -1,11 +1,12 @@
 The grammar:
 ```
-Document := Element
+Document := EMPTY
 Document := Element Document
 Element  := TEXT
 Element  := Cell
+Cell     := {Name}
 Cell     := {Name:Value}
 Name     := ID
-Value    := EXPRESSION
+Value    := TEXT
 ```
 To be continued
