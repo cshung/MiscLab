@@ -1,47 +1,55 @@
-import { Scanner } from "./Scanner";
+import { CellElement } from "./CellElement";
 import { IDocumentElement } from "./IDocumentElement";
+import { ParseResult } from "./ParseResult";
+import { Scanner } from "./Scanner";
+import { TextElement } from "./TextElement";
 import { Token } from "./Token";
 import { TokenType } from "./TokenType";
-import { TextElement } from "./TextElement";
-import { CellElement } from "./CellElement";
 
 export class Parser {
 
-    private d: string;
     private s: Scanner;
     private t: Token;
 
-    constructor(d: string) {
-        this.d = d;
-        this.s = new Scanner(d);
+    constructor(s: string) {
+        this.s = new Scanner(s);
         this.t = this.s.Scan();
     }
 
-    Parse(): Array<IDocumentElement> {
-        let result: Array<IDocumentElement>;
-        result = [];
+    Parse(): ParseResult {
+        let elements: Array<IDocumentElement>;
+        let errors: Array<string>;
+        let element: IDocumentElement | string;
+        elements = [];
+        errors = [];
         while (this.t.type != TokenType.EOF) {
-            result.push(this.ParseElement());
+            element = this.ParseElement();
+            if (typeof element == "string") {
+                errors.push(element as string);
+            }
+            else {
+                elements.push(element as IDocumentElement);
+            }
         }
-        return result;
+        return new ParseResult(elements, errors);
     }
 
-    ParseElement(): IDocumentElement {
+    private ParseElement(): IDocumentElement | string {
         let s: string;
         let t: string;
         if (this.t.type == TokenType.TEXT) {
-            s = this.d.substring(this.t.from, this.t.to);
+            s = this.s.Unescape(this.t.from, this.t.to);
             this.t = this.s.Scan();
             return new TextElement(s);
         } else if (this.t.type == TokenType.OPEN_BRACE) {
             this.t = this.s.Scan();
             if (this.t.type == TokenType.ID) {
-                s = this.d.substring(this.t.from, this.t.to);
+                s = this.s.Unescape(this.t.from, this.t.to);
                 this.t = this.s.Scan();
                 if (this.t.type == TokenType.COLON) {
                     this.t = this.s.Scan();
                     if (this.t.type == TokenType.TEXT) {
-                        t = this.d.substring(this.t.from, this.t.to);
+                        t = this.s.Unescape(this.t.from, this.t.to);
                         this.t = this.s.Scan();
                         if (this.t.type == TokenType.CLOSE_BRACE) {
                             this.t = this.s.Scan();
@@ -66,8 +74,8 @@ export class Parser {
                 throw "Error 4";
             }
         } else {
-            // TODO: Implement proper error reporting
-            throw "Error 5"
+            this.t = this.s.Scan();
+            return "} unexpected at line " + this.s.l + " column " + (this.s.c - 1) + ".";
         }
     }
 }

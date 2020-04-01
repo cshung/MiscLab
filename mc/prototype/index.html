@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <title>Calc</title>
+</head>
+
+<body>
+    <!-- readonly if the cell has an expression -->
+    The sum of <input id='a' type='text' value='0'> and <input id='b' type='text'> is <input id='c' type='text' readonly>. The double of it is <input id='d' type='text' readonly>.
+    <script>
+        (function () {
+            // Just loop through all the cells and generate them
+            var a = document.getElementById('a');
+            var b = document.getElementById('b');
+            var c = document.getElementById('c');            
+            var d = document.getElementById('d');
+            // These need to be generated if 
+            // a) Its value is depended by someone else, and
+            // b) Its value is not dependent on anyone else
+            a.onchange = on_a_changed;
+            b.onchange = on_b_changed;
+            // This needs to be generated if 
+            // a) Its value is depended by someone else
+            function on_a_changed() {
+                // Generate an update call for all the direct updates
+                update_c();
+            }
+            function on_b_changed() {
+                update_c();
+            }
+            function on_c_changed() {
+                update_d();
+            }
+            // This needs to be generated if there is a formula
+            function update_c() {
+                c.value = a.value * 1 + b.value * 1;
+                on_c_changed();
+            }
+            function update_d() {
+                d.value = c.value * 1 * 2;
+            }
+            // Generate in topological order
+            update_c();
+            update_d();
+        })();
+    </script>
+</body>
+
+</html>

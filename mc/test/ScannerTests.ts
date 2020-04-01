@@ -53,4 +53,7 @@ describe('Scanner', function () {
     it('Expression', function () {
         TestScanner("{a12:hello + world}", [TokenType.OPEN_BRACE, TokenType.ID, TokenType.COLON, TokenType.TEXT, TokenType.CLOSE_BRACE], ["{", "a12",":","hello + world", "}"]);
     });
+    it('Ends with an ID', function () {
+        TestScanner("{aaaa", [TokenType.OPEN_BRACE, TokenType.ID], ["{", "aaaa"]);
+    });
 });

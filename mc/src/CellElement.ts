@@ -1,6 +1,7 @@
-import {IDocumentElement} from './IDocumentElement'
+import { IDocumentElement } from './IDocumentElement'
 
 export class CellElement implements IDocumentElement {
+
     name: string;
     value?: string;
 
@@ -8,4 +9,8 @@ export class CellElement implements IDocumentElement {
         this.name = name;
         this.value = value;
     }
+
+    dummy() : void
+    {
+    }    
 }
