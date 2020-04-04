@@ -15,6 +15,7 @@ export class Compiler {
         let result: ParseResult;
         let cells: { [name: string]: CellElement; }
         let cell: CellElement;
+        let cell2: CellElement;
         let key: string;
         let i: number;
 
@@ -31,7 +32,8 @@ export class Compiler {
             if (result.elements[i] instanceof CellElement) {
                 cell = result.elements[i] as CellElement;
                 if (cells.hasOwnProperty(cell.name)) {
-                    this.errors.push("TODO: Proper error message");
+                    cell2 = cells[cell.name];
+                    this.errors.push(`Cell at (${cell.startLine}, ${cell.startColumn}) - (${cell.endLine}, ${cell.endColumn}) with name '${cell.name}' already defined at (${cell2.startLine}, ${cell2.startColumn}) - (${cell2.endLine}, ${cell2.endColumn})`);
                 }
                 cells[cell.name] = cell;
             }
@@ -40,7 +42,7 @@ export class Compiler {
         {
             cell = cells[key];
             if (cell.value != undefined) {
-                // TODO: Find references
+                
             }
         }
         if (this.errors.length != 0) {

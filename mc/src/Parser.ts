@@ -37,11 +37,17 @@ export class Parser {
     private ParseElement(): IDocumentElement | string {
         let s: string;
         let t: string;
+        let sl: number;
+        let sc: number;
+        let el: number;
+        let ec: number;
         if (this.t.type == TokenType.TEXT) {
             s = this.s.Unescape(this.t.from, this.t.to);
             this.t = this.s.Scan();
             return new TextElement(s);
         } else if (this.t.type == TokenType.OPEN_BRACE) {
+            sl = this.s.l;
+            sc = this.s.c;
             this.t = this.s.Scan();
             if (this.t.type == TokenType.ID) {
                 s = this.s.Unescape(this.t.from, this.t.to);
@@ -52,8 +58,10 @@ export class Parser {
                         t = this.s.Unescape(this.t.from, this.t.to);
                         this.t = this.s.Scan();
                         if (this.t.type == TokenType.CLOSE_BRACE) {
+                            el = this.s.l;
+                            ec = this.s.c;
                             this.t = this.s.Scan();
-                            return new CellElement(s, t);
+                            return new CellElement(s, t, sl, sc - 1, el, ec - 1);
                         } else {
                             // TODO: Implement proper error reporting
                             throw "Error 1";
@@ -63,8 +71,10 @@ export class Parser {
                         throw "Error 2";
                     }
                 } else if (this.t.type == TokenType.CLOSE_BRACE) {
+                    el = this.s.l;
+                    ec = this.s.c;
                     this.t = this.s.Scan();
-                    return new CellElement(s, undefined);
+                    return new CellElement(s, undefined, sl, sc - 1, el, ec - 1);
                 } else {
                     // TODO: Implement proper error reporting
                     throw "Error 3";
@@ -74,8 +84,10 @@ export class Parser {
                 throw "Error 4";
             }
         } else {
+            sl = this.s.pl;
+            sc = this.s.pc;
             this.t = this.s.Scan();
-            return "} unexpected at line " + this.s.l + " column " + (this.s.c - 1) + ".";
+            return "} unexpected at line " + sl + " column " + sc + ".";
         }
     }
 }

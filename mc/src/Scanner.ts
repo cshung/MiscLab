@@ -6,6 +6,8 @@ export class Scanner {
     private s: string;
     private p: number;
     private m: boolean;
+    pl: number;
+    pc: number;
     l: number;
     c: number;
 
@@ -13,11 +15,15 @@ export class Scanner {
         this.s = s;
         this.p = 0;
         this.m = false;
+        this.pl = 0;
+        this.pc = 0;
         this.l = 1;
         this.c = 1;
     }
 
     private AdvancePosition(): void {
+        this.pl = this.l;
+        this.pc = this.c;
         if (this.s[this.p] == '\n') {
             this.l = this.l + 1;
             this.c = 1;

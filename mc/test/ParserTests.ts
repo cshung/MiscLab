@@ -57,6 +57,6 @@ describe('Parser', function () {
         ], []);
     });
     it('Close brace unexpected', function () {
-        TestParser("Hello\nWorld}", [new TextElement("Hello\nWorld")], ["} unexpected at line 2 column 6."]);
+        TestParser("Hello World\n}Cruel World", [new TextElement("Hello World\n"),new TextElement("Cruel World")], ["} unexpected at line 2 column 1."]);
     });
 });
