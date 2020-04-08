@@ -81,6 +81,8 @@ export class Parser {
                 }
             } else {
                 // TODO: Implement proper error reporting
+                // Here is a missing ID case, I'd like to continue parsing as 
+                // if it is here ... 
                 throw "Error 4";
             }
         } else {

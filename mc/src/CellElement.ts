@@ -8,6 +8,7 @@ export class CellElement implements IDocumentElement {
     startColumn?: number;
     endLine?: number;
     endColumn?: number;
+    references: Array<CellElement>;
 
     constructor(name: string, value?: string, startLine?: number, startColumn?: number, endLine?: number, endColumn?: number) {
         this.name = name;
@@ -16,6 +17,7 @@ export class CellElement implements IDocumentElement {
         this.startColumn = startColumn;
         this.endLine = endLine;
         this.endColumn = endColumn;
+        this.references = [];
     }
 
     dummy(): void {

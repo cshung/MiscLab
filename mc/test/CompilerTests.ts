@@ -26,4 +26,12 @@ describe('Compiler', function () {
     it('DuplicateId', function () {
         TestCompiler("{a}{a}", ["Cell at (1, 4) - (1, 6) with name 'a' already defined at (1, 1) - (1, 3)"]);
     });
+
+    it('Unclosed Reference', function () {
+        TestCompiler("{cell:`a}", ["Reference starting at (?, ?) is not closed."]);
+    });
+
+    it('Undefined reference', function () {
+        TestCompiler("{cell:`a`}", ["Reference at (?, ?) to a cell named ? does not exist."]);
+    });
 });
