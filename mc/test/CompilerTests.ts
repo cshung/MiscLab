@@ -32,42 +32,42 @@ describe('Compiler', function () {
     it('Working Example', function () {
         TestCompiler("The sum of {a:3} and {b:-2} is {c:`a`*1+`b`*1}, the double of that would be {d:`c`*2}", `<html>
 
-        <head>
-            <title>Calc</title>
-        </head>
-        
-        <body>
-          The sum of <input id="a" type="text" value="3"> and <input id="b" type="text" value="-2"> is <input id="c" type="text" readonly>, the double of that would be <input id="d" type="text" readonly>
-            <script>
-                (function () {
-                    var a = document.getElementById('a');
-                    var b = document.getElementById('b');
-                    var c = document.getElementById('c');
-                    var d = document.getElementById('d');
-                    a.onchange = on_a_changed;
-                    b.onchange = on_b_changed;
-                    function on_a_changed() {
-                        update_c();
-                    }
-                    function on_b_changed() {
-                        update_c();
-                    }
-                    function on_c_changed() {
-                        update_d();
-                    }
-                    function update_c() {
-                        c.value = a.value*1+b.value*1;
-                        on_c_changed();
-                    }
-                    function update_d() {
-                        d.value = c.value*2;
-                    }
-                    update_c();
-                    update_d();
-                })();
-            </script>
-        </body>
-        
-        </html>`, []);
+<head>
+    <title>Calc</title>
+</head>
+
+<body>
+  The sum of <input id="a" type="text" value="3"> and <input id="b" type="text" value="-2"> is <input id="c" type="text" readonly>, the double of that would be <input id="d" type="text" readonly>
+    <script>
+        (function () {
+            var a = document.getElementById('a');
+            var b = document.getElementById('b');
+            var c = document.getElementById('c');
+            var d = document.getElementById('d');
+            a.onchange = on_a_changed;
+            b.onchange = on_b_changed;
+            function on_a_changed() {
+                update_c();
+            }
+            function on_b_changed() {
+                update_c();
+            }
+            function on_c_changed() {
+                update_d();
+            }
+            function update_c() {
+                c.value = a.value*1+b.value*1;
+                on_c_changed();
+            }
+            function update_d() {
+                d.value = c.value*2;
+            }
+            update_c();
+            update_d();
+        })();
+    </script>
+</body>
+
+</html>`, []);
     });
 });
