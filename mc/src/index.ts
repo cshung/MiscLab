@@ -1,30 +1,29 @@
 import { Compiler } from './Compiler'
 
 (function () {
-    let testButton: HTMLButtonElement;
     let testInputArea: HTMLTextAreaElement;
-    let testOutputArea: HTMLTextAreaElement;
+    let testOutputDiv: HTMLDivElement;
 
     function BindEvents() {
         window.onload = OnWindowLoaded;
     }
 
     function OnWindowLoaded() {
-        testButton = document.getElementById('TestButton') as HTMLButtonElement;
         testInputArea = document.getElementById('TestInputArea') as HTMLTextAreaElement;
-        testOutputArea = document.getElementById('TestOutputArea') as HTMLTextAreaElement;
-        testButton.onclick = OnTestButtonClicked;
+        testOutputDiv = document.getElementById('TestOutputDiv') as HTMLDivElement;
+        testInputArea.onkeyup = OnTestButtonClicked;
     }
 
     function OnTestButtonClicked() {
         let compiler: Compiler = new Compiler();
         compiler.Compile(testInputArea.value);
         if (compiler.errors.length == 0) {
-            testOutputArea.value = compiler.output;
+            testOutputDiv.innerHTML = compiler.element;
+           eval(compiler.script);
         } else {
-            testOutputArea.value = "";
+            testOutputDiv.innerHTML = "";
             for (let i = 0; i < compiler.errors.length; i++) {
-                testOutputArea.value += compiler.errors[i] + "\n";
+                testOutputDiv.innerHTML += compiler.errors[i] + "<br/>";
             }
         }
     }

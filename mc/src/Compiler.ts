@@ -8,10 +8,14 @@ export class Compiler {
 
     errors: Array<string>;
     output: string;
+    element: string;
+    script: string;
 
     constructor() {
         this.errors = [];
         this.output = "";
+        this.element = "";
+        this.script = "";
     }
 
     Compile(s: string) {
@@ -107,14 +111,27 @@ export class Compiler {
     }
 
     private GenerateCode(elements: Array<IDocumentElement>, topologicalOrder: Array<CellElement>) {
-        let result = `<html>
+        this.element = this.GenerateElements(elements);
+        this.script = this.GenerateScript(elements, topologicalOrder);
+        this.output = `<html>
 
 <head>
     <title>Calc</title>
 </head>
 
 <body>
-  `;
+  ${this.element}
+    <script>
+${this.script}
+    </script>
+</body>
+
+</html>`
+    }
+
+    private GenerateElements(elements: Array<IDocumentElement>): string {
+        let result: string;
+        result = "";
         for (let i = 0; i < elements.length; i++) {
             if (elements[i] instanceof CellElement) {
                 let cell = elements[i] as CellElement;
@@ -128,9 +145,13 @@ export class Compiler {
                 result += (elements[i] as TextElement).s;
             }
         }
-        result += `
-    <script>
-        (function () {
+        return result;
+    }
+
+    private GenerateScript(elements: Array<IDocumentElement>, topologicalOrder: Array<CellElement>): string {
+        let result: string;
+        result = "";
+        result += `        (function () {
 `;
         for (let i = 0; i < elements.length; i++) {
             if (elements[i] instanceof CellElement) {
@@ -202,11 +223,7 @@ export class Compiler {
 `;
             }
         }
-        result += `        })();
-    </script>
-</body>
-
-</html>`;
-        this.output = result;
+        result += `        })();`;
+        return result;
     }
 }
