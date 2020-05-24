@@ -1,28 +1,32 @@
-import { Scanner } from './Scanner'
-import { Token } from './Token';
+import { Compiler } from './Compiler'
 
 (function () {
     let testButton: HTMLButtonElement;
-    let testTextArea: HTMLTextAreaElement;
+    let testInputArea: HTMLTextAreaElement;
+    let testOutputArea: HTMLTextAreaElement;
 
     function BindEvents() {
         window.onload = OnWindowLoaded;
     }
 
     function OnWindowLoaded() {
-        testButton = document.getElementById('TestButton') as HTMLButtonElement;    
-        testTextArea = document.getElementById('TestTextArea') as HTMLTextAreaElement;
+        testButton = document.getElementById('TestButton') as HTMLButtonElement;
+        testInputArea = document.getElementById('TestInputArea') as HTMLTextAreaElement;
+        testOutputArea = document.getElementById('TestOutputArea') as HTMLTextAreaElement;
         testButton.onclick = OnTestButtonClicked;
     }
 
     function OnTestButtonClicked() {
-        let document: string;
-        let scanner: Scanner;
-        let token: Token;
-        document = testTextArea.value;
-        scanner = new Scanner(document);
-        token = scanner.Scan();
-        alert(document.substring(token.from, token.to));
+        let compiler: Compiler = new Compiler();
+        compiler.compile(testInputArea.value);
+        if (compiler.errors.length == 0) {
+            testOutputArea.value = compiler.output;
+        } else {
+            testOutputArea.value = "";
+            for (let i = 0; i < compiler.errors.length; i++) {
+                testOutputArea.value += compiler.errors[i] + "\n";
+            }
+        }
     }
 
     BindEvents();

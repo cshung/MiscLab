@@ -1,3 +1,4 @@
+import { BackTick } from "./BackTick";
 import { CellElement } from "./CellElement";
 import { IDocumentElement } from "./IDocumentElement";
 import { ParseResult } from "./ParseResult";
@@ -5,6 +6,7 @@ import { Scanner } from "./Scanner";
 import { TextElement } from "./TextElement";
 import { Token } from "./Token";
 import { TokenType } from "./TokenType";
+import { Reference } from "./Reference";
 
 export class Parser {
 
@@ -33,7 +35,6 @@ export class Parser {
         }
         return new ParseResult(elements, errors);
     }
-
     private ParseElement(): IDocumentElement | string {
         let s: string;
         let t: string;
@@ -55,13 +56,29 @@ export class Parser {
                 if (this.t.type == TokenType.COLON) {
                     this.t = this.s.Scan();
                     if (this.t.type == TokenType.TEXT) {
+                        let bt = this.s.backTicks;
                         t = this.s.Unescape(this.t.from, this.t.to);
                         this.t = this.s.Scan();
                         if (this.t.type == TokenType.CLOSE_BRACE) {
                             el = this.s.l;
                             ec = this.s.c;
                             this.t = this.s.Scan();
-                            return new CellElement(s, t, sl, sc - 1, el, ec - 1);
+                            if (bt.length % 2 == 1) {
+                                let orphan: BackTick = bt[bt.length - 1];
+                                return `Reference starting at (${orphan.line}, ${orphan.column}) is not closed.`;
+                            }
+                            else
+                            {
+                                let references: Array<Reference> = [];
+                                for (let i:number = 0; i < bt.length; i += 2)
+                                {
+                                    let start: BackTick = bt[i];
+                                    let end: BackTick = bt[i + 1];
+                                    let reference: Reference = new Reference(start.line, start.column, start.position, end.line, end.column, end.position);
+                                    references.push(reference);
+                                }
+                                return new CellElement(s, t, references, sl, sc - 1, el, ec - 1);
+                            }
                         } else {
                             // TODO: Implement proper error reporting
                             throw "Error 1";
@@ -74,7 +91,7 @@ export class Parser {
                     el = this.s.l;
                     ec = this.s.c;
                     this.t = this.s.Scan();
-                    return new CellElement(s, undefined, sl, sc - 1, el, ec - 1);
+                    return new CellElement(s, "", [], sl, sc - 1, el, ec - 1);
                 } else {
                     // TODO: Implement proper error reporting
                     throw "Error 3";

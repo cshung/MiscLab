@@ -1,13 +1,17 @@
+import { CellElement } from "./CellElement";
+import { IDocumentElement } from "./IDocumentElement";
 import { Parser } from "./Parser";
 import { ParseResult } from "./ParseResult";
-import { CellElement } from "./CellElement";
+import { TextElement } from "./TextElement";
 
 export class Compiler {
 
     errors: Array<string>;
+    output: string;
 
     constructor() {
         this.errors = [];
+        this.output = "";
     }
 
     compile(s: string) {
@@ -18,8 +22,6 @@ export class Compiler {
         let cell2: CellElement;
         let key: string;
         let i: number;
-        let j: number;
-        let referenceName: string;
 
         parser = new Parser(s);
         result = parser.Parse();
@@ -42,41 +44,169 @@ export class Compiler {
         }
         for (key in cells) {
             cell = cells[key];
-            if (cell.value != undefined) {
-                j = -1;
-                i = 0;
-                // TODO: Move the back tick detection logic to the scanner so that
-                // we can track the positions
-                while (true) {
-                    i = cell.value.indexOf('`', i);
-                    if (i == -1) {
-                        break;
+            if (cell.value != "") {
+                for (i = 0; i < cell.references.length; i++) {
+                    let reference = cell.references[i];
+                    let referenceTo = cell.value.substr(reference.startPosition + 1, reference.endPosition - reference.startPosition - 1);
+                    if (cells.hasOwnProperty(referenceTo)) {
+                        reference.cell = cells[referenceTo];
+                    } else {
+                        this.errors.push(`Reference at (${reference.startLine}, ${reference.startColumn}) - (${reference.endLine}, ${reference.endColumn}) to a cell named '${referenceTo}' does not exist.`);
                     }
-                    else {
-                        if (j == -1) {
-                            j = i + 1;
-                        } else {
-                            referenceName = cell.value.substring(j, i);
-                            if (cells.hasOwnProperty(referenceName)) {
-                                cell.references.push(cells[referenceName]);
-                            } else {
-                                // TODO, track the actual location
-                                this.errors.push("Reference at (?, ?) to a cell named ? does not exist.");
-                            }
-                            j = -1;
-                        }
-                        i = i + 1;
-                    }
-                }
-                if (j != -1) {
-                    // TODO, track the actual location
-                    this.errors.push("Reference starting at (?, ?) is not closed.");
                 }
             }
         }
         if (this.errors.length != 0) {
             return;
         }
-        // Topological sort and detect cycle
+
+        let color: { [name: string]: number; } = {};
+        let topologicalOrder: Array<CellElement> = [];
+        for (key in cells) {
+            color[key] = 0;
+        }
+        for (key in cells) {
+            if (color[key] == 0) {
+                this.depthFirstSearch(cells[key], color, topologicalOrder);
+            }
+        }
+        for (key in cells) {
+            let source = cells[key];
+            for (let i = 0; i < source.references.length; i++) {
+                let target = source.references[i].cell;
+                target?.referencedBy.push(source);
+            }
+        }
+        if (this.errors.length != 0) {
+            return;
+        }
+        this.generateCode(result.elements, topologicalOrder);
+    }
+
+    private depthFirstSearch(visiting: CellElement, color: { [name: string]: number; }, topologicalOrder: Array<CellElement>): boolean {
+        color[visiting.name] = 1;
+        for (let i = 0; i < visiting.references.length; i++) {
+            let neighbor = visiting.references[i].cell;
+            if (neighbor != undefined) {
+                let neighborName = neighbor.name;
+                if (color[neighborName] == 1) {
+                    // TODO: Can we describe the error better?
+                    this.errors.push("The references form a cycle and that is not supported!");
+                    return false;
+                }
+                else if (color[neighborName] == 0) {
+                    if (!this.depthFirstSearch(neighbor, color, topologicalOrder)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        color[visiting.name] = 2;
+        topologicalOrder.push(visiting);
+        return true;
+    }
+
+    private generateCode(elements: Array<IDocumentElement>, topologicalOrder: Array<CellElement>) {
+        let result = `<html>
+
+<head>
+    <title>Calc</title>
+</head>
+
+<body>
+  `;
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i] instanceof CellElement) {
+                let cell = elements[i] as CellElement;
+                result += `<input id="${cell.name}" type="text"`;
+                if (cell.references.length == 0) {
+                    result += ` value="${cell.value}">`;
+                } else {
+                    result += ` readonly>`
+                }
+            } else if (elements[i] instanceof TextElement) {
+                result += (elements[i] as TextElement).s;
+            }
+        }
+        result += `
+    <script>
+        (function () {
+`;
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i] instanceof CellElement) {
+                let cell = elements[i] as CellElement;
+                result += `            var ${cell.name} = document.getElementById('${cell.name}');
+`;
+            }
+        }
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i] instanceof CellElement) {
+                let cell = elements[i] as CellElement;
+                if (cell.references.length == 0) {
+                    result += `            ${cell.name}.onchange = on_${cell.name}_changed;
+`;
+                }
+            }
+        }
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i] instanceof CellElement) {
+                let cell = elements[i] as CellElement;
+                if (cell.referencedBy.length > 0) {
+                    result += `            function on_${cell.name}_changed() {
+`;
+                    for (let j = 0; j < cell.referencedBy.length; j++) {
+                        result += `                update_${cell.referencedBy[j].name}();
+`;
+                    }
+                    result += `            }
+`;
+                }
+            }
+        }
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i] instanceof CellElement) {
+                let cell = elements[i] as CellElement;
+                if (cell.references.length > 0) {
+                    result += `            function update_${cell.name}() {
+`;
+
+                    result += `                ${cell.name}.value = `;
+                    let first = true;
+                    for (let j = 0; j < cell.value.length; j++) {
+                        if (cell.value[j] == '`') {
+                            if (first) {
+                                first = false;
+                            } else {
+                                result += ".value";
+                                first = true;
+                            }
+                        } else {
+                            result += cell.value[j];
+                        }
+                    }
+                    result += `;
+`;
+                    if (cell.referencedBy.length > 0) {
+                        result += `                on_${cell.name}_changed();
+`;
+                    }
+                    result += `            }
+`;
+                }
+            }
+        }
+        for (let i = 0; i < topologicalOrder.length; i++) {
+            let cell = topologicalOrder[i] as CellElement;
+            if (cell.references.length > 0) {
+                result += `            update_${cell.name}();
+`;
+            }
+        }
+        result += `        })();
+    </script>
+</body>
+
+</html>`;
+        this.output = result;
     }
 }

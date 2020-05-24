@@ -1,24 +1,28 @@
-import { TokenType } from './TokenType'
+import { BackTick } from './BackTick'
 import { Token } from './Token'
+import { TokenType } from './TokenType'
 
 export class Scanner {
 
     private s: string;
     private p: number;
-    private m: boolean;
+    private expectingIdentifier: boolean;
+
     pl: number;
     pc: number;
     l: number;
     c: number;
+    backTicks: Array<BackTick>;
 
     constructor(s: string) {
         this.s = s;
         this.p = 0;
-        this.m = false;
+        this.expectingIdentifier = false;
         this.pl = 0;
         this.pc = 0;
         this.l = 1;
         this.c = 1;
+        this.backTicks = [];
     }
 
     private AdvancePosition(): void {
@@ -40,18 +44,18 @@ export class Scanner {
         } else {
             if (this.IsUnescaped('{')) {
                 this.AdvancePosition();
-                this.m = true;
+                this.expectingIdentifier = true;
                 return new Token(TokenType.OPEN_BRACE, this.p - 1, this.p);
             } else if (this.IsUnescaped('}')) {
                 this.AdvancePosition();
-                this.m = false;
+                this.expectingIdentifier = false;
                 return new Token(TokenType.CLOSE_BRACE, this.p - 1, this.p);
             } else if (this.s[this.p] == ':') {
                 this.AdvancePosition();
-                this.m = false;
+                this.expectingIdentifier = false;
                 return new Token(TokenType.COLON, this.p - 1, this.p);
             } else {
-                if (this.m) {
+                if (this.expectingIdentifier) {
                     if (this.IsAlphabet(this.s[this.p])) {
                         i = this.p;
                         while (true) {
@@ -68,6 +72,8 @@ export class Scanner {
                     return new Token(TokenType.EOF, 0, 0);
                 } else {
                     i = this.p;
+                    this.backTicks = [];
+                    let textPosition = this.p;
                     while (true) {
                         let terminated = false;
                         if (this.p == this.s.length) {
@@ -84,6 +90,8 @@ export class Scanner {
                             } else {
                                 this.AdvancePosition();
                             }
+                        } else if (this.s[this.p] == '`') {
+                            this.backTicks.push(new BackTick(this.l, this.c, this.p - textPosition));
                         }
                         if (terminated) {
                             return new Token(TokenType.TEXT, i, this.p);

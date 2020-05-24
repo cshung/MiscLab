@@ -3,8 +3,6 @@ import { IDocumentElement } from '../src/IDocumentElement';
 import { Parser } from '../src/Parser'
 import { ParseResult } from '../src/ParseResult';
 import { TextElement } from '../src/TextElement';
-import { Token } from 'Token';
-import { TokenType } from '../src/TokenType'
 import assert from 'assert'
 
 describe('Parser', function () {
@@ -41,19 +39,22 @@ describe('Parser', function () {
         TestParser("Hello World", [new TextElement("Hello World")], []);
     });
     it('Simple Cell', function () {
-        TestParser("{a}", [new CellElement("a", undefined)], []);
+        TestParser("{a}", [new CellElement("a", "", [])], []);
     });
     it('Complex Cell', function () {
-        TestParser("{a:1}", [new CellElement("a", "1")], []);
+        TestParser("{a:1}", [new CellElement("a", "1", [])], []);
+    });
+    it('Unclosed Reference', function () {
+        TestParser("{cell:`a}", [], ["Reference starting at (1, 7) is not closed."]);
     });
     it('Example', function () {
         TestParser("The sum of {a} and {b} is {c:a+b}", [
             new TextElement("The sum of "),
-            new CellElement("a", undefined),
+            new CellElement("a", "", []),
             new TextElement(" and "),
-            new CellElement("b", undefined),
+            new CellElement("b", "", []),
             new TextElement(" is "),
-            new CellElement("c", "a+b")
+            new CellElement("c", "a+b", [])
         ], []);
     });
     it('Close brace unexpected', function () {
