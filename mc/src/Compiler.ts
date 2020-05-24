@@ -14,7 +14,7 @@ export class Compiler {
         this.output = "";
     }
 
-    compile(s: string) {
+    Compile(s: string) {
         let parser: Parser;
         let result: ParseResult;
         let cells: { [name: string]: CellElement; }
@@ -67,7 +67,7 @@ export class Compiler {
         }
         for (key in cells) {
             if (color[key] == 0) {
-                this.depthFirstSearch(cells[key], color, topologicalOrder);
+                this.DepthFirstSearch(cells[key], color, topologicalOrder);
             }
         }
         for (key in cells) {
@@ -80,10 +80,10 @@ export class Compiler {
         if (this.errors.length != 0) {
             return;
         }
-        this.generateCode(result.elements, topologicalOrder);
+        this.GenerateCode(result.elements, topologicalOrder);
     }
 
-    private depthFirstSearch(visiting: CellElement, color: { [name: string]: number; }, topologicalOrder: Array<CellElement>): boolean {
+    private DepthFirstSearch(visiting: CellElement, color: { [name: string]: number; }, topologicalOrder: Array<CellElement>): boolean {
         color[visiting.name] = 1;
         for (let i = 0; i < visiting.references.length; i++) {
             let neighbor = visiting.references[i].cell;
@@ -95,7 +95,7 @@ export class Compiler {
                     return false;
                 }
                 else if (color[neighborName] == 0) {
-                    if (!this.depthFirstSearch(neighbor, color, topologicalOrder)) {
+                    if (!this.DepthFirstSearch(neighbor, color, topologicalOrder)) {
                         return false;
                     }
                 }
@@ -106,7 +106,7 @@ export class Compiler {
         return true;
     }
 
-    private generateCode(elements: Array<IDocumentElement>, topologicalOrder: Array<CellElement>) {
+    private GenerateCode(elements: Array<IDocumentElement>, topologicalOrder: Array<CellElement>) {
         let result = `<html>
 
 <head>

@@ -58,6 +58,18 @@ describe('Parser', function () {
         ], []);
     });
     it('Close brace unexpected', function () {
-        TestParser("Hello World\n}Cruel World", [new TextElement("Hello World\n"),new TextElement("Cruel World")], ["} unexpected at line 2 column 1."]);
+        TestParser("Hello World\n}Cruel World", [new TextElement("Hello World\n"), new TextElement("Cruel World")], ["} unexpected at line 2 column 1."]);
+    });
+    it('Colon unexpected', function () {
+        TestParser("Hello World\n:Cruel World", [new TextElement("Hello World\n"), new TextElement("Cruel World")], [": unexpected at line 2 column 1."]);
+    });
+    it('Missing ID', function () {
+        TestParser("Hello {:} World", [new TextElement("Hello "), new TextElement(" World")], ["Cell identifier expected at 1 column 8."]);
+    });
+    it('Unexpected EOF', function () {
+        TestParser("{a", [], ["EOF unexpected at line 1 column 2."]);
+    });
+    it('Unexpected Open Brace', function () {
+        TestParser("{a{", [], ["{ unexpected at line 1 column 3."]);
     });
 });

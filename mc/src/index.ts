@@ -18,7 +18,7 @@ import { Compiler } from './Compiler'
 
     function OnTestButtonClicked() {
         let compiler: Compiler = new Compiler();
-        compiler.compile(testInputArea.value);
+        compiler.Compile(testInputArea.value);
         if (compiler.errors.length == 0) {
             testOutputArea.value = compiler.output;
         } else {

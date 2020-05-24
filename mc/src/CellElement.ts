@@ -23,6 +23,6 @@ export class CellElement implements IDocumentElement {
         this.referencedBy = [];
     }
 
-    dummy(): void {
+    public Dummy(): void {
     }
 }

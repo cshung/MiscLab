@@ -18,7 +18,7 @@ export class Parser {
         this.t = this.s.Scan();
     }
 
-    Parse(): ParseResult {
+    public Parse(): ParseResult {
         let elements: Array<IDocumentElement>;
         let errors: Array<string>;
         let element: IDocumentElement | string;
@@ -35,7 +35,10 @@ export class Parser {
         }
         return new ParseResult(elements, errors);
     }
+
     private ParseElement(): IDocumentElement | string {
+        // TODO: Complete unit tests for error cases
+        // TODO: Make sure line numbers associated with the error is accurate
         let s: string;
         let t: string;
         let sl: number;
@@ -66,12 +69,9 @@ export class Parser {
                             if (bt.length % 2 == 1) {
                                 let orphan: BackTick = bt[bt.length - 1];
                                 return `Reference starting at (${orphan.line}, ${orphan.column}) is not closed.`;
-                            }
-                            else
-                            {
+                            } else {
                                 let references: Array<Reference> = [];
-                                for (let i:number = 0; i < bt.length; i += 2)
-                                {
+                                for (let i: number = 0; i < bt.length; i += 2) {
                                     let start: BackTick = bt[i];
                                     let end: BackTick = bt[i + 1];
                                     let reference: Reference = new Reference(start.line, start.column, start.position, end.line, end.column, end.position);
@@ -80,12 +80,14 @@ export class Parser {
                                 return new CellElement(s, t, references, sl, sc - 1, el, ec - 1);
                             }
                         } else {
-                            // TODO: Implement proper error reporting
-                            throw "Error 1";
+                            let error = `} expected at ${sl} column ${sc}.`;
+                            this.Panic();
+                            return error;
                         }
                     } else {
-                        // TODO: Implement proper error reporting
-                        throw "Error 2";
+                        let error = `expression expected at ${sl} column ${sc}.`;
+                        this.Panic();
+                        return error;
                     }
                 } else if (this.t.type == TokenType.CLOSE_BRACE) {
                     el = this.s.l;
@@ -93,20 +95,49 @@ export class Parser {
                     this.t = this.s.Scan();
                     return new CellElement(s, "", [], sl, sc - 1, el, ec - 1);
                 } else {
-                    // TODO: Implement proper error reporting
-                    throw "Error 3";
+                    sl = this.s.pl;
+                    sc = this.s.pc;
+                    let error: string;
+                    if (this.t.type == TokenType.EOF) {
+                        error = `EOF unexpected at line ${sl} column ${sc}.`;
+                    } else if (this.t.type == TokenType.OPEN_BRACE) {
+                        error = `{ unexpected at line ${sl} column ${sc}.`;
+                    } else {
+                        throw "Unexpected";
+                    }
+                    this.Panic();
+                    return error;
                 }
             } else {
-                // TODO: Implement proper error reporting
-                // Here is a missing ID case, I'd like to continue parsing as 
-                // if it is here ... 
-                throw "Error 4";
+                let error = `Cell identifier expected at ${sl} column ${sc}.`;
+                this.Panic();
+                return error;
             }
         } else {
             sl = this.s.pl;
             sc = this.s.pc;
+            let error: string;
+            if (this.t.type == TokenType.CLOSE_BRACE) {
+                error = `} unexpected at line ${sl} column ${sc}.`;
+            } else if (this.t.type == TokenType.COLON) {
+                error = `: unexpected at line ${sl} column ${sc}.`;
+            } else {
+                throw "Unexpected";
+            }
             this.t = this.s.Scan();
-            return "} unexpected at line " + sl + " column " + sc + ".";
+            return error;
+        }
+    }
+
+    private Panic() {
+        while (true) {
+            this.t = this.s.Scan();
+            if (this.t.type == TokenType.CLOSE_BRACE) {
+                this.t = this.s.Scan();
+                break;
+            } else if (this.t.type == TokenType.EOF) {
+                break;
+            }
         }
     }
 }

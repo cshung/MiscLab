@@ -8,7 +8,7 @@ export class TextElement implements IDocumentElement {
         this.s = s;
     }
 
-    dummy() : void
+    public Dummy() : void
     {
     }
 }

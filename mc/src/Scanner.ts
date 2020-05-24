@@ -50,7 +50,7 @@ export class Scanner {
                 this.AdvancePosition();
                 this.expectingIdentifier = false;
                 return new Token(TokenType.CLOSE_BRACE, this.p - 1, this.p);
-            } else if (this.s[this.p] == ':') {
+            } else if (this.IsUnescaped(':')) {
                 this.AdvancePosition();
                 this.expectingIdentifier = false;
                 return new Token(TokenType.COLON, this.p - 1, this.p);
@@ -90,6 +90,12 @@ export class Scanner {
                             } else {
                                 this.AdvancePosition();
                             }
+                        } else if (this.s[this.p] == ':') {
+                            if (this.IsUnescaped(':')) {
+                                terminated = true;
+                            } else {
+                                this.AdvancePosition();
+                            }                            
                         } else if (this.s[this.p] == '`') {
                             this.backTicks.push(new BackTick(this.l, this.c, this.p - textPosition));
                         }
@@ -101,6 +107,15 @@ export class Scanner {
                 }
             }
         }
+    }
+
+    public Unescape(from: number, to: number): string {
+        let result: string;
+        result = this.s.substring(from, to);
+        result = result.replace("{{", "{");
+        result = result.replace("}}", "}");
+        result = result.replace("::", ":");
+        return result;
     }
 
     private IsAlphabet(c: string): boolean {
@@ -124,13 +139,5 @@ export class Scanner {
             }
         }
         return false;
-    }
-
-    Unescape(from: number, to: number): string {
-        let result: string;
-        result = this.s.substring(from, to);
-        result = result.replace("{{", "{");
-        result = result.replace("}}", "}");
-        return result;
     }
 }

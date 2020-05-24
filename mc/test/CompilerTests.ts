@@ -7,7 +7,7 @@ describe('Compiler', function () {
         let compiler: Compiler;
         let i: number;
         compiler = new Compiler();
-        compiler.compile(s);
+        compiler.Compile(s);
         assert(compiler.output == output);
         assert(compiler.errors.length == errors.length);
         for (i = 0; i < errors.length; i++) {

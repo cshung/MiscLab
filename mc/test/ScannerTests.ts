@@ -18,7 +18,7 @@ describe('Scanner', function () {
             } else {
                 assert(token.type == tokenTypes[i]);
                 if (tokenValues[i] != null) {
-                    assert(document.substring(token.from, token.to) == tokenValues[i]);
+                    assert(scanner.Unescape(token.from, token.to) == tokenValues[i]);
                 }
                 i = i + 1;
             }
@@ -42,10 +42,13 @@ describe('Scanner', function () {
         TestScanner("}", [TokenType.CLOSE_BRACE], ["}"]);
     });
     it('Escaped Open Brace', function () {
-        TestScanner("{{", [TokenType.TEXT], ["{{"]);
+        TestScanner("{{", [TokenType.TEXT], ["{"]);
+    });
+    it('Escaped Colon', function () {
+        TestScanner("::", [TokenType.TEXT], [":"]);
     });
     it('Escaped Close Brace', function () {
-        TestScanner("}}", [TokenType.TEXT], ["}}"]);
+        TestScanner("}}", [TokenType.TEXT], ["}"]);
     });
     it('Identifier', function () {
         TestScanner("{a12", [TokenType.OPEN_BRACE, TokenType.ID], ["{", "a12"]);
