@@ -45,21 +45,35 @@
                 using (var client = new HttpClient())
                 {
                     client.Timeout = TimeSpan.FromMinutes(5);
-                    var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                    var request = new HttpRequestMessage(HttpMethod.Get, uri);
                     var sendTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                     var response = sendTask.Result.EnsureSuccessStatusCode();
+                    long? length = response.Content.Headers.ContentLength;
                     string rawFileNameFromResponse = GetFileName(response);
                     string decodedFileName = WebUtility.UrlDecode(rawFileNameFromResponse);
-
                     var httpStream = await response.Content.ReadAsStreamAsync();
-
+                    long count = 0;
+                    int lastProgress = 0;
                     using (var fileStream = File.Create(decodedFileName))
                     {
-                        using (var reader = new StreamReader(httpStream))
+                        byte[] buffer = new byte[4 * 1024 * 1024];
+                        while (true)
                         {
-                            httpStream.CopyTo(fileStream);
-                            fileStream.Flush();
+                            int bytesRead = await httpStream.ReadAsync(buffer, 0, 1024).ConfigureAwait(false);
+                            if (length != null)
+                            {
+                                count += bytesRead;
+                                int progress = (int)(count * 100 / length);
+                                if (progress != lastProgress)
+                                {
+                                    Console.WriteLine(progress);
+                                    lastProgress = progress;
+                                }
+                            }
+                            if (bytesRead == 0) break;
+                            await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
                         }
+                        fileStream.Flush();
                     }
                 }
             }
