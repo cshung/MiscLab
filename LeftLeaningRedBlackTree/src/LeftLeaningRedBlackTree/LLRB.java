@@ -125,6 +125,10 @@ public class LLRB<Key extends Comparable<Key>, Value> {
 		}
 		if (!isRed(h.left) && !isRed(h.left.left)) {
 			h = moveRedLeft(h);
+			if (!isRed(h.left))
+			{
+				throw new IllegalStateException();
+			}
 		}
 		h.left = deleteMin(h.left);
 		return fixUp(h);
