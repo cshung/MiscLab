@@ -1,7 +1,6 @@
 package LeftLeaningRedBlackTree;
 
 public class LLRB<Key extends Comparable<Key>, Value> {
-	private static boolean TwoThreeTree = true;
 	private static final boolean RED = true;
 	private static final boolean BLACK = false;
 	private Node root;
@@ -125,8 +124,7 @@ public class LLRB<Key extends Comparable<Key>, Value> {
 		}
 		if (!isRed(h.left) && !isRed(h.left.left)) {
 			h = moveRedLeft(h);
-			if (!isRed(h.left))
-			{
+			if (!isRed(h.left)) {
 				throw new IllegalStateException();
 			}
 		}
@@ -204,10 +202,8 @@ public class LLRB<Key extends Comparable<Key>, Value> {
 		if (n.left != null && n.left.color == BLACK && n.right != null && n.right.color == RED) {
 			throw new IllegalStateException();
 		}
-		if (TwoThreeTree) {
-			if (n.left != null && n.left.color == RED && n.right != null && n.right.color == RED) {
-				throw new IllegalStateException();
-			}
+		if (n.left != null && n.left.color == RED && n.right != null && n.right.color == RED) {
+			throw new IllegalStateException();
 		}
 		int left = verify(n.left, n.color == RED);
 		int right = verify(n.right, n.color == RED);
