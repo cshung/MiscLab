@@ -109,7 +109,7 @@ void inverse_number_theoretic_transform(int n, int* input, int* output)
     }
 }
 
-void fast_number_theoretic_transform_helper(int length, int input_offset, int stride, int* input, int output_offset, int* output, int sign)
+void fast_number_theoretic_transform_helper(int length, int input_offset, int stride, int* input, int output_offset, int output_stride, int* output, int sign)
 {
     if (length == 1)
     {
@@ -118,31 +118,31 @@ void fast_number_theoretic_transform_helper(int length, int input_offset, int st
     else
     {
         int half = length / 2;
-        fast_number_theoretic_transform_helper(half, input_offset, stride * 2, input, output_offset, output, sign);
-        fast_number_theoretic_transform_helper(half, input_offset + stride, stride * 2, input, output_offset + half, output, sign);
+        fast_number_theoretic_transform_helper(half, input_offset, stride * 2, input, output_offset, output_stride, output, sign);
+        fast_number_theoretic_transform_helper(half, input_offset + stride, stride * 2, input, output_offset + half * output_stride, output_stride, output, sign);
         for (int i = 0; i < half; i++)
         {
-            int a = output[output_offset + i];
-            int b = output[output_offset + i + half];
+            int a = output[output_offset + i * output_stride];
+            int b = output[output_offset + (i + half) * output_stride];
             int c = mod(a + mod(powers[mod(-i * n / length * sign, n)] * b, prime), prime);
             int d = mod(a + mod(powers[mod((half - i) * n / length * sign, n)] * b, prime), prime);
-            output[output_offset + i] = c;
-            output[output_offset + (i + half)] = d;
+            output[output_offset + i * output_stride] = c;
+            output[output_offset + (i + half) * output_stride] = d;
         }
     }
 }
 
-void fast_number_theoretic_transform(int length, int input_offset, int stride, int* input, int output_offset, int* output)
+void fast_number_theoretic_transform(int length, int input_offset, int stride, int* input, int output_offset, int output_stride, int* output)
 {
-    fast_number_theoretic_transform_helper(length, input_offset, stride, input, output_offset, output, 1);
+    fast_number_theoretic_transform_helper(length, input_offset, stride, input, output_offset, output_stride, output, 1);
 }
 
-void inverse_fast_number_theoretic_transform(int length, int input_offset, int stride, int* input, int output_offset, int* output)
+void inverse_fast_number_theoretic_transform(int length, int input_offset, int stride, int* input, int output_offset, int output_stride, int* output)
 {
-    fast_number_theoretic_transform_helper(length, input_offset, stride, input, output_offset, output, -1);
+    fast_number_theoretic_transform_helper(length, input_offset, stride, input, output_offset, output_stride, output, -1);
     for (int f = 0; f < n; f++)
     {
-        output[output_offset + f] = mod(output[output_offset + f] * inverse, prime);
+        output[output_offset + f * output_stride] = mod(output[output_offset + f * output_stride] * inverse, prime);
     }
 }
 
@@ -154,24 +154,24 @@ int main(int argc, char** argv)
         powers[i] = p;
         p = mod(p * a, prime);
     }
-    int input[64];
-    int output[64];
+    int input[128];
+    int output[128];
     for (int i = 0; i < 32; i++)
     {
-        input[i] = 1;
-        input[i + 32] = 0;
+        input[i * 2] = 1;
+        input[i * 2 + 64] = 0;
     }
-    fast_number_theoretic_transform(64, 0, 1, input, 0, output);
+    fast_number_theoretic_transform(64, 0, 2, input, 0, 2, output);
     for (int i = 0; i < 64; i++)
     {
         // output[i] = mod(output[i] * output[i], prime);
-        cout << output[i] << " ";
+        cout << output[i * 2] << " ";
     }
     cout << endl;
-    inverse_fast_number_theoretic_transform(64, 0, 1, output, 0, input);
+    inverse_fast_number_theoretic_transform(64, 0, 2, output, 0, 2, input);
     for (int i = 0; i < 64; i++)
     {
-        cout << input[i] << " ";
+        cout << input[i * 2] << " ";
     }
     return 0;
 }
