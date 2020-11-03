@@ -10,9 +10,8 @@ using namespace std;
 // can be used efficiently for small inputs
 void discrete_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag);
 
-// my first implementation of fast fourier transform
-// note that length has to be a power of 2
-void fast_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag, double* temp_real, double* temp_imag);
+// fast fourier transform, note that length has to be a power of 2
+void fast_fourier_transform(unsigned int length, int input_offset, int input_stride, double* input_real, double* input_imag, int output_offset, int output_stride, double* output_real, double* output_imag);
 
 int main(int argc, char** argv)
 {
@@ -21,8 +20,6 @@ int main(int argc, char** argv)
     double input_imag[length];
     double output_real[length];
     double output_imag[length];
-    double temp_real[length];
-    double temp_imag[length];
     for (unsigned int i = 0; i < length; i++)
     {
         input_real[i] = 2 * i;
@@ -37,12 +34,11 @@ int main(int argc, char** argv)
     }
     else
     {
-        fast_fourier_transform(length, input_real, input_imag, output_real, output_imag, temp_real, temp_imag);
+        fast_fourier_transform(length, 0, 1, input_real, input_imag, 0, 1, output_real, output_imag);
     }
     for (unsigned int i = 0; i < length; i++)
     {
         cout << output_real[i] << " " << output_imag[i] << "j" << endl;
-        // cout << input_real[i] << " " << input_imag[i] << "j" << endl;
     }
     return 0;
 }
@@ -64,34 +60,20 @@ void discrete_fourier_transform(unsigned int length, double* input_real, double*
     }
 }
 
-void fast_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag, double* temp_real, double* temp_imag)
+void fast_fourier_transform(unsigned int length, int input_offset, int input_stride, double* input_real, double* input_imag, int output_offset, int output_stride, double* output_real, double* output_imag)
 {
     // Step 1: Base case handling
     if (length == 1)
     {
-        output_real[0] = input_real[0];
-        output_imag[0] = input_imag[0];
+        output_real[output_offset] = input_real[input_offset];
+        output_imag[output_offset] = input_imag[input_offset];
         return;
     }
 
-    // Step 1: Decimation in time
-    unsigned int half = length / 2;
-    for (unsigned int i = 0; i < half; i++)
-    {
-        temp_real[i] = input_real[2 * i];
-        temp_imag[i] = input_imag[2 * i];
-        temp_real[i + half] = input_real[2 * i + 1];
-        temp_imag[i + half] = input_imag[2 * i + 1];
-    }
-    for (unsigned int i = 0; i < length; i++)
-    {
-        input_real[i] = temp_real[i];
-        input_imag[i] = temp_imag[i];
-    }
-
     // Step 2: Recursive calls
-    fast_fourier_transform(half, input_real       , input_imag       , temp_real       , temp_imag       , output_real       , output_imag       );
-    fast_fourier_transform(half, input_real + half, input_imag + half, temp_real + half, temp_imag + half, output_real + half, output_imag + half);
+    unsigned int half = length / 2;
+    fast_fourier_transform(half, input_offset               , input_stride * 2, input_real, input_imag, output_offset       , output_stride, output_real, output_imag);
+    fast_fourier_transform(half, input_offset + input_stride, input_stride * 2, input_real, input_imag, output_offset + half, output_stride, output_real, output_imag);
 
     // Step 3: Merge results
     for (unsigned int i = 0; i < half; i++)
@@ -99,23 +81,20 @@ void fast_fourier_transform(unsigned int length, double* input_real, double* inp
         double angle = -2 * M_PI / length * i;
         double cosine = cos(angle);
         double sine = sin(angle);
-        output_real[i]        = temp_real[i] + temp_real[i + half] * cosine - temp_imag[i + half] * sine  ;
-        output_imag[i]        = temp_imag[i] + temp_real[i + half] * sine   + temp_imag[i + half] * cosine;
-        output_real[i + half] = temp_real[i] - temp_real[i + half] * cosine + temp_imag[i + half] * sine  ;
-        output_imag[i + half] = temp_imag[i] - temp_real[i + half] * sine   - temp_imag[i + half] * cosine;
-    }
 
-    // Step 4: (Optional) restore input
-    for (unsigned int i = 0; i < length; i++)
-    {
-        temp_real[i] = input_real[i];
-        temp_imag[i] = input_imag[i];
-    }
-    for (unsigned int i = 0; i < half; i++)
-    {
-        input_real[2 * i] = temp_real[i];
-        input_imag[2 * i] = temp_imag[i];
-        input_real[2 * i + 1] = temp_real[i + half];
-        input_imag[2 * i + 1] = temp_imag[i + half];
+        double a_real = output_real[output_offset + i * output_stride];
+        double a_imag = output_imag[output_offset + i * output_stride];
+        double b_real = output_real[output_offset + (i + half) * output_stride];
+        double b_imag = output_imag[output_offset + (i + half) * output_stride];
+
+        double c_real = a_real + b_real * cosine - b_imag * sine  ;
+        double c_imag = a_imag + b_real * sine   + b_imag * cosine;
+        double d_real = a_real - b_real * cosine + b_imag * sine  ;
+        double d_imag = a_imag - b_real * sine   - b_imag * cosine;
+
+        output_real[output_offset + i * output_stride] = c_real;
+        output_imag[output_offset + i * output_stride] = c_imag;
+        output_real[output_offset + (i + half) * output_stride] = d_real;
+        output_imag[output_offset + (i + half) * output_stride] = d_imag;
     }
 }
