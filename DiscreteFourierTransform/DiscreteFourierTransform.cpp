@@ -1,21 +1,20 @@
-#include "stdafx.h"
-
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
 #define M_PI 3.1415926
 
 // naive implementation of discrete fourier transform
-// can be used efficiently for small inputs 
+// can be used efficiently for small inputs
 void discrete_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag);
 
 // my first implementation of fast fourier transform
 // note that length has to be a power of 2
 void fast_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag, double* temp_real, double* temp_imag);
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char** argv)
 {
     const unsigned int length = 64;
     double input_real[length];
@@ -30,8 +29,16 @@ int _tmain(int argc, _TCHAR* argv[])
         input_imag[i] = 2 * i + 1;
     }
 
-    // discrete_fourier_transform(length, input_real, input_imag, output_real, output_imag);
-    fast_fourier_transform(length, input_real, input_imag, output_real, output_imag, temp_real, temp_imag);
+    cout << fixed << setprecision(2);
+
+    if (argc == 1)
+    {
+        discrete_fourier_transform(length, input_real, input_imag, output_real, output_imag);
+    }
+    else
+    {
+        fast_fourier_transform(length, input_real, input_imag, output_real, output_imag, temp_real, temp_imag);
+    }
     for (unsigned int i = 0; i < length; i++)
     {
         cout << output_real[i] << " " << output_imag[i] << "j" << endl;
