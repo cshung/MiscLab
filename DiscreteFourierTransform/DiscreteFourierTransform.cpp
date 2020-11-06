@@ -11,7 +11,7 @@ using namespace std;
 void discrete_fourier_transform(unsigned int length, double* input_real, double* input_imag, double* output_real, double* output_imag);
 
 // fast fourier transform, note that length has to be a power of 2
-void fast_fourier_transform(unsigned int length, int input_offset, int input_stride, double* input_real, double* input_imag, int output_offset, int output_stride, double* output_real, double* output_imag);
+void fast_fourier_transform(unsigned int length, int input_offset, int input_stride, double* input_real, double* input_imag, int output_offset, int output_stride, double* output_real, double* output_imag, int sign);
 
 int main(int argc, char** argv)
 {
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        fast_fourier_transform(length, 0, 1, input_real, input_imag, 0, 1, output_real, output_imag);
+        fast_fourier_transform(length, 0, 1, input_real, input_imag, 0, 1, output_real, output_imag, 1);
     }
     for (unsigned int i = 0; i < length; i++)
     {
@@ -60,7 +60,7 @@ void discrete_fourier_transform(unsigned int length, double* input_real, double*
     }
 }
 
-void fast_fourier_transform(unsigned int length, int input_offset, int input_stride, double* input_real, double* input_imag, int output_offset, int output_stride, double* output_real, double* output_imag)
+void fast_fourier_transform(unsigned int length, int input_offset, int input_stride, double* input_real, double* input_imag, int output_offset, int output_stride, double* output_real, double* output_imag, int sign)
 {
     // Step 1: Base case handling
     if (length == 1)
@@ -72,13 +72,13 @@ void fast_fourier_transform(unsigned int length, int input_offset, int input_str
 
     // Step 2: Recursive calls
     unsigned int half = length / 2;
-    fast_fourier_transform(half, input_offset               , input_stride * 2, input_real, input_imag, output_offset       , output_stride, output_real, output_imag);
-    fast_fourier_transform(half, input_offset + input_stride, input_stride * 2, input_real, input_imag, output_offset + half, output_stride, output_real, output_imag);
+    fast_fourier_transform(half, input_offset               , input_stride * 2, input_real, input_imag, output_offset       , output_stride, output_real, output_imag, sign);
+    fast_fourier_transform(half, input_offset + input_stride, input_stride * 2, input_real, input_imag, output_offset + half, output_stride, output_real, output_imag, sign);
 
     // Step 3: Merge results
     for (unsigned int i = 0; i < half; i++)
     {
-        double angle = -2 * M_PI / length * i;
+        double angle = -2 * sign * M_PI / length * i;
         double cosine = cos(angle);
         double sine = sin(angle);
 
