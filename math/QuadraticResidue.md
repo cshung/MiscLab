@@ -34,7 +34,7 @@
 
 - **Tonelli–Shanks algorithm**. To compute the square root of $$ n $$ modulo $$ p $$, we start with Euler's criterion $$ n^\frac{p-1}{2} = 1 $$.
   - **Algorithm**
-    1. Find odd $$ q $$ and $$ s $$ such that $$ p = q2^s $$.
+    1. Find odd $$ q $$ and $$ s $$ such that $$ p - 1 = q2^s $$.
     2. Pick a quadratic nonresidue $$ z $$.
     3. Initialize $$ M = s $$, $$ C = z^q $$, $$ T = n^q $$, $$ R = n^\frac{q + 1}{2} $$.
     4. While $$ t \ne 1 $$
@@ -53,7 +53,7 @@
       - $$ R^2 = Tn $$ because $$ R'^2 = (RB)^2 = R^2 B^2 = TnB^2 = T'n $$
       - $$ C^{2^{M-1}} = -1 $$ because $$ C'^{2^{M' - 1}} = (B^2)^{2^{I - 1}} = B^{2^I} = -1 $$
       - $$ T^{2^{M-1}} = 1 $$ because $$ T'^{2^{M'-1}} = (TB^2)^{2^{I-1}} = T^{2^{I-1}}B^{2^I}} = 1 $$
-    - $$ M $$ always decrease and therefore the algorithm terminates.
+    - $$ M $$ always decreases and therefore the algorithm terminates.
           
 
 **Composite moduli**: All of the above applies when $$ p $$ is an odd prime. The key idea is to solve it per prime power component and use the Chinese remainder theorem to find the answer. Key result is:
