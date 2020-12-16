@@ -6,6 +6,8 @@ btree.cpp
 btree_test.cpp
 cartesian_tree.cpp
 cartesian_tree_test.cpp
+disjoint_set_union_find.cpp
+disjoint_set_union_find_test.cpp
 fenwick_tree.cpp
 fenwick_tree_test.cpp
 hash_trie.cpp
