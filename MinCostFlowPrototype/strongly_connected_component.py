@@ -1,10 +1,8 @@
-class edge:
-    def __init__(self, src, dst):
-        self.src = src
-        self.dst = dst
+from collections import namedtuple
 
-    def __repr__(self):
-        return "%s --> %s" % (self.src, self.dst)
+debug = False
+
+edge = namedtuple('edge',['src','dst'])
 
 class strongly_connected_components_state:
     def __init__(self, number_of_nodes):
@@ -38,7 +36,7 @@ def strongly_connected_components_helper(node, adjacency_list, states):
     states.low[node] = states.start_time[node]
     states.node_stack.append(node)
     states.instack[node] = 1
-    for edge in adjacency_list[node]:        
+    for edge in adjacency_list[node]:
         if states.start_time[edge.dst] is None:
             # All the tree edges enters the edge stack
             states.edge_stack.append(edge)
@@ -70,8 +68,9 @@ def strongly_connected_components_helper(node, adjacency_list, states):
             connected_component_nodes.append(stack_node)
             if node == stack_node:
                 break
-        while True:
-            # I claim that all edges within the strongly connected component must be currently at the 
+        # The popping should stop after we have emptied the stack (in case the node is the root of the depth first search)
+        while len(states.edge_stack) > 0:
+            # I claim that all edges within the strongly connected component must be currently at the
             # top of the stack
             edge = states.edge_stack.pop()
             # I claim that states.instack[edge.src] == 2
@@ -81,15 +80,17 @@ def strongly_connected_components_helper(node, adjacency_list, states):
             # Therefore we check if the destination of the edge is within the current strongly connected component
             if states.instack[edge.dst] == 2:
                 connected_component_edges.append(edge)
-            # The popping should stop after we have emptied the stack (in case the node is the root of the depth first search)
-            # or after the tree edge to node is found. We are just leaving the depth first search for node, so it is 
-            # impossible for us to have a forward edge to node, therefore the time condition confirms it is the tree edge
-            if len(states.edge_stack) == 0 or (edge.dst == node and states.start_time[edge.src] < states.start_time[edge.dst]):
+            # If we find an edge that is going downwards to node, it has to be a tree edge.
+            # # This is because it is the first time when the node returns, it is impossible to be a forward edge.
+            if edge.dst == node and states.start_time[edge.src] < states.start_time[edge.dst]:
+                # Once we have found the tree edge to node, we can stop.
                 break
-        print("connected component nodes: %s" % connected_component_nodes)
-        print("connected component edges: %s" % connected_component_edges)
         for connected_component_node in connected_component_nodes:
             states.instack[connected_component_node] = 3
+        if debug:
+            print("A connected component is found")
+            print("connected component nodes: %s" % connected_component_nodes)
+            print("connected component edges: %s" % connected_component_edges)
 
 def main():
     edges = [

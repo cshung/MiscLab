@@ -10,7 +10,7 @@ class edge:
         return "%s --%s--> %s" % (self.src, self.cost, self.dst)
 
 # The edge list is assumed to be representing a strongly connected graph
-def minimum_mean_cycle(number_of_nodes, edges):
+def minimum_mean_cycle_within_connected_component(number_of_nodes, edges):
     # costs[v][k] represents the minimal cost to reach node v from 0 through exactly k edges
     # None represents node v is unreachable from node s
     costs = [[None for i in range(0, number_of_nodes + 1)] for j in range(0, number_of_nodes)]
@@ -21,7 +21,7 @@ def minimum_mean_cycle(number_of_nodes, edges):
     # In 0 step, the only reachable node from 0 is 0, and its cost is 0
     costs[0][0] = 0
 
-    # The best cost to reach node v through exactly k edge can be found by relaxing all the edges 
+    # The best cost to reach node v through exactly k edge can be found by relaxing all the edges
     for step in range(1, number_of_nodes + 1):
         for edge in edges:
             src = edge.src
@@ -69,7 +69,7 @@ def minimum_mean_cycle(number_of_nodes, edges):
         print("best_ratio = %s" % best_ratio)
         print("best_node = %s" % best_node)
 
-    # There must be a cycle on a path of n nodes - find it 
+    # There must be a cycle on a path of n nodes - find it
     steps = [None] * number_of_nodes
     node_cursor = best_node
     step_cursor = number_of_nodes
@@ -82,8 +82,8 @@ def minimum_mean_cycle(number_of_nodes, edges):
             node_cursor = parents[node_cursor][step_cursor]
             step_cursor = step_cursor - 1
         else:
-            # We have found the cycle, recover it by walking the cycle again starting 
-            # from the original step number 
+            # We have found the cycle, recover it by walking the cycle again starting
+            # from the original step number
             stop_cursor = step_cursor
             step_cursor = steps[node_cursor]
             while step_cursor > stop_cursor:
@@ -108,7 +108,7 @@ def main():
         edge(5,6,2),
         edge(4,5,-1),
     ]
-    print(minimum_mean_cycle(8, edges))
+    print(minimum_mean_cycle_within_connected_component(8, edges))
     return 0
 
 if __name__ == "__main__":
