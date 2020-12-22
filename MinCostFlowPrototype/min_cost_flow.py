@@ -81,7 +81,7 @@ def minimum_cost_maximum_flow(number_of_nodes, source, target, given_edges):
         if best_cycle_mean is None or best_cycle_mean >= 0:
             break
         (flow_delta, cost_delta) = augment_flow(edges, best_cycle)
-        flow = flow + flow_delta
+        # Flowing through a cycle does not increase the flow
         cost = cost + cost_delta
     return (flow, cost)
 
@@ -319,21 +319,92 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
             states.best_cycle = cycle
 
 def main():
-    # The graph from UVa10594, node 4 is a virtual sink to limit the flow to 20
+    # This is derived from a random campus bike ii instance
+    # The correct answer for this instance is (8, 243)
     edges = [
-        Edge(0, 1, 10, 3),
-        Edge(1, 0, 10, 3),
-        Edge(0, 3, 10, 1),
-        Edge(3, 0, 10, 1),
-        Edge(0, 2, 10, 2),
-        Edge(2, 0, 10, 2),
-        Edge(1, 3, 10, 4),
-        Edge(3, 1, 10, 4),
-        Edge(2, 3, 10, 5),
-        Edge(3, 2, 10, 5),
-        Edge(3, 4, 20, 0),
+        Edge(0, 1, 1, 0),
+        Edge(0, 2, 1, 0),
+        Edge(0, 3, 1, 0),
+        Edge(0, 4, 1, 0),
+        Edge(0, 5, 1, 0),
+        Edge(0, 6, 1, 0),
+        Edge(0, 7, 1, 0),
+        Edge(0, 8, 1, 0),
+        Edge(1, 9, 1, 35),
+        Edge(1, 10, 1, 78),
+        Edge(1, 11, 1, 23),
+        Edge(1, 12, 1, 9),
+        Edge(1, 13, 1, 99),
+        Edge(1, 14, 1, 32),
+        Edge(1, 15, 1, 34),
+        Edge(1, 16, 1, 73),
+        Edge(2, 9, 1, 70),
+        Edge(2, 10, 1, 27),
+        Edge(2, 11, 1, 120),
+        Edge(2, 12, 1, 96),
+        Edge(2, 13, 1, 28),
+        Edge(2, 14, 1, 99),
+        Edge(2, 15, 1, 97),
+        Edge(2, 16, 1, 32),
+        Edge(3, 9, 1, 27),
+        Edge(3, 10, 1, 76),
+        Edge(3, 11, 1, 23),
+        Edge(3, 12, 1, 17),
+        Edge(3, 13, 1, 91),
+        Edge(3, 14, 1, 10),
+        Edge(3, 15, 1, 56),
+        Edge(3, 16, 1, 91),
+        Edge(4, 9, 1, 62),
+        Edge(4, 10, 1, 17),
+        Edge(4, 11, 1, 86),
+        Edge(4, 12, 1, 68),
+        Edge(4, 13, 1, 40),
+        Edge(4, 14, 1, 95),
+        Edge(4, 15, 1, 53),
+        Edge(4, 16, 1, 12),
+        Edge(5, 9, 1, 90),
+        Edge(5, 10, 1, 47),
+        Edge(5, 11, 1, 140),
+        Edge(5, 12, 1, 116),
+        Edge(5, 13, 1, 26),
+        Edge(5, 14, 1, 119),
+        Edge(5, 15, 1, 117),
+        Edge(5, 16, 1, 62),
+        Edge(6, 9, 1, 54),
+        Edge(6, 10, 1, 11),
+        Edge(6, 11, 1, 104),
+        Edge(6, 12, 1, 80),
+        Edge(6, 13, 1, 32),
+        Edge(6, 14, 1, 87),
+        Edge(6, 15, 1, 81),
+        Edge(6, 16, 1, 16),
+        Edge(7, 9, 1, 40),
+        Edge(7, 10, 1, 93),
+        Edge(7, 11, 1, 62),
+        Edge(7, 12, 1, 38),
+        Edge(7, 13, 1, 62),
+        Edge(7, 14, 1, 41),
+        Edge(7, 15, 1, 73),
+        Edge(7, 16, 1, 108),
+        Edge(8, 9, 1, 50),
+        Edge(8, 10, 1, 11),
+        Edge(8, 11, 1, 82),
+        Edge(8, 12, 1, 58),
+        Edge(8, 13, 1, 32),
+        Edge(8, 14, 1, 83),
+        Edge(8, 15, 1, 59),
+        Edge(8, 16, 1, 18),
+        Edge(9, 17, 1, 0),
+        Edge(10, 17, 1, 0),
+        Edge(11, 17, 1, 0),
+        Edge(12, 17, 1, 0),
+        Edge(13, 17, 1, 0),
+        Edge(14, 17, 1, 0),
+        Edge(15, 17, 1, 0),
+        Edge(16, 17, 1, 0),
     ]
-    print(minimum_cost_maximum_flow(5, 0, 4, edges))
+    
+    print(minimum_cost_maximum_flow(18, 0, 17, edges))
     return 0
 
 if __name__ == "__main__":
