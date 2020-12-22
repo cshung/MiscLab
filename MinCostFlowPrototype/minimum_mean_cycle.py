@@ -108,7 +108,7 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
     # None represents node v is unreachable from node s
     costs = [[None for i in range(0, number_of_nodes + 1)] for j in range(0, number_of_nodes)]
 
-    # parents[v][k] represents the edge index we chose to reach the parent 
+    # parents[v][k] represents the edge index we chose to reach the parent
     parents = [[None for i in range(0, number_of_nodes + 1)] for j in range(0, number_of_nodes)]
 
     # In 0 step, the only reachable node from 0 is 0, and its cost is 0
@@ -165,7 +165,8 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
         print()
         print()
         print("best_ratio = %s" % best_ratio)
-        print("best_node = %s" % connected_component_nodes[best_node])
+        if best_node is not None:
+            print("best_node = %s" % connected_component_nodes[best_node])
 
     if best_node is not None:
         # There must be a cycle on a path of n nodes - find it

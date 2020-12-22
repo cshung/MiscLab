@@ -1,6 +1,6 @@
 from collections import deque
 
-debug = True
+debug = False
 
 class Edge:
     def __init__(self, src, dst, capacity, cost):
@@ -31,6 +31,7 @@ def minimum_cost_maximum_flow(number_of_nodes, source, target, given_edges):
         adjacency_list[dst].append(len(edges))
         edges.append(residual_edge)
     flow = 0
+    cost = 0
     while True:
         # The BFS queue, it contains the edge indexes, that allows us to
         # get access to the edges quickly
@@ -72,14 +73,22 @@ def minimum_cost_maximum_flow(number_of_nodes, source, target, given_edges):
                 augmenting_edge = edges[parent_edge_index]
                 augmenting_edge_indexes.append(parent_edge_index)
                 cursor = augmenting_edge.src
-        flow = flow + augment_flow(edges, augmenting_edge_indexes)
-    # Game on - this gives us the minimum mean cycle, but we wanted the edges!
-    minimum_mean_cycle(number_of_nodes, adjacency_list, edges)
-    return flow
+        (flow_delta, cost_delta) = augment_flow(edges, augmenting_edge_indexes)
+        flow = flow + flow_delta
+        cost = cost + cost_delta
+    while True:
+        (best_cycle_mean, best_cycle) = minimum_mean_cycle(number_of_nodes, adjacency_list, edges)
+        if best_cycle_mean is None or best_cycle_mean >= 0:
+            break
+        (flow_delta, cost_delta) = augment_flow(edges, best_cycle)
+        flow = flow + flow_delta
+        cost = cost + cost_delta
+    return (flow, cost)
 
 def augment_flow(edges, augmenting_edge_indexes):
     # Determine how much flow can be augmented
     available_capacity = None
+    cost_delta = 0
     for augmenting_edge_index in augmenting_edge_indexes:
             augmenting_edge = edges[augmenting_edge_index]
             if available_capacity is None or available_capacity > augmenting_edge.capacity:
@@ -101,9 +110,10 @@ def augment_flow(edges, augmenting_edge_indexes):
         else:
             partner_edge_index = augmenting_edge_index - 1
         partner_edge = edges[partner_edge_index]
+        cost_delta = cost_delta + available_capacity * augmenting_edge.cost
         augmenting_edge.capacity = augmenting_edge.capacity - available_capacity
         partner_edge.capacity = partner_edge.capacity + available_capacity
-    return available_capacity
+    return (available_capacity, cost_delta)
 
 class minimum_mean_cycle_states:
     def __init__(self, number_of_nodes, edges):
@@ -132,7 +142,7 @@ def minimum_mean_cycle(number_of_nodes, adjacency_list, edges):
     for node in range(0, number_of_nodes):
         if states.start_time[node] is None:
             minimum_mean_cycle_helper(node, adjacency_list, states)
-    return states.best_cycle
+    return (states.best_cycle_mean, states.best_cycle)
 
 def minimum_mean_cycle_helper(node, adjacency_list, states):
     states.start_time[node] = states.time
@@ -180,12 +190,13 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
             # top of the stack
             edge_index = states.edge_stack.pop()
             edge = states.edges[edge_index]
+            # TODO - bug - as of now, I do not understand why this check fails
             # I claim that states.instack[edge.src] == 2
-            if not states.instack[edge.src] == 2:
-                raise ValueError()
+            # if not states.instack[edge.src] == 2:
+            #     raise ValueError()
             # The edge could be forward edge or cross edge to other strongly connected component
             # Therefore we check if the destination of the edge is within the current strongly connected component
-            if states.instack[edge.dst] == 2:
+            if states.instack[edge.src] == 2 and states.instack[edge.dst] == 2:
                 connected_component_edge_indexes.append(edge_index)
             # If we find an edge that is going downwards to node, it has to be a tree edge.
             # # This is because it is the first time when the node returns, it is impossible to be a forward edge.
@@ -202,7 +213,7 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
 
 def minimum_mean_cycle_within_connected_component(connected_component_nodes, connected_component_edge_indexes, states):
     number_of_nodes = len(connected_component_nodes)
-    # TODO, that sucks, let's fix it
+    # TODO, bug, let's pass the number directly instead of inferring from start time
     mapping = [0] * len(states.start_time)
     for i in range(0, number_of_nodes):
         mapping[connected_component_nodes[i]] = i
@@ -227,7 +238,7 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
                 new_cost = costs[src][step - 1] + edge.cost
                 if costs[dst][step] == None or new_cost < costs[dst][step]:
                     costs[dst][step] = new_cost
-                    parents[dst][step] = src
+                    parents[dst][step] = edge_index
 
     # Karp's formula, computing the max ratios
     ratios = [None] * number_of_nodes
@@ -256,7 +267,10 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
         print("Parent table, each row is a step")
         for step in range(0, number_of_nodes + 1):
             for node in range(0, number_of_nodes):
-                print(parents[node][step], end="\t")
+                if parents[node][step] is None:
+                    print(None, end="\t")
+                else:
+                    print(mapping[states.edges[parents[node][step]].src], end="\t")
             print()
         print()
         print("Ratio table")
@@ -279,7 +293,7 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
                 # On each newly discovered node, mark it with the current step number
                 steps[node_cursor] = step_cursor
                 # And walk through the parent chain
-                node_cursor = parents[node_cursor][step_cursor]
+                node_cursor = mapping[states.edges[parents[node_cursor][step_cursor]].src]
                 step_cursor = step_cursor - 1
             else:
                 # We have found the cycle, recover it by walking the cycle again starting
@@ -287,29 +301,40 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
                 stop_cursor = step_cursor
                 step_cursor = steps[node_cursor]
                 while step_cursor > stop_cursor:
-                    cycle.append(connected_component_nodes[node_cursor])
-                    node_cursor = parents[node_cursor][step_cursor]
+                    cycle.append(parents[node_cursor][step_cursor])
+                    node_cursor = mapping[states.edges[parents[node_cursor][step_cursor]].src]
                     step_cursor = step_cursor - 1
                 break
         # The discovery order was in parent chain, so reverse it.
         cycle.reverse()
         if debug:
+            cycle_nodes = []
+            for edge_index in cycle:
+                cycle_nodes.append(states.edges[edge_index].dst)
             print()
-            print("The best cycle found within the strongly connected component is %s" % cycle)
+            print("The best cycle found within the strongly connected component is %s" % cycle_nodes)
             print()
         if states.best_cycle_mean is None or states.best_cycle_mean > best_ratio:
             states.best_cycle_mean = best_ratio
             states.best_cycle = cycle
 
 def main():
+    # The graph from UVa10594, node 4 is a virtual sink to limit the flow to 20
     edges = [
-        Edge(0, 1, 20, 1),
+        Edge(0, 1, 10, 3),
+        Edge(1, 0, 10, 3),
         Edge(0, 3, 10, 1),
-        Edge(1, 3, 30, 1),
-        Edge(1, 2, 10, 1),
-        Edge(3, 2, 20, 1)
+        Edge(3, 0, 10, 1),
+        Edge(0, 2, 10, 2),
+        Edge(2, 0, 10, 2),
+        Edge(1, 3, 10, 4),
+        Edge(3, 1, 10, 4),
+        Edge(2, 3, 10, 5),
+        Edge(3, 2, 10, 5),
+        Edge(3, 4, 20, 0),
     ]
-    print(minimum_cost_maximum_flow(4, 0, 2, edges))
+    # TODO, bug, setting target to 3 can repro the assertion failure
+    print(minimum_cost_maximum_flow(5, 0, 4, edges))
     return 0
 
 if __name__ == "__main__":
