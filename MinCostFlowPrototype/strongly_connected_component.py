@@ -1,11 +1,11 @@
 from collections import namedtuple
 
-debug = False
+debug = True
 
 edge = namedtuple('edge',['src','dst'])
 
 class strongly_connected_components_state:
-    def __init__(self, number_of_nodes):
+    def __init__(self, number_of_nodes, edges):
         self.time = 0
         # This represents the time when the node is reached
         self.start_time = [None] * number_of_nodes
@@ -20,12 +20,10 @@ class strongly_connected_components_state:
         self.low = [None] * number_of_nodes
         self.node_stack = []
         self.edge_stack = []
+        self.edges = edges
 
-def strongly_connected_components(number_of_nodes, edges):
-    adjacency_list = [[] for _ in range(0, number_of_nodes)]
-    for edge in edges:
-        adjacency_list[edge.src].append(edge)
-    states = strongly_connected_components_state(number_of_nodes)
+def strongly_connected_components(number_of_nodes, adjacency_list, edges):
+    states = strongly_connected_components_state(number_of_nodes, edges)
     for node in range(0, number_of_nodes):
         if states.start_time[node] is None:
             strongly_connected_components_helper(node, adjacency_list, states)
@@ -36,10 +34,11 @@ def strongly_connected_components_helper(node, adjacency_list, states):
     states.low[node] = states.start_time[node]
     states.node_stack.append(node)
     states.instack[node] = 1
-    for edge in adjacency_list[node]:
+    for edge_index in adjacency_list[node]:
+        edge = states.edges[edge_index]
         if states.start_time[edge.dst] is None:
             # All the tree edges enters the edge stack
-            states.edge_stack.append(edge)
+            states.edge_stack.append(edge_index)
             strongly_connected_components_helper(edge.dst, adjacency_list, states)
             if states.low[edge.src] > states.low[edge.dst]:
                 states.low[edge.src] = states.low[edge.dst]
@@ -50,7 +49,7 @@ def strongly_connected_components_helper(node, adjacency_list, states):
             # But we might also encounter a cross edge or a forward edge in this branch, in that case
             # the edge might cross two strongly connected components, and there is no good way
             # to tell at this point.
-            states.edge_stack.append(edge)
+            states.edge_stack.append(edge_index)
             if states.low[edge.src] > states.start_time[edge.dst]:
                 states.low[edge.src] = states.start_time[edge.dst]
         else:
@@ -72,7 +71,8 @@ def strongly_connected_components_helper(node, adjacency_list, states):
         while len(states.edge_stack) > 0:
             # I claim that all edges within the strongly connected component must be currently at the
             # top of the stack
-            edge = states.edge_stack.pop()
+            edge_index = states.edge_stack.pop()
+            edge = states.edges[edge_index]
             # I claim that states.instack[edge.src] == 2
             if not states.instack[edge.src] == 2:
                 raise ValueError()
@@ -107,7 +107,10 @@ def main():
         edge(7, 6),
         edge(7, 7),
     ]
-    strongly_connected_components(8, edges)
+    adjacency_list = [[] for _ in range(0, 8)]
+    for i in range(0, len(edges)):
+        adjacency_list[edges[i].src].append(i)
+    strongly_connected_components(8, adjacency_list, edges)
     return 0
 
 if __name__ == "__main__":

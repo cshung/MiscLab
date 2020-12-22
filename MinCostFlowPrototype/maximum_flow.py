@@ -12,9 +12,9 @@ class Edge:
         return "%s -(%s)-> %s" % (self.src, self.capacity, self.dst)
 
 def maximum_flow(number_of_nodes, source, target, given_edges):
-    # The first element in the edge list is none, this is useful only for the BFS search 
+    # The first element in the edge list is none, this is useful only for the BFS search
     # The odd indexed elements are forward edges, they are the given ones
-    # The even indexed elements are the residual edges, they have 0 capacity to begin with    
+    # The even indexed elements are the residual edges, they have 0 capacity to begin with
     edges = [None]
     # A node is mapped to a list of edges connected to it
     adjacency_list = [[] for _ in range(0, number_of_nodes)]
@@ -30,7 +30,7 @@ def maximum_flow(number_of_nodes, source, target, given_edges):
         edges.append(residual_edge)
     flow = 0
     while True:
-        # The BFS queue, it contains the edge indexes, that allows us to 
+        # The BFS queue, it contains the edge indexes, that allows us to
         # get access to the edges quickly
         bfs = deque()
 
@@ -59,8 +59,7 @@ def maximum_flow(number_of_nodes, source, target, given_edges):
             if debug:
                 print("No more augmenting path can be found")
             break
-        # Recovering the augmenting path and determine how much flow we can augment
-        available_capacity = None
+        # Recovering the augmenting path from the parents
         augmenting_edge_indexes = []
         cursor = target
         while True:
@@ -68,31 +67,39 @@ def maximum_flow(number_of_nodes, source, target, given_edges):
             if parent_edge_index == 0:
                 break
             else:
-                augmenting_edge = edges[parent_edge_index]                
+                augmenting_edge = edges[parent_edge_index]
                 augmenting_edge_indexes.append(parent_edge_index)
                 cursor = augmenting_edge.src
-                if available_capacity is None or available_capacity > augmenting_edge.capacity:
-                    available_capacity = augmenting_edge.capacity
-        if debug:
-            print("The augmenting path is:")
-            augmenting_edge_indexes.reverse()
-            for augmenting_edge_index in augmenting_edge_indexes:
-                augmenting_edge = edges[augmenting_edge_index]
-                print(augmenting_edge)
-            augmenting_edge_indexes.reverse()
-            print("and we can augment %s" % available_capacity)
-        
-        flow = flow + available_capacity
+        flow = flow + augment_flow(edges, augmenting_edge_indexes)
+    return flow
+
+def augment_flow(edges, augmenting_edge_indexes):
+    # Determine how much flow can be augmented
+    available_capacity = None
+    for augmenting_edge_index in augmenting_edge_indexes:
+            augmenting_edge = edges[augmenting_edge_index]
+            if available_capacity is None or available_capacity > augmenting_edge.capacity:
+                available_capacity = augmenting_edge.capacity
+    if debug:
+        print("The augmenting path is:")
+        augmenting_edge_indexes.reverse()
         for augmenting_edge_index in augmenting_edge_indexes:
             augmenting_edge = edges[augmenting_edge_index]
-            if augmenting_edge_index % 2 == 1:
-                partner_edge_index = augmenting_edge_index + 1
-            else:
-                partner_edge_index = augmenting_edge_index - 1
-            partner_edge = edges[partner_edge_index]
-            augmenting_edge.capacity = augmenting_edge.capacity - available_capacity
-            partner_edge.capacity = partner_edge.capacity + available_capacity
-    return flow
+            print(augmenting_edge)
+        augmenting_edge_indexes.reverse()
+        print("and we can augment %s" % available_capacity)
+        print()
+
+    for augmenting_edge_index in augmenting_edge_indexes:
+        augmenting_edge = edges[augmenting_edge_index]
+        if augmenting_edge_index % 2 == 1:
+            partner_edge_index = augmenting_edge_index + 1
+        else:
+            partner_edge_index = augmenting_edge_index - 1
+        partner_edge = edges[partner_edge_index]
+        augmenting_edge.capacity = augmenting_edge.capacity - available_capacity
+        partner_edge.capacity = partner_edge.capacity + available_capacity
+    return available_capacity
 
 def main():
     edges = [
