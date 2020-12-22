@@ -73,7 +73,7 @@ def minimum_mean_cycle_within_connected_component(number_of_nodes, edges, edge_i
         print()
         print("best_ratio = %s" % best_ratio)
         if best_node is not None:
-            print("best_node = %s" % connected_component_nodes[best_node])
+            print("best_node = %s" % best_node)
 
     if best_node is not None:
         # There must be a cycle on a path of n nodes - find it

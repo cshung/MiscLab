@@ -1,6 +1,6 @@
 from collections import deque
 
-debug = False
+debug = True
 
 class Edge:
     def __init__(self, src, dst, capacity, cost):
@@ -190,19 +190,19 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
             # top of the stack
             edge_index = states.edge_stack.pop()
             edge = states.edges[edge_index]
-            # TODO - bug - as of now, I do not understand why this check fails
-            # I claim that states.instack[edge.src] == 2
-            # if not states.instack[edge.src] == 2:
-            #     raise ValueError()
-            # The edge could be forward edge or cross edge to other strongly connected component
-            # Therefore we check if the destination of the edge is within the current strongly connected component
-            if states.instack[edge.src] == 2 and states.instack[edge.dst] == 2:
-                connected_component_edge_indexes.append(edge_index)
             # If we find an edge that is going downwards to node, it has to be a tree edge.
             # # This is because it is the first time when the node returns, it is impossible to be a forward edge.
             if edge.dst == node and states.start_time[edge.src] < states.start_time[edge.dst]:
                 # Once we have found the tree edge to node, we can stop.
                 break
+            # I claim that states.instack[edge.src] == 2
+            if not states.instack[edge.src] == 2:
+                raise ValueError()
+            # The edge could be forward edge or cross edge to other strongly connected component
+            # Therefore we check if the destination of the edge is within the current strongly connected component
+            if states.instack[edge.dst] == 2:
+                connected_component_edge_indexes.append(edge_index)
+
         for connected_component_node in connected_component_nodes:
             states.instack[connected_component_node] = 3
         if debug:
@@ -213,7 +213,7 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
 
 def minimum_mean_cycle_within_connected_component(connected_component_nodes, connected_component_edge_indexes, states):
     number_of_nodes = len(connected_component_nodes)
-    # TODO, bug, let's pass the number directly instead of inferring from start time
+    # TODO - bug - let's pass the number directly instead of inferring from start time
     mapping = [0] * len(states.start_time)
     for i in range(0, number_of_nodes):
         mapping[connected_component_nodes[i]] = i
@@ -333,7 +333,6 @@ def main():
         Edge(3, 2, 10, 5),
         Edge(3, 4, 20, 0),
     ]
-    # TODO, bug, setting target to 3 can repro the assertion failure
     print(minimum_cost_maximum_flow(5, 0, 4, edges))
     return 0
 

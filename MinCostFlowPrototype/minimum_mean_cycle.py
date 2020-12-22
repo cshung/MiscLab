@@ -78,6 +78,11 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
             # top of the stack
             edge_index = states.edge_stack.pop()
             edge = states.edges[edge_index]
+            # If we find an edge that is going downwards to node, it has to be a tree edge.
+            # # This is because it is the first time when the node returns, it is impossible to be a forward edge.
+            if edge.dst == node and states.start_time[edge.src] < states.start_time[edge.dst]:
+                # Once we have found the tree edge to node, we can stop.
+                break
             # I claim that states.instack[edge.src] == 2
             if not states.instack[edge.src] == 2:
                 raise ValueError()
@@ -85,11 +90,6 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
             # Therefore we check if the destination of the edge is within the current strongly connected component
             if states.instack[edge.dst] == 2:
                 connected_component_edge_indexes.append(edge_index)
-            # If we find an edge that is going downwards to node, it has to be a tree edge.
-            # # This is because it is the first time when the node returns, it is impossible to be a forward edge.
-            if edge.dst == node and states.start_time[edge.src] < states.start_time[edge.dst]:
-                # Once we have found the tree edge to node, we can stop.
-                break
         for connected_component_node in connected_component_nodes:
             states.instack[connected_component_node] = 3
         if debug:
