@@ -1,247 +1,141 @@
-#include <bitset>
 #include <iostream>
 #include <cassert>
-#include <vector>
-#include <stack>
-#include <map>
-#include <queue>
-#include <algorithm>
-#include <unordered_map>
-#include <algorithm>
 using namespace std;
 
-/*
+// This code represents GF(8), a Galois field of 8 elements
+// Each element in the field is represented by a polynomial with cofficients in GF(2) [i.e. a single bit]
+// We use an integer to represent the polynomial. Therefore, 00001011 represents the polynomial x^3 + x + 1
+// Operations are done modulo a irreducible_polynomial polynomial, in this case, 00001011
+// Beyond the constants, the code can be adapted to other irreducible polynomials and thus fields of different size
+// 
+// For example, this is a larger finite field of 1024 elements, this will take a while to run through the full brute-force testing
+// 
+// const int degree = 10;
+// const int irreducible_polynomial = 1877;
+//
 
-GF(2n), to be productized
-
-void print(int i)
-{
-    // bitset<8> x(i);
-    // cout << x << " ";
-    cout << i << " ";
-}
-
-int shift(int i)
-{
-    i = i << 1;
-    if ((i & (1 << 3)) != 0)
-    {
-        // 76543210
-        // 00001011
-        i = i ^ 0xb;
-    }
-    return i;
-}
+const int degree = 3;
+const int irreducible_polynomial = 11;
+const int N = 1 << degree;
 
 int add(int i, int j)
 {
+    // Adding a pair of polynomial is simply bitwise xor
     return i ^ j;
 }
 
-int multiply(int i, int j)
+int additive_inverse(int i)
 {
+    return i;
+}
+
+int mul(int i, int j)
+{
+    // The idea of this algorithm is that when we write i to be f(x) and j to be g(x)
+    // If we write g(x) as a sum of monomials, then we can write it as
+    // g(x) = c2 x^2 + c1 x^1 + c0 x^0
+    // 
+    // Then the product can be written as
+    // f(x)g(x) = c2 f(x) x^2 + c_1 f(x) x^1 + c_0 f(x) x^0
+    //          = ((c2 f(x) x + c1 f(x))x) + c0 f(x)
+    //          = ((((0)x + c2 f(x)) x + c1 f(x))x) + c0 f(x)
+    // 
+    // The formula does look complicated, but the code isn't.
+    //
+    // The evaluation starts from the innermost bracket, every time we want to evaluate the 
+    // outer bracket, we multiply by x and then add f(x) if the coefficient is not zero.
+    //
+    // That's it
+    //
     int result = 0;
-    int mask = 1;
-    for (int bit = 0; bit < 3; bit++)
+    int mask = 1 << (degree - 1);
+    for (int bit = 0; bit < degree; bit++)
     {
+        // This operation multiply the current polynomial by x
+        result = result << 1;
+        // Assuming result was a polynomial with degree at most 2
+        // After the multiply, it is at most 3, so either it is or it is not
+        if ((result & (1 << degree)) != 0)
+        {
+            // In case it is, we compute the mod irreducible_polynomial simply by subtracting it.
+            result = add(result, additive_inverse(irreducible_polynomial));
+        }
+        // If the coefficient is not 0
         if ((mask & j) != 0)
         {
-            int temp = i;
-            for (int times = 0; times < bit; times++)
-            {
-                temp = shift(temp);
-            }
-            result = add(result, temp);
+            // Add f(x) to the result
+            result = add(result, i);
         }
-        mask = mask << 1;
+        // And consider the next less significant term
+        mask = mask >> 1;
     }
     return result;
 }
 
-int main()
+// A simple repeated squaring algorithm
+int power(int a, int n)
 {
-    for (int i = 0; i < 8; i++)
+    if (n == 0)
     {
-        for (int j = 0; j < 8; j++)
-        {
-            cout << multiply(i, j) << " ";
-        }
-        cout << endl;
+        return 1;
     }
-    return 0;
-}
-*/
-
-const int n = 64;
-const int a = 125;
-// TODO, prime should account for largest possible overlap, good for now
-const int prime = 193;
-const int inverse = 190;
-int powers[64];
-
-int mod(int x, int p)
-{
-    return ((x % p) + p) % p;
-}
-
-void number_theoretic_transform_helper(int n, int* input, int* output, int sign)
-{
-    for (int f = 0; f < n; f++)
+    else if (n == 1)
     {
-        output[f] = 0;
-        for (int t = 0; t < n; t++)
-        {
-            output[f] = mod(output[f] + mod(powers[mod(sign * t * f, n)] * input[t], prime), prime);
-        }
-    }
-}
-
-void number_theoretic_transform(int n, int* input, int* output)
-{
-    number_theoretic_transform_helper(n, input, output, -1);
-}
-
-void inverse_number_theoretic_transform(int n, int* input, int* output)
-{
-    number_theoretic_transform_helper(n, input, output, 1);
-    for (int f = 0; f < n; f++)
-    {
-        output[f] = mod(output[f] * inverse, prime);
-    }
-}
-
-
-void fast_number_theoretic_transform_helper(int length, int input_offset, int stride, vector<int>& input, int output_offset, int output_stride, vector<int>& output, int sign)
-{
-    if (length == 1)
-    {
-        output[output_offset] = input[input_offset];
+        return a;
     }
     else
     {
-        int half = length / 2;
-        fast_number_theoretic_transform_helper(half, input_offset, stride * 2, input, output_offset, output_stride, output, sign);
-        fast_number_theoretic_transform_helper(half, input_offset + stride, stride * 2, input, output_offset + half * output_stride, output_stride, output, sign);
-        for (int i = 0; i < half; i++)
+        int half = power(a, n / 2);
+        int answer = mul(half, half);
+        if (n % 2 == 1)
         {
-            int a = output[output_offset + i * output_stride];
-            int b = output[output_offset + (i + half) * output_stride];
-            int c = mod(a + mod(powers[mod(-i * n / length * sign, n)] * b, prime), prime);
-            int d = mod(a + mod(powers[mod((half - i) * n / length * sign, n)] * b, prime), prime);
-            output[output_offset + i * output_stride] = c;
-            output[output_offset + (i + half) * output_stride] = d;
+            answer = mul(answer, a);
         }
+        return answer;
     }
 }
 
-void fast_number_theoretic_transform(int length, int input_offset, int stride, vector<int>& input, int output_offset, int output_stride, vector<int>& output)
+// We know that the is multiplicative group is cyclic with order N - 1, 
+// therefore a^(N-1) = 1, so a^(N-2) is the multiplicative inverse
+int multiplicative_inverse(int a)
 {
-    fast_number_theoretic_transform_helper(length, input_offset, stride, input, output_offset, output_stride, output, 1);
+    return power(a, N - 2);
 }
 
-void inverse_fast_number_theoretic_transform(int length, int input_offset, int stride, vector<int>& input, int output_offset, int output_stride, vector<int>& output)
+// The procedure test that the field we generated does satisfy the field axioms.
+int main()
 {
-    fast_number_theoretic_transform_helper(length, input_offset, stride, input, output_offset, output_stride, output, -1);
-    for (int f = 0; f < length; f++)
+    // closure not tested
+    for (int a = 0; a < N; a++)
     {
-        // TODO - What I really needed here is the multiplicative inverse of length, not the multiplicative inverse of 64
-        output[output_offset + f * output_stride] = mod(output[output_offset + f * output_stride] * inverse, prime);
-    }
-}
-
-void init_powers()
-{
-    int p = 1;
-    for (int i = 0; i < n; i++)
-    {
-        powers[i] = p;
-        p = mod(p * a, prime);
-    }
-}
-
-/*
-clc;clear;
-it1 = [1 1 0;0 1 0;0 1 0];
-it2 = [1 0 0;1 1 0;0 0 0];
-IT1 = [it1 zeros(3, 3);zeros(3, 6)];
-IT2 = [it2 zeros(3, 3);zeros(3, 6)];
-IF1 = fft2(IT1);
-IF2 = fft2(IT2);
-CF = IF1 .* IF2;
-CT = ifft2(CF)
-conv2(it1,it2)
- */
-int main(int argc, char** argv)
-{
-    init_powers();
-    vector<vector<int>> img1(3, vector<int>(3, 0));
-    vector<vector<int>> img2(3, vector<int>(3, 0));
-    img1[0][0] = 1; img1[0][1] = 1; img1[0][2] = 0;
-    img1[1][0] = 0; img1[1][1] = 1; img1[1][2] = 0;
-    img1[2][0] = 0; img1[2][1] = 1; img1[2][2] = 0;
-
-    img2[0][0] = 0; img2[0][1] = 0; img2[0][2] = 0;
-    img2[1][0] = 0; img2[1][1] = 1; img2[1][2] = 1;
-    img2[2][0] = 0; img2[2][1] = 0; img2[2][2] = 1;
-
-    vector<int> padded_image1(64, 0);
-    vector<int> padded_image2(64, 0);
-
-    vector<int> image1_rows(64, 0);
-    vector<int> image2_rows(64, 0);
-    vector<int> image1_rows_cols(64, 0);
-    vector<int> image2_rows_cols(64, 0);
-    vector<int> product (64, 0);
-    vector<int> product_rows(64, 0);
-    vector<int> product_rows_cols(64, 0);
-
-    for (int row = 0; row < img1.size(); row++)
-    {
-        for (int col = 0; col < img1[0].size(); col++)
+        // identity rule
+        assert(add(a, 0) == a);
+        assert(add(0, a) == a);
+        assert(mul(a, 1) == a);
+        assert(mul(1, a) == a);
+        // additive inverse
+        assert(add(a, additive_inverse(a)) == 0);
+        if (a != 0)
         {
-            padded_image1[row * 8 + col] = img1[row][col];
+            assert(mul(a, multiplicative_inverse(a)) == 1);
+        }
+        for (int b = 0; b < N; b++)
+        {
+            // commutative
+            assert(add(a, b) == add(b, a));
+            assert(mul(a, b) == mul(b, a));
+            for (int c = 0; c < 8; c++)
+            {
+                // associative
+                assert(add(add(a, b), c) == add(a, add(b, c)));
+                assert(mul(mul(a, b), c) == mul(a, mul(b, c)));
+
+                // distributive
+                assert(mul(add(a, b), c) == add(mul(a, c), mul(b, c)));
+            }
         }
     }
-
-    for (int row = 0; row < img2.size(); row++)
-    {
-        for (int col = 0; col < img2[0].size(); col++)
-        {
-            padded_image2[row * 8 + col] = img2[img2.size() - row - 1][img2[0].size() - col - 1];
-        }
-    }
-
-    for (int row = 0; row < 8; row++)
-    {
-        fast_number_theoretic_transform(8, row * 8, 1, padded_image1, row * 8, 1, image1_rows);
-        fast_number_theoretic_transform(8, row * 8, 1, padded_image2, row * 8, 1, image2_rows);
-    }
-    for (int col = 0; col < 8; col++)
-    {
-        fast_number_theoretic_transform(8, col, 8, image1_rows, col, 8, image1_rows_cols);
-        fast_number_theoretic_transform(8, col, 8, image2_rows, col, 8, image2_rows_cols);
-    }
-    for (int i = 0; i < 64; i++)
-    {
-        product[i] = mod(image1_rows_cols[i] * image2_rows_cols[i], prime);
-    }
-    for (int row = 0; row < 8; row++)
-    {
-        inverse_fast_number_theoretic_transform(8, row * 8, 1, product, row * 8, 1, product_rows);
-    }
-    for (int col = 0; col < 8; col++)
-    {
-        inverse_fast_number_theoretic_transform(8, col, 8, product_rows, col, 8, product_rows_cols);
-    }
-    for (int row = 0; row < 8; row++)
-    {
-        for (int col = 0; col < 8; col++)
-        {
-            // TODO, eliminate this compensation
-            cout << mod(product_rows_cols[row * 8 + col] * 64, prime) << " ";
-        }
-        cout << endl;
-    }
+    // TODO: Find a primitive element
 
     return 0;
 }
