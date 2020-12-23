@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 #include <cassert>
 using namespace std;
 
@@ -17,9 +18,11 @@ using namespace std;
 // const int degree = 10;
 // const int irreducible_polynomial = 1877;
 //
+// const int degree = 4;
+// const int irreducible_polynomial = 19;
 
-const int degree = 4;
-const int irreducible_polynomial = 19;
+const int degree = 10;
+const int irreducible_polynomial = 1877;
 const int N = 1 << degree;
 
 int add(int i, int j)
@@ -106,8 +109,22 @@ int multiplicative_inverse(int a)
     return power(a, N - 2);
 }
 
-// The procedure test that the field we generated does satisfy the field axioms.
-int main()
+bool is_primitive_root(int i)
+{
+    int t = 1;
+    bool succeed = true;
+    for (int j = 0; succeed && j < (N - 2); j++)
+    {
+        t = mul(t, i);
+        if (t == 1)
+        {
+            succeed = false;
+        }
+    }
+    return succeed;
+}
+
+void test_finite_field()
 {
     // closure not tested
     for (int a = 0; a < N; a++)
@@ -139,24 +156,47 @@ int main()
             }
         }
     }
+}
 
+void find_primitive_roots()
+{
     // The multiplicative group has 15 elements, therefore there should be 
     // phi(15) = phi(3) x phi(5) = 2 x 4 = 8 primitive roots.
     for (int i = 2; i < N; i++)
     {
-        int t = 1;
-        bool succeed = true;
-        for (int j = 0; succeed && j < (N - 2); j++)
-        {
-            t = mul(t, i);
-            if (t == 1)
-            {
-                succeed = false;
-            }
-        }
-        if (succeed)
+        if (is_primitive_root(i))
         {
             cout << "A primitive root is " << i << endl;
+        }
+    }
+}
+
+// The procedure test that the field we generated does satisfy the field axioms.
+int main()
+{
+    // test_finite_field();
+    // find_primitive_roots();
+
+    int q = power(2, 327);
+    int m = 35;
+
+    unordered_map<int, int> table;
+    int p = 1;
+    table[0] = p;
+    for (int i = 1; i < m; i++)
+    {
+        p = mul(p, 2);
+        table[p] = i;
+    }
+
+    for (int j = 0; j < m; j++)
+    {
+        int match = mul(q, multiplicative_inverse(power(2, j * m)));
+        auto probe = table.find(match);
+        if (probe != table.end())
+        {
+            cout << j * m + probe->second << endl;
+            break;
         }
     }
 
