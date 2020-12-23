@@ -2,20 +2,24 @@
 #include <cassert>
 using namespace std;
 
-// This code represents GF(8), a Galois field of 8 elements
+// This code represents GF(2^4), a Galois field of 16 elements
 // Each element in the field is represented by a polynomial with cofficients in GF(2) [i.e. a single bit]
 // We use an integer to represent the polynomial. Therefore, 00001011 represents the polynomial x^3 + x + 1
-// Operations are done modulo a irreducible_polynomial polynomial, in this case, 00001011
+// Operations are done modulo a irreducible_polynomial polynomial, in this case, 00010011
 // Beyond the constants, the code can be adapted to other irreducible polynomials and thus fields of different size
 // 
-// For example, this is a larger finite field of 1024 elements, this will take a while to run through the full brute-force testing
+// This page contains a list of irreducible polynomials to use:
+// https://www.csee.umbc.edu/~lomonaco/f97/442/Peterson_Table.html
+// 
+// const int degree = 3;
+// const int irreducible_polynomial = 11;
 // 
 // const int degree = 10;
 // const int irreducible_polynomial = 1877;
 //
 
-const int degree = 3;
-const int irreducible_polynomial = 11;
+const int degree = 4;
+const int irreducible_polynomial = 19;
 const int N = 1 << degree;
 
 int add(int i, int j)
@@ -57,7 +61,7 @@ int mul(int i, int j)
         // After the multiply, it is at most 3, so either it is or it is not
         if ((result & (1 << degree)) != 0)
         {
-            // In case it is, we compute the mod irreducible_polynomial simply by subtracting it.
+            // In case it is, we compute mod irreducible_polynomial simply by subtracting it.
             result = add(result, additive_inverse(irreducible_polynomial));
         }
         // If the coefficient is not 0
@@ -124,7 +128,7 @@ int main()
             // commutative
             assert(add(a, b) == add(b, a));
             assert(mul(a, b) == mul(b, a));
-            for (int c = 0; c < 8; c++)
+            for (int c = 0; c < N; c++)
             {
                 // associative
                 assert(add(add(a, b), c) == add(a, add(b, c)));
@@ -135,7 +139,26 @@ int main()
             }
         }
     }
-    // TODO: Find a primitive element
+
+    // The multiplicative group has 15 elements, therefore there should be 
+    // phi(15) = phi(3) x phi(5) = 2 x 4 = 8 primitive roots.
+    for (int i = 2; i < N; i++)
+    {
+        int t = 1;
+        bool succeed = true;
+        for (int j = 0; succeed && j < (N - 2); j++)
+        {
+            t = mul(t, i);
+            if (t == 1)
+            {
+                succeed = false;
+            }
+        }
+        if (succeed)
+        {
+            cout << "A primitive root is " << i << endl;
+        }
+    }
 
     return 0;
 }
