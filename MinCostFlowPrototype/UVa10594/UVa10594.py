@@ -1,6 +1,7 @@
 from collections import deque
+from sys import stdin
 
-debug = True
+debug = False
 
 class Edge:
     def __init__(self, src, dst, capacity, cost):
@@ -36,7 +37,6 @@ def minimum_cost_maximum_flow(number_of_nodes, source, target, given_edges):
         # The BFS queue, it contains the edge indexes, that allows us to
         # get access to the edges quickly
         bfs = deque()
-
         parents = [-1] * number_of_nodes
         bfs.append(0)
         parents[source] = 0
@@ -49,7 +49,6 @@ def minimum_cost_maximum_flow(number_of_nodes, source, target, given_edges):
             else:
                 visiting_target = visiting_edge.dst
             for neighboring_edge_index in adjacency_list[visiting_target]:
-                # TODO avoid repeatedly scanning saturated edge
                 if edges[neighboring_edge_index].capacity > 0:
                     neighboring_edge = edges[neighboring_edge_index]
                     neighboring_edge_dst = neighboring_edge.dst
@@ -153,7 +152,6 @@ def minimum_mean_cycle_helper(node, adjacency_list, states):
     states.instack[node] = 1
     for edge_index in adjacency_list[node]:
         edge = states.edges[edge_index]
-        # TODO avoid repeatedly scanning saturated edge
         if edge.capacity > 0:
             if states.start_time[edge.dst] is None:
                 # All the tree edges enters the edge stack
@@ -321,92 +319,47 @@ def minimum_mean_cycle_within_connected_component(connected_component_nodes, con
             states.best_cycle = cycle
 
 def main():
-    # This is derived from a random campus bike ii instance
-    # The correct answer for this instance is (8, 243)
-    edges = [
-        Edge(0, 1, 1, 0),
-        Edge(0, 2, 1, 0),
-        Edge(0, 3, 1, 0),
-        Edge(0, 4, 1, 0),
-        Edge(0, 5, 1, 0),
-        Edge(0, 6, 1, 0),
-        Edge(0, 7, 1, 0),
-        Edge(0, 8, 1, 0),
-        Edge(1, 9, 1, 35),
-        Edge(1, 10, 1, 78),
-        Edge(1, 11, 1, 23),
-        Edge(1, 12, 1, 9),
-        Edge(1, 13, 1, 99),
-        Edge(1, 14, 1, 32),
-        Edge(1, 15, 1, 34),
-        Edge(1, 16, 1, 73),
-        Edge(2, 9, 1, 70),
-        Edge(2, 10, 1, 27),
-        Edge(2, 11, 1, 120),
-        Edge(2, 12, 1, 96),
-        Edge(2, 13, 1, 28),
-        Edge(2, 14, 1, 99),
-        Edge(2, 15, 1, 97),
-        Edge(2, 16, 1, 32),
-        Edge(3, 9, 1, 27),
-        Edge(3, 10, 1, 76),
-        Edge(3, 11, 1, 23),
-        Edge(3, 12, 1, 17),
-        Edge(3, 13, 1, 91),
-        Edge(3, 14, 1, 10),
-        Edge(3, 15, 1, 56),
-        Edge(3, 16, 1, 91),
-        Edge(4, 9, 1, 62),
-        Edge(4, 10, 1, 17),
-        Edge(4, 11, 1, 86),
-        Edge(4, 12, 1, 68),
-        Edge(4, 13, 1, 40),
-        Edge(4, 14, 1, 95),
-        Edge(4, 15, 1, 53),
-        Edge(4, 16, 1, 12),
-        Edge(5, 9, 1, 90),
-        Edge(5, 10, 1, 47),
-        Edge(5, 11, 1, 140),
-        Edge(5, 12, 1, 116),
-        Edge(5, 13, 1, 26),
-        Edge(5, 14, 1, 119),
-        Edge(5, 15, 1, 117),
-        Edge(5, 16, 1, 62),
-        Edge(6, 9, 1, 54),
-        Edge(6, 10, 1, 11),
-        Edge(6, 11, 1, 104),
-        Edge(6, 12, 1, 80),
-        Edge(6, 13, 1, 32),
-        Edge(6, 14, 1, 87),
-        Edge(6, 15, 1, 81),
-        Edge(6, 16, 1, 16),
-        Edge(7, 9, 1, 40),
-        Edge(7, 10, 1, 93),
-        Edge(7, 11, 1, 62),
-        Edge(7, 12, 1, 38),
-        Edge(7, 13, 1, 62),
-        Edge(7, 14, 1, 41),
-        Edge(7, 15, 1, 73),
-        Edge(7, 16, 1, 108),
-        Edge(8, 9, 1, 50),
-        Edge(8, 10, 1, 11),
-        Edge(8, 11, 1, 82),
-        Edge(8, 12, 1, 58),
-        Edge(8, 13, 1, 32),
-        Edge(8, 14, 1, 83),
-        Edge(8, 15, 1, 59),
-        Edge(8, 16, 1, 18),
-        Edge(9, 17, 1, 0),
-        Edge(10, 17, 1, 0),
-        Edge(11, 17, 1, 0),
-        Edge(12, 17, 1, 0),
-        Edge(13, 17, 1, 0),
-        Edge(14, 17, 1, 0),
-        Edge(15, 17, 1, 0),
-        Edge(16, 17, 1, 0),
-    ]
-    
-    print(minimum_cost_maximum_flow(18, 0, 17, edges))
+    state = 0
+    n = 0
+    m = 0
+    rows = []
+    volume = 0
+    capacity = 0
+    i = 0
+    while True:
+        try:
+            line = input().strip()
+        except(EOFError):
+            break
+        if line != "":
+            tokens = line.split(' ')
+            if state == 0:
+                n = int(tokens[0])
+                m = int(tokens[1])
+                i = 0
+                state = 1
+            elif state == 1:
+                src = int(tokens[0])
+                dst = int(tokens[1])
+                time = int(tokens[2])
+                rows.append((src, dst, time))
+                i = i + 1
+                if i == m:
+                    state = 2
+            elif state == 2:
+                volume = int(tokens[0])
+                capacity = int(tokens[1])
+                edges = []
+                edges.append(Edge(0, 1, volume, 0))
+                for (src,dst,time) in rows:
+                    edges.append(Edge(src, dst, capacity, time))
+                rows.clear()
+                (flow, cost) = minimum_cost_maximum_flow(n + 1, 0, n, edges)
+                if flow == volume:
+                    print(cost)
+                else:
+                    print("Impossible.")
+                state = 0
     return 0
 
 if __name__ == "__main__":
