@@ -1,8 +1,9 @@
 #include "prime_field.h"
+#include "galois_field.h"
 #include "reed_solomon.h"
 #include "reed_solomon_test.h"
 
-int reed_solomon_test()
+int prime_field_test()
 {
     reed_solomon_code<prime_field<7>> code(1);
 
@@ -38,5 +39,32 @@ int reed_solomon_test()
             }
         }
     }
+    return 0;
+}
+
+
+int galois_field_test()
+{
+    reed_solomon_code<galois_field<8, 285>> code(5);
+    std::vector<int> input(245, 0);
+    for (int iteration = 0; iteration < 50; iteration++)
+    {
+        for (int i = 0; i < 245; i++)
+        {
+            input[i] = rand() % 256;
+        }
+        auto encoded = code.encode(input);
+        encoded[10] = 12;
+        encoded[13] = 7;
+        auto decoded = code.decode(encoded);
+        assert(input == decoded);
+    }
+    return 0;
+}
+
+int reed_solomon_test()
+{
+    prime_field_test();
+    galois_field_test();
     return 0;
 }

@@ -71,7 +71,7 @@ int prime_field<N>::add(int x, int y)
 template<int N>
 int prime_field<N>::multiply(int x, int y)
 {
-    return (x * y + 7) % N;
+    return (x * y + N) % N;
 }
 
 template<int N>

@@ -6,6 +6,15 @@
 #include <cassert>
 // #define assert(x) {if(!(x)){throw 0;}}
 
+void print_vector(std::vector<int> v)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        std::cout << v[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
 std::vector<int> polynomial_simplify(std::vector<int> x)
 {
     while (x.size() > 0 && x[x.size() - 1] == 0)
@@ -138,10 +147,13 @@ std::vector<int> reed_solomon_code<TField>::decode(std::vector<int> input)
         /*
         for (int i = 0; i < TField::size() - 1; i++)
         {
-            cout << "error_locator_polynomial(alpha^{-" << i << "}) = " << evaluate_polynomial<TField>(error_locator_polynomial, TField::primitive_power(-i)) << endl;
+            int answer = evaluate_polynomial<TField>(error_locator_polynomial, TField::primitive_power(-i));
+            if (answer == 0)
+            {
+                std::cout << "error_locator_polynomial(alpha^{-" << i << "}) = " << answer << std::endl;
+            }
         }
         */
-
         std::vector<int> error_in_frequency = solve_error_in_frequency(error_locator_polynomial, syndrome);
         verify_circular_convolution(error_locator_polynomial, error_in_frequency);
         error_in_time = solve_error_in_time(error_in_frequency);
@@ -255,12 +267,19 @@ template<class TField>
 std::vector<int> reed_solomon_code<TField>::solve_error_in_time(std::vector<int> error_in_frequency)
 {
     std::vector<int> error_in_time(TField::size() - 1, 0);
-    int normalization = TField::multiplicative_inverse(TField::size() - 1);
+
+    int n = 0;
+    for (int i = 0; i < TField::size() - 1; i++)
+    {
+        n = TField::add(n, 1);
+    }
+    int normalization = TField::multiplicative_inverse(n);
+
     for (int i = 0; i < TField::size() - 1; i++)
     {
         for (int j = 0; j < TField::size() - 1; j++)
         {
-            int v = TField::multiplicative_inverse(TField::primitive_power(i * j));
+            int v = TField::primitive_power(-i * j);
             error_in_time[i] = TField::add(error_in_time[i], TField::multiply(error_in_frequency[j], v));
         }
         error_in_time[i] = TField::multiply(error_in_time[i], normalization);
