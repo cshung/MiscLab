@@ -23,6 +23,7 @@ Program.cpp
 splay_tree.cpp
 suffix_tree.cpp
 suffix_tree_test.cpp
+reed_solomon_test.cpp
 )
 add_executable (data_structure ${SRCS})
 

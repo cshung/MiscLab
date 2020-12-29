@@ -8,4 +8,5 @@
 #include "hungarian_test.h"
 #include "min_max_heap_test.h"
 #include "min_max_queue_test.h"
+#include "reed_solomon_test.h"
 #include "suffix_tree_test.h"
