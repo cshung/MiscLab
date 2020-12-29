@@ -48,7 +48,7 @@ Let $$ c $$ and $$ C $$ be a Fourier transform pair, both of them can be interpr
 - If $$ C(\alpha^{-k}) = 0 $$, then $$ c_k = 0 $$.
 
 ### Solving
-Consider the error locator polynomial $$ \Lambda(x) = (\alpha^{e_1}x - 1)...(\alpha^{e_v}x - 1) $$ such that $$ \alpha^{-e_k} $$ is a root if any only if $$ e_k $$ is an error location. 
+Consider the error locator polynomial $$ \Lambda(x) = (1 - \alpha^{e_1}x)...(1 - \alpha^{e_v}x) $$ such that $$ \alpha^{-e_k} $$ is a root if any only if $$ e_k $$ is an error location. 
 
 Interpret $$ \Lambda $$ as the Fourier transform of $$ \lambda $$. Using property 2, we know $$ \lambda_{e_k} $$ must be 0. Therefore $$ \lambda_k e_k = 0 $$ for all $$ k $$. 
 
@@ -60,16 +60,34 @@ We do not know $$ E $$, but we know the first $$ 2t $$ terms, they are simply $$
 
 Let's give an example with $$ t = 3 $$.
 
-    1 u u u 0 0 0 0 0 0 0 0 0
-    ? k k k k k k ? ? ? ? ? ?
+    0 u3 u2 u1  1  0  0 0 0 0 0 0 0
+    ? k1 k2 k3 k4 k5 k6 ? ? ? ? ? ?
 
-The first row corresponds to the unknown error locator polynomial coefficients in the frequency domain. The second row corresponds to the Fourier transform of the error. If we slide the error locator polynomial, we can see that there are exactly 3 spots where the error locator polynomial overlaps on only the known portion of the error. Note that the circular convolution is 0, which yields 3 linear equations and therefore we can solve for the unknown coefficients in a unique way.
+The first row corresponds to the mirror image of the unknown error locator polynomial coefficients in the frequency domain. The second row corresponds to the Fourier transform of the error. If we slide the mirror image of the error locator polynomial, we can see that there are exactly 3 spots where the error locator polynomial overlaps on only the known portion of the error. Note that the circular convolution is 0, which yields 3 linear equations and therefore we can solve for the unknown coefficients in a unique way.
+
+$$
+u_3 k_1 + u_2 k_2 + u_1 k_3 + k_4 &=& 0 \\
+u_3 k_2 + u_2 k_3 + u_1 k_4 + k_5 &=& 0 \\
+u_3 k_3 + u_2 k_4 + u_1 k_5 + k_6 &=& 0
+$$
 
 ### Advanced solving
-Solving a linear equation system is complicated. We can simplify it. By considering the convolution as polynomial multiplication. In particular, we have $$ \Lambda \times E = \Omega $$. We only know $$ E $$ up to $$ 2t $$ terms, so we simply $$ \pmod{x^{2t}} $$. We do not really care what is $$ \Omega $$. The extended Euclidean algorithm applied on $$ Y $$ and $$ x^{2t} $$ will give us $$ \Lambda $$. 
+While it works, solving a linear equation system is complicated. We can simplify it. In particular, we can model the convolution as polynomial multiplication as follow:
 
-TODO - flush out the details.
+$$
+P(x) = 1 + u_1x + u_2x^2 + u_3x^3 \\
+Q(x) = k_1 + k_2 x+ k_3 x^2 + \cdots + k_6x^5 \\
+PQ = \cdots + (u_3 k_1 + u_2 k_2 + u_1 k_3 + k_4)x^3 + (u_3 k_2 + u_2 k_3 + u_1 k_4 + k_5)x^4 + \cdots 
+$$
+
+The idea is that the coefficients for $$ x^3 $$ to $$ x^5 $$ is 0. The rest are unknown and we do not care.
+
+The problem becomes finding $$ P $$ such that $$ PQ \pmod{x^6} $$ has degree 2.
+
+Extended Euclidean algorithm applied on $$ Q $$ and $$ x^6 $$ gives a sequence of identities $$ AQ + B(x^6) = R $$ for some $$ R $$. Assume we figure $$ \deg(R) \le t $$, then we can claim $$ U = A $$.
+
+TODO: It has to be stopped right away, why?
 
 ### Decoding
-Once we know all the values of $$ u $$, we can slide the error locator polynomial one at a time to determine all the unknown question marks in the second row one at a time. Once we know all the errors in the frequency domain, inverse Fourier transform and polynomial division will give us the decoding.
+Once we know all the values of $$ u $$, we can slide the mirror of the error locator polynomial one at a time to determine all the unknown question marks in the second row one at a time. Once we know all the errors in the frequency domain, inverse Fourier transform and polynomial division will give us the decoding.
 
