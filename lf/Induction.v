@@ -199,7 +199,7 @@ Proof.
 Theorem mul_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  intros n. 
+  intros n.
   induction n as [| n IHn].
   -              (* 0 * 0 = 0       *)
     reflexivity.
@@ -207,12 +207,12 @@ Proof.
                  (* S n * 0 = 0     *)
     simpl.       (* n * 0 = 0       *) (* Check the definition of mult and plus to see why this is a simplification *)
     apply IHn.                         (* when the goal is identical with the hypothesis, we can use apply *)
-    Qed. 
+    Qed.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  intros n m. 
+  intros n m.
   induction n as [|n IHn].
   -                 (* S (0 + m) = 0 + S m         *)
     reflexivity.
@@ -632,7 +632,7 @@ Proof.
     simpl.     (* (n <=? m) = true -> (p + n <=? p + m) = true     *)
     apply IHp.
   Qed.
-  
+
 Theorem S_neqb_0 : forall n:nat,
   (S n) =? 0 = false.
 Proof.
@@ -687,13 +687,13 @@ Proof.
     rewrite <- mult_n_Sm. (* (n + m) * p + (n + m) = n * p + n + m * S p         *)
     rewrite <- mult_n_Sm. (* (n + m) * p + (n + m) = n * p + n + (m * p + m)     *)
     rewrite -> IHp.       (* n * p + m * p + (n + m) = n * p + n + (m * p + m)   *)
-    assert (n * p + (m * p + (n + m)) = n * p + m * p + (n + m)) as assoc1. 
-    { 
-      apply add_assoc. 
+    assert (n * p + (m * p + (n + m)) = n * p + m * p + (n + m)) as assoc1.
+    {
+      apply add_assoc.
     }
     rewrite <- assoc1.    (* n * p + (m * p + (n + m)) = n * p + n + (m * p + m) *)
-    assert (m * p + (n + m) = n + (m * p + m)) as shuffle. { 
-      apply add_shuffle3. 
+    assert (m * p + (n + m) = n + (m * p + m)) as shuffle. {
+      apply add_shuffle3.
     }
     rewrite -> shuffle.   (* n * p + (n + (m * p + m)) = n * p + n + (m * p + m) *)
     rewrite -> add_assoc. (* n * p + n + (m * p + m) = n * p + n + (m * p + m)   *)
@@ -897,7 +897,229 @@ Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
         proof -- that will allow the main proof to make progress.) Don't
         define this using [nat_to_bin] and [bin_to_nat]! *)
 
-(* FILL IN HERE *)
+Fixpoint normalize (n:bin) : bin :=
+  match n with
+  | Z => Z
+  | B0 b => match normalize(b) with
+            | Z => Z
+            | B0 c => B0 (B0 c)
+            | B1 d => B0 (B1 d)
+            end
+  | B1 e => B1 (normalize e)
+  end.
+
+Example test_normalize_1: normalize(Z) = Z.
+Proof. reflexivity. Qed.
+
+Example test_normalize_2: normalize(B0 Z) = Z.
+Proof. reflexivity. Qed.
+
+Example test_normalize_3: normalize(B0 (B0 Z)) = Z.
+Proof. reflexivity. Qed.
+
+Example test_normalize_4: normalize(B1 Z) = (B1 Z).
+Proof. reflexivity. Qed.
+
+Example test_normalize_5: normalize(B0 (B1 Z)) = (B0 (B1 Z)).
+Proof. reflexivity. Qed.
+
+Example test_normalize_6: normalize(B1 (B0 Z)) = (B1 Z).
+Proof. reflexivity. Qed.
+
+(* These definitions are used to describe property only *)
+Definition isNotZ (n:bin) : bool  :=
+  match n with
+  | Z => false
+  | B0 _ => true
+  | B1 _ => true
+  end.
+
+Fixpoint normalized (n:bin) :bool :=
+  match n with
+  | Z => true
+  | B0 b => (normalized b) && (isNotZ b)
+  | B1 e => normalized e
+  end.
+
+Theorem normalize_keep_value: forall b, bin_to_nat(b) = bin_to_nat(normalize(b)).
+Proof.
+  induction b as [|b IHb|b IHb].
+  - reflexivity.
+  - simpl.
+    destruct (normalize b).
+    * rewrite -> IHb. reflexivity.
+    * rewrite -> IHb. rewrite -> add_0_r. simpl. rewrite -> add_0_r. rewrite -> add_0_r. rewrite -> add_assoc. reflexivity.
+    * rewrite -> IHb. rewrite -> add_0_r. simpl. rewrite -> add_0_r. rewrite -> add_0_r. reflexivity.
+  - simpl. rewrite -> add_0_r. rewrite -> add_0_r. rewrite <- IHb. reflexivity.
+Qed.
+
+Theorem normalize_is_normalized: forall b, normalized(normalize b) = true.
+Proof.
+  intros b.
+  induction b as [|b IHb|b IHb].
+  - reflexivity.
+  - destruct (normalize b) eqn:D.
+    + simpl. rewrite -> D. reflexivity.
+    + simpl. rewrite -> D.
+      assert (imm: normalized (B0 (B0 b0)) = (normalized (B0 b0) && (isNotZ (B0 b0)))).
+      {
+        reflexivity.
+      }
+      rewrite -> imm.
+      rewrite -> IHb.
+      reflexivity.
+    + simpl. rewrite -> D.
+      assert (imm: normalized (B0 (B1 b0)) = (normalized (B1 b0) && (isNotZ (B1 b0)))).
+      {
+        reflexivity.
+      }
+      rewrite -> imm.
+      rewrite -> IHb.
+      reflexivity.
+  - simpl. apply IHb.
+  Qed.
+
+Theorem normalized_normalize: forall b, (normalized b = true) -> b = normalize b.
+Proof.
+  intros b.
+  induction b as [|b IHb|b IHb].
+  - reflexivity.
+  -
+    intros H.
+    simpl in H.
+    assert (D:normalized b = true).
+    {
+      destruct (normalized b) eqn:D.
+      + reflexivity.
+      + simpl in H. inversion H.
+    }
+    apply IHb in D.
+    simpl.
+    rewrite <- D.
+    destruct b.
+    + assert (F:isNotZ Z = true).
+      {
+        destruct (isNotZ Z) eqn:E.
+        * reflexivity.
+        * simpl in H. inversion H.
+      }
+      simpl in F.
+      inversion F.
+    + reflexivity.
+    + reflexivity.
+  - simpl. intros H. apply IHb in H. rewrite <- H. reflexivity.
+  Qed.
+
+Theorem normalize_is_idempotent: forall b, (normalize b) = normalize(normalize b).
+Proof.
+  intros b.
+  symmetry.
+  rewrite <- normalized_normalize.
+  reflexivity.
+  apply normalize_is_normalized.
+  Qed.
+
+
+Theorem nat_to_bin_b0: forall x, nat_to_bin(S x + S x) = B0 (nat_to_bin (S x)).
+Proof.
+  intros x.
+  induction x as [|x IHx].
+  -
+    reflexivity.
+  -
+    replace (S (S x) + S (S x)) with (S(S(S x + S x))).
+    replace (nat_to_bin (S (S (S x + S x)))) with (incr (incr (nat_to_bin (S x + S x)))).
+    rewrite -> IHx.
+    simpl.
+    reflexivity.
+    reflexivity.
+    simpl.
+    rewrite -> plus_n_Sm.
+    reflexivity.
+  Qed.
+
+Theorem normal_b0: forall b, B0 b = normalize(B0 b) -> b = normalize b.
+Proof.
+  intros b H.
+  inversion H.
+  destruct (normalize b) eqn:E.
+  + discriminate H1.
+  + inversion H1. reflexivity.
+  + inversion H1. reflexivity.
+  Qed.
+
+Theorem normal_b1: forall b, B1 b = normalize(B1 b) -> b = normalize b.
+Proof.
+  intros b H.
+  inversion H.
+  rewrite <- H1.
+  apply H1.
+  Qed.
+
+Theorem zero: forall b, (b = normalize b) -> bin_to_nat(b) = 0 -> b = Z.
+Proof.
+  intros b H1 H2.
+  induction b.
+  + reflexivity.
+  + pose proof (H1) as H3. apply normal_b0 in H3. simpl in H2. rewrite -> add_0_r in H2. 
+    assert (H4: forall x, x + x = 0 -> x = 0).
+    {
+      destruct x.
+      * reflexivity.
+      * simpl. intros H. inversion H.
+    }
+    apply H4 in H2.
+    rewrite IHb in H1.
+    simpl in H1.
+    inversion H1.
+    apply H3.
+    apply H2.
+  + simpl in H2. inversion H2.
+  Qed.
+
+Theorem main_normalized: forall b, (b = normalize b) -> nat_to_bin(bin_to_nat(b)) = b.
+Proof.
+  intros b H.
+  (* This hypothesis is specifically designed for the induction later *)
+  destruct ((bin_to_nat b) =? 0) eqn:D1.
+  + destruct (bin_to_nat b) eqn:D2.
+    - apply zero in H. rewrite -> H. reflexivity. apply D2.
+    - simpl in D1. inversion D1.
+    (* 
+       Whenever we do an induction, all the current hypothesis are captured as the induction hypothesis
+       If the destruct earlier created an hypothesis that bin_to_nat b = S n, then it will be a required
+       precondition of the hypothesis, which is not what we wanted, all we need is non zero.
+    *)
+  + induction b.
+    - simpl in D1. inversion D1.
+    - simpl in D1. rewrite -> add_0_r in D1. apply normal_b0 in H.
+      assert ((bin_to_nat b =? 0) = false).
+      {
+        destruct (bin_to_nat b) eqn:D3.
+        + simpl in D1. inversion D1.
+        + reflexivity.
+      }
+      simpl. rewrite -> add_0_r. destruct (bin_to_nat b) eqn:D4.
+      * simpl in D1. inversion D1.
+      * rewrite -> nat_to_bin_b0. rewrite -> IHb. reflexivity. apply H. reflexivity.
+    - apply normal_b1 in H. simpl. rewrite -> add_0_r. destruct (bin_to_nat b) eqn:D3.
+      * apply zero in D3. rewrite -> D3. reflexivity. apply H.
+      * rewrite -> nat_to_bin_b0. rewrite -> IHb. reflexivity. apply H. reflexivity.
+  Qed.
+
+(*
+   Here is the main theorem.
+   The idea of this proof is that we always use normalized representation.
+   Therefore, we argue, if the input is not normalized, it wouldn't hurt to first
+   normalize it.
+*)
+Theorem main: forall b, nat_to_bin(bin_to_nat(b)) = normalize(b).
+Proof.
+  intros b.
+  rewrite -> normalize_keep_value.
+  apply main_normalized.
+  apply normalize_is_idempotent.
+  Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
