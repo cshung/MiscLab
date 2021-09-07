@@ -199,22 +199,63 @@ Proof.
 Theorem mul_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. 
+  induction n as [| n IHn].
+  -              (* 0 * 0 = 0       *)
+    reflexivity.
+  -              (* IHn : n * 0 = 0 *)
+                 (* S n * 0 = 0     *)
+    simpl.       (* n * 0 = 0       *) (* Check the definition of mult and plus to see why this is a simplification *)
+    apply IHn.                         (* when the goal is identical with the hypothesis, we can use apply *)
+    Qed. 
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m. 
+  induction n as [|n IHn].
+  -                 (* S (0 + m) = 0 + S m         *)
+    reflexivity.
+  -                 (* IHn : S (n + m) = n + S m   *)
+                    (* S (S n + m) = S n + S m     *)
+    simpl.          (* S (S (n + m)) = S (n + S m) *) (* Check the definition of plus to see why this is a simplification *)
+    rewrite -> IHn. (* S (n + S m) = S (n + S m)   *)
+    reflexivity.
+  Qed.
 
 Theorem add_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  induction m as [|m IHm].
+  -                        (* n + 0 = 0 + n         *)
+    simpl.                 (* n + 0 = n             *)
+    apply add_0_r.
+  -                        (* IHm : n + m = m + n   *)
+                           (* n + S m = S m + n     *)
+    simpl.                 (* n + S m = S (m + n)   *)
+    rewrite <- IHm.        (* n + S m = S (n + m)   *)
+    rewrite <- plus_n_Sm.  (* S (n + m) = S (n + m) *)
+    reflexivity.
+  Qed.
 
 Theorem add_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  induction m as [|m IHm].
+  -                         (* n + (0 + p) = n + 0 + p         *)
+      rewrite -> add_0_r.   (* n + (0 + p) = n + p             *)
+      reflexivity.
+  -                         (* IHm : n + (m + p) = n + m + p   *)
+                            (* n + (S m + p) = n + S m + p     *)
+      simpl.                (* n + S (m + p) = n + S m + p     *)
+      rewrite <- plus_n_Sm. (* S (n + (m + p)) = n + S m + p   *)
+      rewrite <- plus_n_Sm. (* S (n + (m + p)) = S (n + m) + p *)
+      simpl.                (* S (n + (m + p)) = S (n + m + p) *)
+      rewrite -> IHm.       (* S (n + m + p) = S (n + m + p)   *)
+      reflexivity.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (double_plus)
@@ -231,7 +272,17 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [|n IHn].
+  -                       (* double 0 = 0 + 0                 *)
+    reflexivity.
+  -                       (* IHn : double n = n + n           *)
+                          (* double (S n) = S n + S n         *)
+    simpl.                (* S (S (double n)) = S (n + S n)   *)
+    rewrite <- plus_n_Sm. (* S (S (double n)) = S (S (n + n)) *)
+    rewrite -> IHn.       (* S (S (n + n)) = S (S (n + n))    *)
+    reflexivity.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (even_S)
@@ -246,7 +297,16 @@ Proof.
 Theorem even_S : forall n : nat,
   even (S n) = negb (even n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n IHn].
+  -                             (* even 1 = negb (even 0)                *)
+    reflexivity.
+  -                             (* IHn : even (S n) = negb (even n)      *)
+                                (* even (S (S n)) = negb (even (S n))    *)
+    rewrite -> IHn.             (* even (S (S n)) = negb (negb (even n)) *)
+    simpl.                      (* even n = negb (negb (even n))         *)
+    rewrite -> negb_involutive. (* even n = even n                       *)
+    reflexivity.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard, optional (destruct_induction)
@@ -482,7 +542,16 @@ Definition manual_grade_for_add_comm_informal : option (nat*string) := None.
 Theorem add_shuffle3 : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.                  (* n + (m + p) = m + (n + p) *)
+  rewrite -> add_assoc.          (* n + m + p = m + (n + p)   *)
+  rewrite -> add_assoc.          (* n + m + p = m + (n + p)   *)
+  assert ( n + m = m + n ) as H.
+  {
+    apply add_comm.
+  }
+  rewrite -> H.                  (* m + n + p = m + n + p     *)
+  reflexivity.
+  Qed.
 
 (** Now prove commutativity of multiplication.  You will probably
     want to define and prove a "helper" theorem to be used
@@ -491,7 +560,19 @@ Proof.
 Theorem mul_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  induction m as [|m IHm].
+  -                       (* n * 0 = 0 * n         *)
+    simpl.                (* n * 0 = 0             *)
+    apply mul_0_r.
+  -                       (* IHm : n * m = m * n   *)
+                          (* n * S m = S m * n     *)
+    simpl.                (* n * S m = n + m * n   *)
+    rewrite <- IHm.       (* n * S m = n + n * m   *)
+    rewrite <- mult_n_Sm. (* n * m + n = n + n * m *)
+    rewrite <- add_comm.  (* n + n * m = n + n * m *)
+    reflexivity.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, optional (more_exercises)
@@ -509,31 +590,67 @@ Check leb.
 Theorem leb_refl : forall n:nat,
   (n <=? n) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [|n IHn].
+  -              (* (0 <=? 0) = true       *)
+    reflexivity.
+  -              (* IHn : (n <=? n) = true *)
+                 (* (S n <=? S n) = true   *)
+    simpl.       (* (n <=? n) = true       *)
+    apply IHn.
+  Qed.
 
 Theorem zero_neqb_S : forall n:nat,
   0 =? (S n) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.    (* (0 =? S n) = false *)
+  reflexivity.
+  Qed.
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b.
+  destruct b.
+  -              (* true && false = false  *)
+    reflexivity.
+  -              (* false && false = false *)
+    reflexivity.
+  Qed.
 
 Theorem plus_leb_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros n m p.
+  induction p as [|p IHp].
+  -            (* (n <=? m) = true -> (0 + n <=? 0 + m) = true     *)
+    simpl.     (* (n <=? m) = true -> (n <=? m) = true             *)
+    intros H.  (* H : (n <=? m) = true                             *)
+               (* (n <=? m) = true                                 *)
+    apply H.
+  -            (* (n <=? m) = true -> (S p + n <=? S p + m) = true *)
+    simpl.     (* (n <=? m) = true -> (p + n <=? p + m) = true     *)
+    apply IHp.
+  Qed.
+  
 Theorem S_neqb_0 : forall n:nat,
   (S n) =? 0 = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.    (* (S n =? 0) = false *)
+  reflexivity.
+  Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  destruct n.
+  -                     (* 1 * 0 = 0       *)
+    reflexivity.
+  -                     (* 1 * S n = S n   *)
+    simpl.              (* S (n + 0) = S n *)
+    rewrite -> add_0_r. (* S n = S n       *)
+    reflexivity.
+  Qed.
 
 Theorem all3_spec : forall b c : bool,
   orb
@@ -542,17 +659,77 @@ Theorem all3_spec : forall b c : bool,
          (negb c))
   = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c.
+  destruct b,c.
+  -              (* true && true || (negb true || negb true) = true     *)
+    reflexivity.
+  -              (* true && false || (negb true || negb false) = true   *)
+    reflexivity.
+  -              (* false && true || (negb false || negb true) = true   *)
+    reflexivity.
+  -              (* false && false || (negb false || negb false) = true *)
+    reflexivity.
+  Qed.
 
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  induction p as [|p IHp].
+  -                       (* (n + m) * 0 = n * 0 + m * 0                         *)
+    rewrite -> mul_0_r.   (* 0 = n * 0 + m * 0                                   *)
+    rewrite -> mul_0_r.   (* 0 = 0 + m * 0                                       *)
+    rewrite -> mul_0_r.   (* 0 = 0 + 0                                           *)
+    reflexivity.
+  -                       (* IHp : (n + m) * p = n * p + m * p                   *)
+                          (* (n + m) * S p = n * S p + m * S p                   *)
+    rewrite <- mult_n_Sm. (* (n + m) * p + (n + m) = n * S p + m * S p           *)
+    rewrite <- mult_n_Sm. (* (n + m) * p + (n + m) = n * p + n + m * S p         *)
+    rewrite <- mult_n_Sm. (* (n + m) * p + (n + m) = n * p + n + (m * p + m)     *)
+    rewrite -> IHp.       (* n * p + m * p + (n + m) = n * p + n + (m * p + m)   *)
+    assert (n * p + (m * p + (n + m)) = n * p + m * p + (n + m)) as assoc1. 
+    { 
+      apply add_assoc. 
+    }
+    rewrite <- assoc1.    (* n * p + (m * p + (n + m)) = n * p + n + (m * p + m) *)
+    assert (m * p + (n + m) = n + (m * p + m)) as shuffle. { 
+      apply add_shuffle3. 
+    }
+    rewrite -> shuffle.   (* n * p + (n + (m * p + m)) = n * p + n + (m * p + m) *)
+    rewrite -> add_assoc. (* n * p + n + (m * p + m) = n * p + n + (m * p + m)   *)
+    reflexivity.
+  Qed.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  induction m as [|m IHm].
+  -                                               (* n * (0 * p) = n * 0 * p                 *)
+    rewrite -> mult_0_l.                          (* n * 0 = n * 0 * p                       *)
+    rewrite -> mul_0_r.                           (* 0 = 0 * p                               *)
+    rewrite -> mult_0_l.                          (* 0 = 0                                   *)
+    reflexivity.
+  -                                               (* IHm : n * (m * p) = n * m * p           *)
+                                                  (* n * (S m * p) = n * S m * p             *)
+    replace (S m * p) with (p * S m).             (* n * (p * S m) = n * S m * p             *)
+    replace (n * (p * S m)) with ((p * S m) * n). (* p * S m * n = n * S m * p               *)
+    rewrite <- mult_n_Sm.                         (* (p * m + p) * n = n * S m * p           *)
+    rewrite <- mult_n_Sm.                         (* (p * m + p) * n = (n * m + n) * p       *)
+    rewrite -> mult_plus_distr_r.                 (* p * m * n + p * n = (n * m + n) * p     *)
+    rewrite -> mult_plus_distr_r.                 (* p * m * n + p * n = n * m * p + n * p   *)
+    rewrite <- IHm.                               (* p * m * n + p * n = n * (m * p) + n * p *)
+    replace (m * p) with (p * m).                 (* p * m * n + p * n = n * (p * m) + n * p *)
+    replace (n * p) with (p * n).                 (* p * m * n + p * n = n * (p * m) + p * n *)
+    replace (n * (p * m)) with (p * m * n).       (* p * m * n + p * n = p * m * n + p * n   *)
+    reflexivity.
+    apply mul_comm.
+    apply mul_comm.
+    apply mul_comm.
+    apply mul_comm.
+    apply mul_comm.
+   Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (eqb_refl) *)
@@ -560,7 +737,15 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   (n =? n) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [|n IHn].
+  -              (* (0 =? 0) = true       *)
+    reflexivity.
+  -              (* IHn : (n =? n) = true *)
+                 (* (S n =? S n) = true   *)
+    simpl.       (* (n =? n) = true       *)
+    apply IHn.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (add_shuffle3')
@@ -577,7 +762,13 @@ Proof.
 Theorem add_shuffle3' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.                 (* n + (m + p) = m + (n + p) *)
+  rewrite -> add_assoc.         (* n + m + p = m + (n + p)   *)
+  rewrite -> add_assoc.         (* n + m + p = m + n + p     *)
+  replace (n + m) with (m + n). (* m + n + p = m + n + p     *)
+  reflexivity.
+  apply add_comm.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, especially useful (binary_commute)
@@ -622,7 +813,22 @@ Definition manual_grade_for_binary_commute : option (nat*string) := None.
         numbers. *)
 
 Fixpoint nat_to_bin (n:nat) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  := match n with
+  | O => Z
+  | S n => incr (nat_to_bin(n))
+  end.
+
+Example test_nat_to_bin_1 : nat_to_bin(0) = Z.
+Proof. reflexivity. Qed.
+
+Example test_nat_to_bin_2 : nat_to_bin(1) = B1 Z.
+Proof. reflexivity. Qed.
+
+Example test_nat_to_bin_3 : nat_to_bin(2) = B0 (B1 Z).
+Proof. reflexivity. Qed.
+
+Example test_nat_to_bin_4 : nat_to_bin(3) = B1 (B1 Z).
+Proof. reflexivity. Qed.
 
 (** Prove that, if we start with any [nat], convert it to binary, and
     convert it back, we get the same [nat] we started with.  (Hint: If
@@ -632,7 +838,38 @@ Fixpoint nat_to_bin (n:nat) : bin
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [|n IHn].
+  -                          (* bin_to_nat (nat_to_bin 0) = 0                                                               *)
+    reflexivity.
+  -                          (* IHn : bin_to_nat (nat_to_bin n) = n                                                         *)
+                             (* bin_to_nat (nat_to_bin (S n)) = S n                                                         *)
+    simpl.                   (* bin_to_nat (incr (nat_to_bin n)) = S n                                                      *)
+    assert (P: forall b, bin_to_nat(incr (b)) = S (bin_to_nat(b))).
+    {
+      intros b.
+      induction b as [|p|q].
+      *                      (* bin_to_nat (incr Z) = S (bin_to_nat Z)                                                      *)
+        reflexivity.
+      *                      (* IHp : bin_to_nat (incr p) = S (bin_to_nat p)                                                *)
+                             (* bin_to_nat (incr (B0 p)) = S (bin_to_nat (B0 p))                                            *)
+        simpl.               (* S (bin_to_nat p + (bin_to_nat p + 0)) = S (bin_to_nat p + (bin_to_nat p + 0))               *)
+        reflexivity.
+      *                      (* IHq : bin_to_nat (incr q) = S (bin_to_nat q)                                                *)
+                             (* bin_to_nat (incr (B1 q)) = S (bin_to_nat (B1 q))                                            *)
+        simpl.               (* bin_to_nat (incr q) + (bin_to_nat (incr q) + 0) = S (S (bin_to_nat q + (bin_to_nat q + 0))) *)
+        rewrite -> IHq.      (* S (bin_to_nat q) + (S (bin_to_nat q) + 0) = S (S (bin_to_nat q + (bin_to_nat q + 0)))       *)
+        rewrite -> add_0_r.  (* S (bin_to_nat q) + S (bin_to_nat q) = S (S (bin_to_nat q + (bin_to_nat q + 0)))             *)
+        rewrite -> add_0_r.  (* S (bin_to_nat q) + S (bin_to_nat q) = S (S (bin_to_nat q + bin_to_nat q))                   *)
+        simpl.               (* S (bin_to_nat q + S (bin_to_nat q)) = S (S (bin_to_nat q + bin_to_nat q))                   *)
+        rewrite -> add_comm. (* S (S (bin_to_nat q) + bin_to_nat q) = S (S (bin_to_nat q + bin_to_nat q))                   *)
+        simpl.               (* S (S (bin_to_nat q + bin_to_nat q)) = S (S (bin_to_nat q + bin_to_nat q))                   *)
+        reflexivity.
+    }
+    rewrite -> P.            (* S (bin_to_nat (nat_to_bin n)) = S n                                                         *)
+    rewrite -> IHn.          (* S n = S n                                                                                   *)
+    reflexivity.
+  Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.
