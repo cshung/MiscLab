@@ -53,5 +53,17 @@ namespace BoyerMoore.Tests
             //                                                       ..ABC
             Assert.Equal(new int[] { 5 }, BoyerMoore.IndexesOf("x.ABC..ABC", "..ABC").ToArray());
         }
+
+        [Fact]
+        public void Regression3()
+        {
+            Assert.Equal(new int[] { }, BoyerMoore.IndexesOf("bbababaaaababbaabbbabbbaaabbbaaababbabaabbaaaaabbaaabbbbaaabaabbaababbbaabaaababbaaabbbbbbaabbbbbaaabbababaaaaabaabbbababbaababaabbaa", "bbabba").ToArray());
+        }
+
+        [Fact]
+        public void Regression4()
+        {
+            Assert.Equal(new int[] { 0 }, BoyerMoore.IndexesOf("a", "a").ToArray());
+        }
     }
 }

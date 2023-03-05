@@ -14,7 +14,7 @@ namespace BoyerMoore
             }
         }
     }
-    
+
     public static class BoyerMoore
     {
         private const bool logging = false;
@@ -314,13 +314,17 @@ namespace BoyerMoore
                         // text    : .........AXX.
                         // pattern :      XX..AXX
                         // shifted :           XX..AXX
-                        shifts[i] = length - 1 - longestBorder[i - 1];
+
+                        // TODO: I wonder if it makes sense to confirm the shift is actually 
+                        // making the overlap shorter than the currently matched piece
+                        shifts[i] = length - longestBorder[i - 1];
                         skips[i] = longestBorder[i - 1];
                     }
                 }
             }
 
-            if (longestBorder[length - 2] != 0)
+            // TODO: The length > 2 check is suspicious
+            if (length > 2 && longestBorder[length - 2] != 0)
             {
                 // If case C2 applies
                 shifts[length] = longestBorder[length - 2] - 1;
