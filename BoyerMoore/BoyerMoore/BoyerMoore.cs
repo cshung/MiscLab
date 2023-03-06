@@ -482,7 +482,6 @@ namespace BoyerMoore
 
                 // We moved one extra character, adjust back
                 currentStart++;
-                suffixStart++;
 
                 // Now we have found the maximal suffix
                 Debug.Assert(IsMaximalSuffix(pattern, currentStart, currentEnd));
