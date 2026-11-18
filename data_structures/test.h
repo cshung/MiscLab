@@ -10,3 +10,4 @@
 #include "min_max_queue_test.h"
 #include "reed_solomon_test.h"
 #include "suffix_tree_test.h"
+#include "van_empe_boas_test.h"

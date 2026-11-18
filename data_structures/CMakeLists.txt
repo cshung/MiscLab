@@ -19,11 +19,13 @@ min_max_heap.cpp
 min_max_heap_test.cpp
 min_max_queue.cpp
 min_max_queue_test.cpp
-brogram.cpp
+program.cpp
 splay_tree.cpp
 suffix_tree.cpp
 suffix_tree_test.cpp
 reed_solomon_test.cpp
+van_empe_boas.cpp
+van_empe_boas_test.cpp
 )
 add_executable (data_structure ${SRCS})
 
