@@ -2,17 +2,17 @@
 
 class btree_impl;
 
-class btree
-{
+class btree {
 public:
-    btree();
-    ~btree();
-    bool insert(int key, int value);
-    bool select(int key, int* result) const;
-    bool remove(int key);
+  btree();
+  ~btree();
+  bool insert(int key, int value);
+  bool select(int key, int *result) const;
+  bool remove(int key);
 
-    void print() const;
-    void verify() const;
+  void print() const;
+  void verify() const;
+
 private:
-    btree_impl* m_impl;
+  btree_impl *m_impl;
 };
